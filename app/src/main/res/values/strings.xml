@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">WallpaperTunnel</string>
+    <string name="hide_app_icon">Hide App Icon</string>
+    <string name="exit">Press back to exit.</string>
+</resources>
