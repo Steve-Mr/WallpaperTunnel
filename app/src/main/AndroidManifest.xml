@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.maary.shareas">
 
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
