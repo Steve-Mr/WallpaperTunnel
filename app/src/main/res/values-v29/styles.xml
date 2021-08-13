@@ -1,6 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.Dialog">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorAccent</item>
@@ -17,6 +17,8 @@
         <item name="android:statusBarColor">
             @android:color/transparent
         </item>
-    </style>
 
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+    </style>
 </resources>

@@ -2,8 +2,11 @@ package com.maary.shareas;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.view.WindowCompat;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -15,6 +18,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.CompoundButton;
@@ -28,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         setContentView(R.layout.activity_main);
+
+        WindowCompat.setDecorFitsSystemWindows(getWindow(),false);
 
         Intent intent = getIntent();
         String action = intent.getAction();
@@ -52,13 +58,12 @@ public class MainActivity extends AppCompatActivity {
     void handleImage(Intent intent){
         Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if(imageUri != null){
-            Intent sendIntent = new Intent(Intent.ACTION_ATTACH_DATA);
-            sendIntent.setDataAndType(imageUri, "image/*");
+            Intent sendIntent = WallpaperManager.getInstance(this).getCropAndSetWallpaperIntent(imageUri);
             sendIntent.putExtra("mimeType", "image/*");
             sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
             Intent receiver = new Intent(this, ShareReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0,
+            @SuppressLint("UnspecifiedImmutableFlag") PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0,
                     receiver,PendingIntent.FLAG_UPDATE_CURRENT);
 
             startActivity(Intent.createChooser(
