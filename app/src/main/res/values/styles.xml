@@ -9,6 +9,9 @@
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
 
+        <item name="android:colorControlActivated">#1a237e</item>
+        <item name="android:colorControlNormal">#00b0ff</item>
+
         <item name="android:navigationBarColor">
             @android:color/transparent
         </item>
@@ -17,6 +20,12 @@
         <item name="android:statusBarColor">
             @android:color/transparent
         </item>
+    </style>
+
+    <style name="MySeekBar" parent="Widget.AppCompat.SeekBar">
+        <item name="android:progressBackgroundTint">@android:color/white</item>
+        <item name="android:progressTint">@color/colorPrimaryDark</item>
+        <item name="android:thumbTint">@color/colorPrimary</item>
     </style>
 
 </resources>
