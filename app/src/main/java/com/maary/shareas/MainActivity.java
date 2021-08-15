@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -16,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +34,8 @@ import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.ToggleButton;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.WindowCompat;
@@ -40,6 +44,8 @@ import com.hoko.blur.HokoBlur;
 import com.hoko.blur.task.AsyncBlurTask;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -106,13 +112,9 @@ public class MainActivity extends AppCompatActivity {
                     );
                     functionScrollViewParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
                     functionScrollViewParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-                    functionScrollView.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                        @Override
-                        public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-                            //button.(16,16,16, insets.getSystemWindowInsetBottom());
-                            functionScrollViewParams.setMargins(16, 16, 16, insets.getSystemWindowInsetBottom());
-                            return insets.consumeSystemWindowInsets();
-                        }
+                    functionScrollView.setOnApplyWindowInsetsListener((v, insets) -> {
+                        functionScrollViewParams.setMargins(16, 16, 16, insets.getSystemWindowInsetBottom());
+                        return insets.consumeSystemWindowInsets();
                     });
                     functionScrollView.setFillViewport(false);
                     functionScrollView.setId(View.generateViewId());
@@ -132,19 +134,15 @@ public class MainActivity extends AppCompatActivity {
                             ViewGroup.LayoutParams.WRAP_CONTENT
                     );
                     blurSeekbarParams.addRule(RelativeLayout.ABOVE, functionScrollView.getId());
-                    blurSeekbar.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                        @Override
-                        public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-                            blurSeekbarParams.setMargins(
-                                    insets.getSystemWindowInsetLeft() + 16,
-                                    16,
-                                    insets.getSystemWindowInsetRight() + 16,
-                                    16);
-                            return insets.consumeSystemWindowInsets();
-                        }
+                    blurSeekbar.setOnApplyWindowInsetsListener((v, insets) -> {
+                        blurSeekbarParams.setMargins(
+                                insets.getSystemWindowInsetLeft(),
+                                16,
+                                insets.getSystemWindowInsetRight(),
+                                16);
+                        return insets.consumeSystemWindowInsets();
                     });
                     blurSeekbar.setMax(25);
-
 
                     SeekBar brightnessSeekbar = new SeekBar(this);
                     RelativeLayout.LayoutParams brightnessSeekbarParams = new RelativeLayout.LayoutParams(
@@ -152,16 +150,13 @@ public class MainActivity extends AppCompatActivity {
                             ViewGroup.LayoutParams.WRAP_CONTENT
                     );
                     brightnessSeekbarParams.addRule(RelativeLayout.ABOVE, functionScrollView.getId());
-                    brightnessSeekbar.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                        @Override
-                        public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-                            blurSeekbarParams.setMargins(
-                                    insets.getSystemWindowInsetLeft() + 16,
-                                    16,
-                                    insets.getSystemWindowInsetRight() + 16,
-                                    16);
-                            return insets.consumeSystemWindowInsets();
-                        }
+                    brightnessSeekbar.setOnApplyWindowInsetsListener((v, insets) -> {
+                        blurSeekbarParams.setMargins(
+                                insets.getSystemWindowInsetLeft(),
+                                16,
+                                insets.getSystemWindowInsetRight(),
+                                16);
+                        return insets.consumeSystemWindowInsets();
                     });
                     brightnessSeekbar.setMax(101);
                     brightnessSeekbar.setProgress(51);
@@ -174,43 +169,34 @@ public class MainActivity extends AppCompatActivity {
                     Handler handler = new Handler(Looper.getMainLooper());
 
                     String[] options = {"home", "lockscreen", "home & lockscreen"};
-                    builder.setItems(options, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            executorService.execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    int FLAG;
-                                    switch (which) {
-                                        case 0: FLAG = WallpaperManager.FLAG_SYSTEM; break;
-                                        case 1: FLAG = WallpaperManager.FLAG_LOCK; break;
-                                        case 2: FLAG = WallpaperManager.FLAG_SYSTEM| WallpaperManager.FLAG_LOCK; break;
-                                        default:
-                                            throw new IllegalStateException("Unexpected value: " + which);
-                                    }
-                                    try {
-                                        wallpaperManager.setBitmap(bitmap, cord, true, FLAG);
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
+                    builder.setItems(options, (dialog, which) -> {
+                        executorService.execute(() -> {
+                            int FLAG;
+                            switch (which) {
+                                case 0: FLAG = WallpaperManager.FLAG_SYSTEM; break;
+                                case 1: FLAG = WallpaperManager.FLAG_LOCK; break;
+                                case 2: FLAG = WallpaperManager.FLAG_SYSTEM| WallpaperManager.FLAG_LOCK; break;
+                                default:
+                                    throw new IllegalStateException("Unexpected value: " + which);
+                            }
+                            try {
+                                wallpaperManager.setBitmap(bitmap, cord, true, FLAG);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
 
-                                    handler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            dialog.cancel();
-                                            imageView.setColorFilter(Color.rgb(123, 123, 123), android.graphics.PorterDuff.Mode.MULTIPLY);
-                                            progressBar.bringToFront();
+                            handler.post(() -> {
+                                dialog.cancel();
+                                imageView.setColorFilter(Color.rgb(123, 123, 123), PorterDuff.Mode.MULTIPLY);
+                                progressBar.bringToFront();
 
-                                        }
-                                    });
-                                }
                             });
-                            Intent i = new Intent();
-                            i.setAction(Intent.ACTION_MAIN);
-                            i.addCategory(Intent.CATEGORY_HOME);
-                            MainActivity.this.startActivity(i);
-                            finish();
-                        }
+                        });
+                        Intent i = new Intent();
+                        i.setAction(Intent.ACTION_MAIN);
+                        i.addCategory(Intent.CATEGORY_HOME);
+                        MainActivity.this.startActivity(i);
+                        finish();
                     });
 
                     //Set Button
@@ -233,23 +219,20 @@ public class MainActivity extends AppCompatActivity {
                     blurButton.setText("BLUR");
                     blurButton.setTextOff("BLUR");
                     blurButton.setTextOn("OK");
-                    blurButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                            if (isChecked) {
-                                blurButton.setText("OK");
-                                relativeLayout.addView(blurSeekbar, blurSeekbarParams);
-                                button.setClickable(false); button.setPressed(true);
-                                buttonFull.setClickable(false); buttonFull.setPressed(true);
-                                brightnessButton.setClickable(false); brightnessButton.setPressed(true);
-                            } else {
-                                blurButton.setText("BLUR");
-                                bitmap = blur;
-                                relativeLayout.removeView(blurSeekbar);
-                                button.setClickable(true); button.setPressed(false);
-                                buttonFull.setClickable(true); buttonFull.setPressed(false);
-                                brightnessButton.setClickable(true); brightnessButton.setPressed(false);
-                            }
+                    blurButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                        if (isChecked) {
+                            blurButton.setText("OK");
+                            relativeLayout.addView(blurSeekbar, blurSeekbarParams);
+                            button.setClickable(false); button.setPressed(true);
+                            buttonFull.setClickable(false); buttonFull.setPressed(true);
+                            brightnessButton.setClickable(false); brightnessButton.setPressed(true);
+                        } else {
+                            blurButton.setText("BLUR");
+                            bitmap = blur;
+                            relativeLayout.removeView(blurSeekbar);
+                            button.setClickable(true); button.setPressed(false);
+                            buttonFull.setClickable(true); buttonFull.setPressed(false);
+                            brightnessButton.setClickable(true); brightnessButton.setPressed(false);
                         }
                     });
 
@@ -263,24 +246,21 @@ public class MainActivity extends AppCompatActivity {
                     brightnessButton.setText("BRIGHTNESS");
                     brightnessButton.setTextOff("BRIGHTNESS");
                     brightnessButton.setTextOn("OK");
-                    brightnessButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                            if (isChecked) {
-                                brightnessButton.setText("OK");
-                                relativeLayout.addView(brightnessSeekbar, brightnessSeekbarParams);
-                                button.setClickable(false); button.setPressed(true);
-                                buttonFull.setClickable(false); buttonFull.setPressed(true);
-                                blurButton.setClickable(false); blurButton.setPressed(true);
-                            } else {
-                                brightnessButton.setText("BRIGHTNESS");
-                                bitmap = thread.finalBitmap();
-                                thread.interrupt();
-                                relativeLayout.removeView(brightnessSeekbar);
-                                button.setClickable(true); button.setPressed(false);
-                                buttonFull.setClickable(true); buttonFull.setPressed(false);
-                                blurButton.setClickable(true); blurButton.setPressed(false);
-                            }
+                    brightnessButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                        if (isChecked) {
+                            brightnessButton.setText("OK");
+                            relativeLayout.addView(brightnessSeekbar, brightnessSeekbarParams);
+                            button.setClickable(false); button.setPressed(true);
+                            buttonFull.setClickable(false); buttonFull.setPressed(true);
+                            blurButton.setClickable(false); blurButton.setPressed(true);
+                        } else {
+                            brightnessButton.setText("BRIGHTNESS");
+                            bitmap = thread.finalBitmap();
+                            thread.interrupt();
+                            relativeLayout.removeView(brightnessSeekbar);
+                            button.setClickable(true); button.setPressed(false);
+                            buttonFull.setClickable(true); buttonFull.setPressed(false);
+                            blurButton.setClickable(true); blurButton.setPressed(false);
                         }
                     });
 
@@ -291,13 +271,10 @@ public class MainActivity extends AppCompatActivity {
                     );
                     buttonFull.setText("SET FULL");
                     buttonFull.setLayoutParams(buttonFullParams);
-                    buttonFull.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            cord = null;
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
-                        }
+                    buttonFull.setOnClickListener(v -> {
+                        cord = null;
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
                     });
 
                     ConstraintLayout container = findViewById(R.id.container);
@@ -330,15 +307,12 @@ public class MainActivity extends AppCompatActivity {
                                         ViewGroup.LayoutParams.WRAP_CONTENT);
                         imageView.setLayoutParams(vLayoutParams);
 
-                        button.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                int start = verticalScrollView.getScrollY();
-                                cord = new Rect(0, start, device_width, start + device_height);
-                                AlertDialog dialog = builder.create();
-                                dialog.show();
+                        button.setOnClickListener(v -> {
+                            int start = verticalScrollView.getScrollY();
+                            cord = new Rect(0, start, device_width, start + device_height);
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
 
-                            }
                         });
 
                         relativeLayout.addView(verticalScrollView);
@@ -364,15 +338,12 @@ public class MainActivity extends AppCompatActivity {
                                         ViewGroup.LayoutParams.MATCH_PARENT);
                         imageView.setLayoutParams(hLayoutParams);
 
-                        button.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                int start = horizontalScrollView.getScrollX();
-                                cord = new Rect(start, 0, start + device_width, device_height);
-                                AlertDialog dialog = builder.create();
-                                dialog.show();
+                        button.setOnClickListener(v -> {
+                            int start = horizontalScrollView.getScrollX();
+                            cord = new Rect(start, 0, start + device_width, device_height);
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
 
-                            }
                         });
 
 
@@ -439,6 +410,17 @@ public class MainActivity extends AppCompatActivity {
                     functionBar.addView(blurButton);
                     functionBar.addView(brightnessButton);
                     functionBar.addView(buttonFull);
+
+                    List<Rect> rects = new ArrayList<>();
+                    int wrapSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+                    functionBar.measure(wrapSpec, wrapSpec);
+                    blurSeekbar.measure(wrapSpec, wrapSpec);
+                    rects.add(new Rect(0, device_height-(functionBar.getMeasuredHeight()+blurSeekbar.getMeasuredHeight()*3), device_width, device_height));
+                    Log.e("rect",String.valueOf(device_height-(functionBar.getMeasuredHeight()+blurSeekbar.getMeasuredHeight())*3));
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        container.setSystemGestureExclusionRects(rects);
+                    }
                 }
             }
         } catch (Exception e) {
