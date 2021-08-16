@@ -2,4 +2,14 @@
     <string name="app_name">WallpaperTunnel</string>
     <string name="hide_app_icon">Hide App Icon</string>
     <string name="exit">Press back to exit.</string>
+    <string name="blur">Blur</string>
+    <string name="brightness">Brightness</string>
+    <string name="horizontal">Set full image as wallpaper</string>
+    <string name="setAs">Set As</string>
+    <string name="home">home</string>
+    <string name="lockscreen">lockscreen</string>
+    <string name="homeAndLockscreen"><![CDATA[home & lockscreen]]></string>
+    <string name="setAsWallpaper">Set image as wallpaper.</string>
+    <string name="finish_blur">Finish blur setting</string>
+    <string name="finish_brightness">Finish brightness setting</string>
 </resources>
