@@ -120,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
                                     int start = horizontalScrollView.getScrollX();
                                     cord = new Rect(start, 0, start + device_width, device_height);
                                 }
+                                bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
                                 AlertDialog dialog = builder.create();
                                 dialog.show();
                                 break;
@@ -275,7 +276,6 @@ public class MainActivity extends AppCompatActivity {
                         desired_height = (int) (scale * bitmap_full_height);
 
                         bitmap = Bitmap.createScaledBitmap(bitmap, desired_width, desired_height, true);
-                        raw = bitmap;
 
                         //Vertical Scroll View
                         LinearLayout.LayoutParams vLayoutParams = new LinearLayout.LayoutParams(
@@ -317,6 +317,8 @@ public class MainActivity extends AppCompatActivity {
 
                     }
 
+                    raw = bitmap;
+                    bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
                     imageView.setImageBitmap(bitmap);
 
                     //setup AlertDialog builder
