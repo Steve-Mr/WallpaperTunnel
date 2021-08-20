@@ -13,4 +13,5 @@
     <string name="setAsWallpaper">设置图片为壁纸</string>
     <string name="finish_blur">完成模糊设置</string>
     <string name="finish_brightness">完成亮度设置</string>
+    <string name="reset">重置修改</string>
 </resources>

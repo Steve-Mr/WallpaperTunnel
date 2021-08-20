@@ -12,4 +12,5 @@
     <string name="setAsWallpaper">Set image as wallpaper.</string>
     <string name="finish_blur">Finish blur setting</string>
     <string name="finish_brightness">Finish brightness setting</string>
+    <string name="reset">Reset</string>
 </resources>

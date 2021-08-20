@@ -16,7 +16,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,9 +48,14 @@ public class MainActivity extends AppCompatActivity {
     static final int FLAG_FAB = 0;
     static final int FLAG_BLUR = 1;
     static final int FLAG_BRIGHTNESS = 2;
+    static final int MENU_RESET = 0;
+    static final int MENU_BLUR = 1;
+    static final int MENU_BRIGHTNESS = 2;
+    static final int MENU_HORIZONTAL = 3;
     Bitmap bitmap;
     Bitmap blur;
     Bitmap brightness;
+    Bitmap raw;
     Rect cord;
     int blurBias = 0;
     int brightnessBias = 0;
@@ -107,12 +111,12 @@ public class MainActivity extends AppCompatActivity {
                     //FLAG_BLUR: finish blur setting
                     //FLAG_BRIGHTNESS: finish brightness setting
                     fab.setOnClickListener(view -> {
-                        switch (FLAG){
+                        switch (FLAG) {
                             case FLAG_FAB:
-                                if (isVertical){
+                                if (isVertical) {
                                     int start = verticalScrollView.getScrollY();
                                     cord = new Rect(0, start, device_width, start + device_height);
-                                }else {
+                                } else {
                                     int start = horizontalScrollView.getScrollX();
                                     cord = new Rect(start, 0, start + device_width, device_height);
                                 }
@@ -124,20 +128,21 @@ public class MainActivity extends AppCompatActivity {
                                 coordinatorLayout.removeView(slider);
                                 fab.setImageResource(R.drawable.ic_vertical);
                                 fab.setContentDescription(getResources().getString(R.string.setAsWallpaper));
-                                bottomAppBar.getMenu().getItem(0).setEnabled(true);
-                                bottomAppBar.getMenu().getItem(1).setEnabled(true);
-                                bottomAppBar.getMenu().getItem(2).setEnabled(true);
+                                bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
+                                bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(true);
+                                bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(true);
+                                bottomAppBar.getMenu().getItem(MENU_HORIZONTAL).setEnabled(true);
                                 FLAG = FLAG_FAB;
                                 break;
                             case FLAG_BRIGHTNESS:
                                 bitmap = brightness;
-
                                 coordinatorLayout.removeView(slider);
                                 fab.setImageResource(R.drawable.ic_vertical);
                                 fab.setContentDescription(getResources().getString(R.string.setAsWallpaper));
-                                bottomAppBar.getMenu().getItem(0).setEnabled(true);
-                                bottomAppBar.getMenu().getItem(1).setEnabled(true);
-                                bottomAppBar.getMenu().getItem(2).setEnabled(true);
+                                bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
+                                bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(true);
+                                bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(true);
+                                bottomAppBar.getMenu().getItem(MENU_HORIZONTAL).setEnabled(true);
                                 FLAG = FLAG_FAB;
                                 break;
                         }
@@ -162,9 +167,10 @@ public class MainActivity extends AppCompatActivity {
                         return insets.consumeSystemWindowInsets();
                     });
 
+                    //TODO:ADD zoom (if possible
                     slider.addOnChangeListener((slider1, value, fromUser) -> {
 
-                        if (FLAG == FLAG_BLUR){
+                        if (FLAG == FLAG_BLUR) {
                             HokoBlur.with(getApplicationContext())
                                     .radius((int) value)
                                     .asyncBlur(bitmap, new AsyncBlurTask.Callback() {
@@ -179,9 +185,9 @@ public class MainActivity extends AppCompatActivity {
 
                                         }
                                     });
-                        }else if (FLAG == FLAG_BRIGHTNESS){
+                        } else if (FLAG == FLAG_BRIGHTNESS) {
                             new Thread(() -> {
-                                brightness = Util.adjustBrightness(bitmap, (int)value);
+                                brightness = Util.adjustBrightness(bitmap, (int) value);
 
                                 runOnUiThread(() -> imageView.setImageBitmap(brightness));
                             }).start();
@@ -197,9 +203,9 @@ public class MainActivity extends AppCompatActivity {
 
                         @Override
                         public void onStopTrackingTouch(@NonNull Slider slider) {
-                            if (FLAG == FLAG_BLUR){
+                            if (FLAG == FLAG_BLUR) {
                                 blurBias = (int) slider.getValue();
-                            }else if (FLAG == FLAG_BRIGHTNESS){
+                            } else if (FLAG == FLAG_BRIGHTNESS) {
                                 brightnessBias = (int) slider.getValue();
                             }
                         }
@@ -208,34 +214,47 @@ public class MainActivity extends AppCompatActivity {
                     //set bottomAppBar menu item
                     //tap blur and brightness button will disable other menu item
                     bottomAppBar.setOnMenuItemClickListener(item -> {
-                        if (item.getItemId() == R.id.blur){
+                        if (item.getItemId() == R.id.blur) {
                             FLAG = FLAG_BLUR;
                             fab.setImageResource(R.drawable.ic_done);
                             fab.setContentDescription(getResources().getString(R.string.finish_blur));
-                            bottomAppBar.getMenu().getItem(0).setEnabled(false);
-                            bottomAppBar.getMenu().getItem(1).setEnabled(false);
-                            bottomAppBar.getMenu().getItem(2).setEnabled(false);
+                            bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
+                            bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(false);
+                            bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(false);
+                            bottomAppBar.getMenu().getItem(MENU_HORIZONTAL).setEnabled(false);
                             slider.setValueFrom(0);
                             slider.setValueTo(20);
                             slider.setStepSize(1);
                             slider.setValue(blurBias);
                             coordinatorLayout.addView(slider, sliderParams);
-                        }else if (item.getItemId() == R.id.brightness){
+                        } else if (item.getItemId() == R.id.brightness) {
                             FLAG = FLAG_BRIGHTNESS;
                             fab.setImageResource(R.drawable.ic_done);
                             fab.setContentDescription(getResources().getString(R.string.finish_brightness));
-                            bottomAppBar.getMenu().getItem(0).setEnabled(false);
-                            bottomAppBar.getMenu().getItem(1).setEnabled(false);
-                            bottomAppBar.getMenu().getItem(2).setEnabled(false);
+                            bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
+                            bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(false);
+                            bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(false);
+                            bottomAppBar.getMenu().getItem(MENU_HORIZONTAL).setEnabled(false);
                             slider.setValueFrom(-50);
                             slider.setValueTo(50);
                             slider.setStepSize(1);
                             slider.setValue(brightnessBias);
                             coordinatorLayout.addView(slider, sliderParams);
-                        }else if (item.getItemId() == R.id.horizontal){
+                        } else if (item.getItemId() == R.id.horizontal) {
                             cord = null;
                             AlertDialog dialog = builder.create();
                             dialog.show();
+                        } else if (item.getItemId() == R.id.reset) {
+                            bitmap = raw;
+                            blurBias = 0;
+                            brightnessBias = 0;
+                            cord = null;
+                            imageView.setImageBitmap(bitmap);
+                            if (isVertical) {
+                                verticalScrollView.post(() -> verticalScrollView.scrollTo(0, 0));
+                            } else {
+                                horizontalScrollView.post(() -> horizontalScrollView.scrollTo(0, 0));
+                            }
                         }
                         return true;
                     });
@@ -250,12 +269,13 @@ public class MainActivity extends AppCompatActivity {
                     int bitmap_full_height = bitmap.getHeight();
                     int desired_width;
                     int desired_height;
-                    if (isVertical){
+                    if (isVertical) {
                         desired_width = device_width;
-                        float scale = (float) device_width/bitmap_full_width;
-                        desired_height = (int)(scale * bitmap_full_height);
+                        float scale = (float) device_width / bitmap_full_width;
+                        desired_height = (int) (scale * bitmap_full_height);
 
                         bitmap = Bitmap.createScaledBitmap(bitmap, desired_width, desired_height, true);
+                        raw = bitmap;
 
                         //Vertical Scroll View
                         LinearLayout.LayoutParams vLayoutParams = new LinearLayout.LayoutParams(
@@ -273,10 +293,10 @@ public class MainActivity extends AppCompatActivity {
                         container.addView(verticalScrollView, vImageLayoutParams);
                         verticalScrollView.addView(imageView);
 
-                    }else{
+                    } else {
                         desired_height = device_height;
-                        float scale = (float)device_height/bitmap_full_height;
-                        desired_width = (int)(scale * bitmap_full_width);
+                        float scale = (float) device_height / bitmap_full_height;
+                        desired_width = (int) (scale * bitmap_full_width);
 
                         bitmap = Bitmap.createScaledBitmap(bitmap, desired_width, desired_height, true);
 
@@ -308,9 +328,15 @@ public class MainActivity extends AppCompatActivity {
                         executorService.execute(() -> {
                             int FLAG;
                             switch (which) {
-                                case 0: FLAG = WallpaperManager.FLAG_SYSTEM; break;
-                                case 1: FLAG = WallpaperManager.FLAG_LOCK; break;
-                                case 2: FLAG = WallpaperManager.FLAG_SYSTEM| WallpaperManager.FLAG_LOCK; break;
+                                case 0:
+                                    FLAG = WallpaperManager.FLAG_SYSTEM;
+                                    break;
+                                case 1:
+                                    FLAG = WallpaperManager.FLAG_LOCK;
+                                    break;
+                                case 2:
+                                    FLAG = WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK;
+                                    break;
                                 default:
                                     throw new IllegalStateException("Unexpected value: " + which);
                             }
@@ -339,8 +365,8 @@ public class MainActivity extends AppCompatActivity {
                     int wrapSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
                     slider.measure(wrapSpec, wrapSpec);
                     bottomAppBar.measure(wrapSpec, wrapSpec);
-                    rects.add(new Rect(0, device_height-(slider.getMeasuredHeight()+bottomAppBar.getMeasuredHeight()*2), device_width, device_height));
-                    Log.e("rect",String.valueOf(device_height-(slider.getMeasuredHeight()+bottomAppBar.getMeasuredHeight())*2));
+                    rects.add(new Rect(0, device_height - (slider.getMeasuredHeight() + bottomAppBar.getMeasuredHeight() * 2), device_width, device_height));
+                    //Log.e("rect",String.valueOf(device_height-(slider.getMeasuredHeight()+bottomAppBar.getMeasuredHeight())*2));
 
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -356,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static class ShareReceiver extends BroadcastReceiver{
+    public static class ShareReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
