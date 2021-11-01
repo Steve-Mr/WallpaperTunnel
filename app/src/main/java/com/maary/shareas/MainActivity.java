@@ -2,7 +2,7 @@ package com.maary.shareas;
 
 import static com.google.android.material.slider.LabelFormatter.LABEL_GONE;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -32,6 +32,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.WindowCompat;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.slider.Slider;
 import com.hoko.blur.HokoBlur;
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     int blurBias = 0;
     int brightnessBias = 0;
     int FLAG = 0;
-    AlertDialog.Builder builder;
+    MaterialAlertDialogBuilder builder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
                                 dialog.show();
                                 break;
                             case FLAG_BLUR:
+                                //TODO: add dialog for slider or add backgrounds to it
                                 bitmap = blur;
                                 coordinatorLayout.removeView(slider);
                                 fab.setImageResource(R.drawable.ic_vertical);
@@ -322,7 +324,8 @@ public class MainActivity extends AppCompatActivity {
                     imageView.setImageBitmap(bitmap);
 
                     //setup AlertDialog builder
-                    builder = new AlertDialog.Builder(MainActivity.this);
+                    builder = new MaterialAlertDialogBuilder(MainActivity.this);
+                    //builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle(R.string.setAs);
 
                     String[] options = {getResources().getString(R.string.home), getResources().getString(R.string.lockscreen), getResources().getString(R.string.homeAndLockscreen)};

@@ -6,24 +6,24 @@
         android:id="@+id/reset"
         android:icon="@drawable/ic_restore"
         android:title="@string/reset"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/blur"
         android:icon="@drawable/ic_blur"
         android:title="@string/blur"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/brightness"
         android:icon="@drawable/ic_brightness"
         android:title="@string/brightness"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/horizontal"
         android:icon="@drawable/ic_horizontal"
         android:title="@string/horizontal"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
 
 </menu>

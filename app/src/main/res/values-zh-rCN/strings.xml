@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WallpaperTunnel</string>
-    <string name="hide_app_icon">隐藏应用图标</string>
-    <string name="exit">按返回键退出</string>
     <string name="blur">模糊</string>
     <string name="brightness">亮度</string>
     <string name="horizontal">将整张图片设置为壁纸</string>
