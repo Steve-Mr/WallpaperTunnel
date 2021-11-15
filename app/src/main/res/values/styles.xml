@@ -1,13 +1,16 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.Dialog">
+    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorAccent</item>
         <item name="colorPrimaryDark">@color/colorAccent</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
+
+        <item name="android:colorControlActivated">#1a237e</item>
+        <item name="android:colorControlNormal">#00b0ff</item>
 
         <item name="android:navigationBarColor">
             @android:color/transparent
@@ -18,5 +21,14 @@
             @android:color/transparent
         </item>
     </style>
+
+    <style name="ThemeOverlay.App.BottomAppBar" parent="">
+        <item name="colorPrimary">#00000000</item>
+        <item name="colorOnPrimary">#00000000</item>
+        <item name="paddingBottomSystemWindowInsets">true</item>
+        <item name="paddingLeftSystemWindowInsets">true</item>
+        <item name="paddingRightSystemWindowInsets">true</item>
+    </style>
+
 
 </resources>

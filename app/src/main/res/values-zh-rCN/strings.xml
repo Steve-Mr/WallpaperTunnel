@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WallpaperTunnel</string>
+    <string name="blur">模糊</string>
+    <string name="brightness">亮度</string>
+    <string name="horizontal">将整张图片设置为壁纸</string>
+    <string name="setAs">设置为</string>
+    <string name="home">桌面壁纸</string>
+    <string name="lockscreen">锁屏壁纸</string>
+    <string name="homeAndLockscreen">桌面和锁屏壁纸</string>
+    <string name="setAsWallpaper">设置图片为壁纸</string>
+    <string name="finish_blur">完成模糊设置</string>
+    <string name="finish_brightness">完成亮度设置</string>
+    <string name="reset">重置修改</string>
+</resources>
