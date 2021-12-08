@@ -2,7 +2,6 @@ package com.maary.shareas;
 
 import static com.google.android.material.slider.LabelFormatter.LABEL_GONE;
 
-import androidx.appcompat.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -26,6 +25,7 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -127,6 +127,9 @@ public class MainActivity extends AppCompatActivity {
                                 break;
                             case FLAG_BLUR:
                                 //TODO: add dialog for slider or add backgrounds to it
+
+                                fab.setLongClickable(true);
+
                                 bitmap = blur;
                                 coordinatorLayout.removeView(slider);
                                 fab.setImageResource(R.drawable.ic_vertical);
@@ -138,6 +141,9 @@ public class MainActivity extends AppCompatActivity {
                                 FLAG = FLAG_FAB;
                                 break;
                             case FLAG_BRIGHTNESS:
+
+                                fab.setLongClickable(true);
+
                                 bitmap = brightness;
                                 coordinatorLayout.removeView(slider);
                                 fab.setImageResource(R.drawable.ic_vertical);
@@ -149,6 +155,13 @@ public class MainActivity extends AppCompatActivity {
                                 FLAG = FLAG_FAB;
                                 break;
                         }
+                    });
+
+                    fab.setOnLongClickListener(view -> {
+                        cord = null;
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                        return false;
                     });
 
                     //set up slider
@@ -219,6 +232,9 @@ public class MainActivity extends AppCompatActivity {
                     bottomAppBar.setOnMenuItemClickListener(item -> {
                         if (item.getItemId() == R.id.blur) {
                             FLAG = FLAG_BLUR;
+
+                            fab.setLongClickable(false);
+
                             fab.setImageResource(R.drawable.ic_done);
                             fab.setContentDescription(getResources().getString(R.string.finish_blur));
                             bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
@@ -232,6 +248,9 @@ public class MainActivity extends AppCompatActivity {
                             coordinatorLayout.addView(slider, sliderParams);
                         } else if (item.getItemId() == R.id.brightness) {
                             FLAG = FLAG_BRIGHTNESS;
+
+                            fab.setLongClickable(false);
+
                             fab.setImageResource(R.drawable.ic_done);
                             fab.setContentDescription(getResources().getString(R.string.finish_brightness));
                             bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
@@ -365,7 +384,7 @@ public class MainActivity extends AppCompatActivity {
                         finish();
                     });
 
-                    //disable gesture fore slider bar
+                    //disable gesture for slider bar
                     List<Rect> rects = new ArrayList<>();
                     int wrapSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
                     slider.measure(wrapSpec, wrapSpec);
