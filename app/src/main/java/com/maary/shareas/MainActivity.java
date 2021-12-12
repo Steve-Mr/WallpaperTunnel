@@ -366,6 +366,9 @@ public class MainActivity extends AppCompatActivity {
                             }
                             try {
                                 wallpaperManager.setBitmap(bitmap, cord, true, FLAG);
+                                if (which == 2){
+                                    wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
+                                }
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
