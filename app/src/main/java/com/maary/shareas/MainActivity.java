@@ -351,23 +351,21 @@ public class MainActivity extends AppCompatActivity {
                     builder.setItems(options, (dialog, which) -> {
                         executorService.execute(() -> {
                             int FLAG;
-                            switch (which) {
-                                case 0:
-                                    FLAG = WallpaperManager.FLAG_SYSTEM;
-                                    break;
-                                case 1:
-                                    FLAG = WallpaperManager.FLAG_LOCK;
-                                    break;
-                                case 2:
-                                    FLAG = WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK;
-                                    break;
-                                default:
-                                    throw new IllegalStateException("Unexpected value: " + which);
-                            }
                             try {
-                                wallpaperManager.setBitmap(bitmap, cord, true, FLAG);
-                                if (which == 2){
-                                    wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
+                                switch (which) {
+                                    case 0:
+                                        wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
+                                        break;
+                                    case 1:
+                                        wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
+                                        break;
+                                    case 2:
+                                        wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
+                                        wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
+                                        //应对定制 Rom（如 Color OS）可能存在的魔改导致 "WallpaperManager.FLAG_LOCK | WallpaperManager.FLAG_SYSTEM" 参数失效的情况。
+                                        break;
+                                    default:
+                                        throw new IllegalStateException("Unexpected value: " + which);
                                 }
                             } catch (IOException e) {
                                 e.printStackTrace();
