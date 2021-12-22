@@ -18,6 +18,7 @@ import android.os.Looper;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -28,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.WindowCompat;
 
@@ -52,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     static final int MENU_RESET = 0;
     static final int MENU_BLUR = 1;
     static final int MENU_BRIGHTNESS = 2;
-    static final int MENU_HORIZONTAL = 3;
+
     Bitmap bitmap;
     Bitmap blur;
     Bitmap brightness;
@@ -127,9 +129,7 @@ public class MainActivity extends AppCompatActivity {
                                 break;
                             case FLAG_BLUR:
                                 //TODO: add dialog for slider or add backgrounds to it
-
                                 fab.setLongClickable(true);
-
                                 bitmap = blur;
                                 coordinatorLayout.removeView(slider);
                                 fab.setImageResource(R.drawable.ic_vertical);
@@ -137,13 +137,11 @@ public class MainActivity extends AppCompatActivity {
                                 bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
                                 bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(true);
                                 bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(true);
-                                bottomAppBar.getMenu().getItem(MENU_HORIZONTAL).setEnabled(true);
+
                                 FLAG = FLAG_FAB;
                                 break;
                             case FLAG_BRIGHTNESS:
-
                                 fab.setLongClickable(true);
-
                                 bitmap = brightness;
                                 coordinatorLayout.removeView(slider);
                                 fab.setImageResource(R.drawable.ic_vertical);
@@ -151,7 +149,6 @@ public class MainActivity extends AppCompatActivity {
                                 bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
                                 bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(true);
                                 bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(true);
-                                bottomAppBar.getMenu().getItem(MENU_HORIZONTAL).setEnabled(true);
                                 FLAG = FLAG_FAB;
                                 break;
                         }
@@ -227,45 +224,87 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
 
+                    Button testButton = new Button(this);
+                    testButton.setId(View.generateViewId());
+                    testButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            coordinatorLayout.setVisibility(View.VISIBLE);
+
+                            fab.setLongClickable(true);
+                            bitmap = blur;
+                            container.removeView(slider);
+                            fab.setImageResource(R.drawable.ic_vertical);
+                            fab.setContentDescription(getResources().getString(R.string.setAsWallpaper));
+                            bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
+                            bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(true);
+                            bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(true);
+
+                            FLAG = FLAG_FAB;
+                            container.removeView(testButton);
+                        }
+                    });
+                    testButton.setText("JUST FOR TEST");
+
+                    ConstraintLayout.LayoutParams testParams = new ConstraintLayout.LayoutParams(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    );
+
+                    slider.setId(View.generateViewId());
+
+                    ConstraintSet constraintSet = new ConstraintSet();
+                    constraintSet.clone(container);
+
+                    constraintSet.connect(slider.getId(), ConstraintSet.START, R.id.container, ConstraintSet.START, 72);
+                    constraintSet.connect(slider.getId(), ConstraintSet.END, R.id.container, ConstraintSet.END, 72);
+                    constraintSet.connect(slider.getId(), ConstraintSet.BOTTOM, R.id.container, ConstraintSet.BOTTOM, 72);
+                    constraintSet.connect(testButton.getId(), ConstraintSet.TOP, slider.getId(), ConstraintSet.TOP);
+                    constraintSet.connect(testButton.getId(), ConstraintSet.BOTTOM, slider.getId(), ConstraintSet.BOTTOM);
+                    constraintSet.connect(testButton.getId(), ConstraintSet.END, R.id.container, ConstraintSet.END);
+                    constraintSet.connect(testButton.getId(), ConstraintSet.START, slider.getId(), ConstraintSet.END);
+
+
                     //set bottomAppBar menu item
                     //tap blur and brightness button will disable other menu item
                     bottomAppBar.setOnMenuItemClickListener(item -> {
                         if (item.getItemId() == R.id.blur) {
                             FLAG = FLAG_BLUR;
 
-                            fab.setLongClickable(false);
+                            container.addView(slider);
+                            container.addView(testButton, testParams);
 
+                            constraintSet.applyTo(container);
+                            coordinatorLayout.setVisibility(View.INVISIBLE);
+
+                            fab.setLongClickable(false);
                             fab.setImageResource(R.drawable.ic_done);
                             fab.setContentDescription(getResources().getString(R.string.finish_blur));
                             bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
                             bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(false);
                             bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(false);
-                            bottomAppBar.getMenu().getItem(MENU_HORIZONTAL).setEnabled(false);
                             slider.setValueFrom(0);
                             slider.setValueTo(20);
                             slider.setStepSize(1);
                             slider.setValue(blurBias);
-                            coordinatorLayout.addView(slider, sliderParams);
+                            //coordinatorLayout.addView(slider, sliderParams);
                         } else if (item.getItemId() == R.id.brightness) {
                             FLAG = FLAG_BRIGHTNESS;
-
                             fab.setLongClickable(false);
-
                             fab.setImageResource(R.drawable.ic_done);
                             fab.setContentDescription(getResources().getString(R.string.finish_brightness));
                             bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
                             bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(false);
                             bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(false);
-                            bottomAppBar.getMenu().getItem(MENU_HORIZONTAL).setEnabled(false);
                             slider.setValueFrom(-50);
                             slider.setValueTo(50);
                             slider.setStepSize(1);
                             slider.setValue(brightnessBias);
                             coordinatorLayout.addView(slider, sliderParams);
-                        } else if (item.getItemId() == R.id.horizontal) {
+                        /*} else if (item.getItemId() == R.id.horizontal) {
                             cord = null;
                             AlertDialog dialog = builder.create();
-                            dialog.show();
+                            dialog.show();*/
                         } else if (item.getItemId() == R.id.reset) {
                             bitmap = raw;
                             blurBias = 0;
