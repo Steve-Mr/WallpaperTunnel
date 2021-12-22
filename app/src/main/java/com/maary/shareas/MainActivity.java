@@ -186,6 +186,9 @@ public class MainActivity extends AppCompatActivity {
                         if (FLAG == FLAG_BLUR) {
                             HokoBlur.with(getApplicationContext())
                                     .radius((int) value)
+                                    .sampleFactor(1.0f)
+                                    .forceCopy(true)
+                                    .needUpscale(true)
                                     .asyncBlur(bitmap, new AsyncBlurTask.Callback() {
                                         @Override
                                         public void onBlurSuccess(Bitmap bitmap) {
@@ -224,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
 
+                    //TODO: ONLY FOR TEST
                     Button testButton = new Button(this);
                     testButton.setId(View.generateViewId());
                     testButton.setOnClickListener(new View.OnClickListener() {
@@ -284,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
                             bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(false);
                             bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(false);
                             slider.setValueFrom(0);
-                            slider.setValueTo(20);
+                            slider.setValueTo(30);
                             slider.setStepSize(1);
                             slider.setValue(blurBias);
                             //coordinatorLayout.addView(slider, sliderParams);
