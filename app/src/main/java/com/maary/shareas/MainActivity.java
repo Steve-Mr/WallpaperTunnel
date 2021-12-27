@@ -18,6 +18,7 @@ import android.os.Looper;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -108,6 +109,11 @@ public class MainActivity extends AppCompatActivity {
 
                     ExecutorService executorService = Executors.newSingleThreadExecutor();
                     Handler handler = new Handler(Looper.getMainLooper());
+
+
+                    ViewStub viewStub = findViewById(R.id.layout_stub);
+                    viewStub.setLayoutResource(R.layout.layout_adjust_slider);
+
 
                     //setup the fab click listener
                     //FLAG: set cropped image as wallpaper
@@ -275,11 +281,10 @@ public class MainActivity extends AppCompatActivity {
                         if (item.getItemId() == R.id.blur) {
                             FLAG = FLAG_BLUR;
 
-                            container.addView(slider);
-                            container.addView(testButton, testParams);
+                            bottomAppBar.setVisibility(View.INVISIBLE);
+                            fab.setVisibility(View.INVISIBLE);
 
-                            constraintSet.applyTo(container);
-                            coordinatorLayout.setVisibility(View.INVISIBLE);
+                            View bottom_slider = viewStub.inflate();
 
                             fab.setLongClickable(false);
                             fab.setImageResource(R.drawable.ic_done);
