@@ -5,6 +5,7 @@ import static com.google.android.material.slider.LabelFormatter.LABEL_GONE;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -16,9 +17,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -105,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                     //image ratio > device ratio?
                     Boolean isVertical = Util.isVertical(device_height, device_width, bitmap);
                     //slider bar for blur & brightness
-                    Slider slider = new Slider(this);
+//                    Slider slider = new Slider(this);
 
                     ExecutorService executorService = Executors.newSingleThreadExecutor();
                     Handler handler = new Handler(Looper.getMainLooper());
@@ -137,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                                 //TODO: add dialog for slider or add backgrounds to it
                                 fab.setLongClickable(true);
                                 bitmap = blur;
-                                coordinatorLayout.removeView(slider);
+//                                coordinatorLayout.removeView(slider);
                                 fab.setImageResource(R.drawable.ic_vertical);
                                 fab.setContentDescription(getResources().getString(R.string.setAsWallpaper));
                                 bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
@@ -149,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                             case FLAG_BRIGHTNESS:
                                 fab.setLongClickable(true);
                                 bitmap = brightness;
-                                coordinatorLayout.removeView(slider);
+//                                coordinatorLayout.removeView(slider);
                                 fab.setImageResource(R.drawable.ic_vertical);
                                 fab.setContentDescription(getResources().getString(R.string.setAsWallpaper));
                                 bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
@@ -175,104 +178,60 @@ public class MainActivity extends AppCompatActivity {
                     sliderParams.setAnchorId(R.id.fab);
                     sliderParams.anchorGravity = Gravity.START;
                     sliderParams.gravity = Gravity.START;
-                    slider.setLabelBehavior(LABEL_GONE);
-                    slider.setTickVisible(false);
-                    slider.setOnApplyWindowInsetsListener((v, insets) -> {
-                        sliderParams.setMargins(
-                                insets.getSystemWindowInsetLeft(),
-                                16,
-                                insets.getSystemWindowInsetRight(),
-                                16);
-                        return insets.consumeSystemWindowInsets();
-                    });
+//                    slider.setLabelBehavior(LABEL_GONE);
+//                    slider.setTickVisible(false);
+//                    slider.setOnApplyWindowInsetsListener((v, insets) -> {
+//                        sliderParams.setMargins(
+//                                insets.getSystemWindowInsetLeft(),
+//                                16,
+//                                insets.getSystemWindowInsetRight(),
+//                                16);
+//                        return insets.consumeSystemWindowInsets();
+//                    });
 
                     //TODO:ADD zoom (if possible
-                    slider.addOnChangeListener((slider1, value, fromUser) -> {
 
-                        if (FLAG == FLAG_BLUR) {
-                            HokoBlur.with(getApplicationContext())
-                                    .radius((int) value)
-                                    .sampleFactor(1.0f)
-                                    .forceCopy(true)
-                                    .needUpscale(true)
-                                    .asyncBlur(bitmap, new AsyncBlurTask.Callback() {
-                                        @Override
-                                        public void onBlurSuccess(Bitmap bitmap) {
-                                            blur = bitmap;
-                                            imageView.setImageBitmap(bitmap);
-                                        }
-
-                                        @Override
-                                        public void onBlurFailed(Throwable error) {
-
-                                        }
-                                    });
-                        } else if (FLAG == FLAG_BRIGHTNESS) {
-                            new Thread(() -> {
-                                brightness = Util.adjustBrightness(bitmap, (int) value);
-
-                                runOnUiThread(() -> imageView.setImageBitmap(brightness));
-                            }).start();
-                        }
-
-                    });
-
-                    slider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
-                        @Override
-                        public void onStartTrackingTouch(@NonNull Slider slider) {
-
-                        }
-
-                        @Override
-                        public void onStopTrackingTouch(@NonNull Slider slider) {
-                            if (FLAG == FLAG_BLUR) {
-                                blurBias = (int) slider.getValue();
-                            } else if (FLAG == FLAG_BRIGHTNESS) {
-                                brightnessBias = (int) slider.getValue();
-                            }
-                        }
-                    });
 
                     //TODO: ONLY FOR TEST
-                    Button testButton = new Button(this);
-                    testButton.setId(View.generateViewId());
-                    testButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            coordinatorLayout.setVisibility(View.VISIBLE);
-
-                            fab.setLongClickable(true);
-                            bitmap = blur;
-                            container.removeView(slider);
-                            fab.setImageResource(R.drawable.ic_vertical);
-                            fab.setContentDescription(getResources().getString(R.string.setAsWallpaper));
-                            bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
-                            bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(true);
-                            bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(true);
-
-                            FLAG = FLAG_FAB;
-                            container.removeView(testButton);
-                        }
-                    });
-                    testButton.setText("JUST FOR TEST");
-
-                    ConstraintLayout.LayoutParams testParams = new ConstraintLayout.LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                    );
-
-                    slider.setId(View.generateViewId());
-
-                    ConstraintSet constraintSet = new ConstraintSet();
-                    constraintSet.clone(container);
-
-                    constraintSet.connect(slider.getId(), ConstraintSet.START, R.id.container, ConstraintSet.START, 72);
-                    constraintSet.connect(slider.getId(), ConstraintSet.END, R.id.container, ConstraintSet.END, 72);
-                    constraintSet.connect(slider.getId(), ConstraintSet.BOTTOM, R.id.container, ConstraintSet.BOTTOM, 72);
-                    constraintSet.connect(testButton.getId(), ConstraintSet.TOP, slider.getId(), ConstraintSet.TOP);
-                    constraintSet.connect(testButton.getId(), ConstraintSet.BOTTOM, slider.getId(), ConstraintSet.BOTTOM);
-                    constraintSet.connect(testButton.getId(), ConstraintSet.END, R.id.container, ConstraintSet.END);
-                    constraintSet.connect(testButton.getId(), ConstraintSet.START, slider.getId(), ConstraintSet.END);
+//                    Button testButton = new Button(this);
+//                    testButton.setId(View.generateViewId());
+//                    testButton.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View view) {
+//                            coordinatorLayout.setVisibility(View.VISIBLE);
+//
+//                            fab.setLongClickable(true);
+//                            bitmap = blur;
+//                            container.removeView(slider);
+//                            fab.setImageResource(R.drawable.ic_vertical);
+//                            fab.setContentDescription(getResources().getString(R.string.setAsWallpaper));
+//                            bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
+//                            bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(true);
+//                            bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(true);
+//
+//                            FLAG = FLAG_FAB;
+//                            container.removeView(testButton);
+//                        }
+//                    });
+//                    testButton.setText("JUST FOR TEST");
+//
+//                    ConstraintLayout.LayoutParams testParams = new ConstraintLayout.LayoutParams(
+//                            ViewGroup.LayoutParams.WRAP_CONTENT,
+//                            ViewGroup.LayoutParams.WRAP_CONTENT
+//                    );
+//
+//                    slider.setId(View.generateViewId());
+//
+//                    ConstraintSet constraintSet = new ConstraintSet();
+//                    constraintSet.clone(container);
+//
+//                    constraintSet.connect(slider.getId(), ConstraintSet.START, R.id.container, ConstraintSet.START, 72);
+//                    constraintSet.connect(slider.getId(), ConstraintSet.END, R.id.container, ConstraintSet.END, 72);
+//                    constraintSet.connect(slider.getId(), ConstraintSet.BOTTOM, R.id.container, ConstraintSet.BOTTOM, 72);
+//                    constraintSet.connect(testButton.getId(), ConstraintSet.TOP, slider.getId(), ConstraintSet.TOP);
+//                    constraintSet.connect(testButton.getId(), ConstraintSet.BOTTOM, slider.getId(), ConstraintSet.BOTTOM);
+//                    constraintSet.connect(testButton.getId(), ConstraintSet.END, R.id.container, ConstraintSet.END);
+//                    constraintSet.connect(testButton.getId(), ConstraintSet.START, slider.getId(), ConstraintSet.END);
 
 
                     //set bottomAppBar menu item
@@ -284,14 +243,88 @@ public class MainActivity extends AppCompatActivity {
                             bottomAppBar.setVisibility(View.INVISIBLE);
                             fab.setVisibility(View.INVISIBLE);
 
-                            View bottom_slider = viewStub.inflate();
+//                            View bottom_slider = viewStub.inflate();
 
-                            fab.setLongClickable(false);
-                            fab.setImageResource(R.drawable.ic_done);
-                            fab.setContentDescription(getResources().getString(R.string.finish_blur));
-                            bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
-                            bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(false);
-                            bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(false);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                            LayoutInflater inflater = this.getLayoutInflater();
+
+                            builder.setView(inflater.inflate(R.layout.layout_dialog_adjustment, null))
+                            .setPositiveButton(R.string.finish_blur, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    bitmap = blur;
+                                    bottomAppBar.setVisibility(View.VISIBLE);
+                                    fab.setVisibility(View.VISIBLE);
+
+                                }
+                            })
+                            .setNegativeButton(R.string.app_name, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+
+                                }
+                            });
+
+                            AlertDialog dialog = builder.create();
+                            dialog.getWindow()
+                                    .clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                            dialog.getWindow().setGravity(Gravity.BOTTOM);
+                            dialog.show();
+                            Slider slider = dialog.findViewById(R.id.dialog_slider);
+
+                            slider.addOnChangeListener((slider1, value, fromUser) -> {
+
+                                if (FLAG == FLAG_BLUR) {
+                                    HokoBlur.with(getApplicationContext())
+                                            .radius((int) value)
+                                            .sampleFactor(1.0f)
+                                            .forceCopy(true)
+                                            .needUpscale(true)
+                                            .asyncBlur(bitmap, new AsyncBlurTask.Callback() {
+                                                @Override
+                                                public void onBlurSuccess(Bitmap bitmap) {
+                                                    blur = bitmap;
+                                                    imageView.setImageBitmap(bitmap);
+                                                }
+
+                                                @Override
+                                                public void onBlurFailed(Throwable error) {
+
+                                                }
+                                            });
+                                } else if (FLAG == FLAG_BRIGHTNESS) {
+                                    new Thread(() -> {
+                                        brightness = Util.adjustBrightness(bitmap, (int) value);
+
+                                        runOnUiThread(() -> imageView.setImageBitmap(brightness));
+                                    }).start();
+                                }
+
+                            });
+
+                            slider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
+                                @Override
+                                public void onStartTrackingTouch(@NonNull Slider slider) {
+
+                                }
+
+                                @Override
+                                public void onStopTrackingTouch(@NonNull Slider slider) {
+                                    if (FLAG == FLAG_BLUR) {
+                                        blurBias = (int) slider.getValue();
+                                    } else if (FLAG == FLAG_BRIGHTNESS) {
+                                        brightnessBias = (int) slider.getValue();
+                                    }
+                                }
+                            });
+
+
+//                            fab.setLongClickable(false);
+//                            fab.setImageResource(R.drawable.ic_done);
+//                            fab.setContentDescription(getResources().getString(R.string.finish_blur));
+//                            bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
+//                            bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(false);
+//                            bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(false);
                             slider.setValueFrom(0);
                             slider.setValueTo(30);
                             slider.setStepSize(1);
@@ -305,11 +338,11 @@ public class MainActivity extends AppCompatActivity {
                             bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
                             bottomAppBar.getMenu().getItem(MENU_BLUR).setEnabled(false);
                             bottomAppBar.getMenu().getItem(MENU_BRIGHTNESS).setEnabled(false);
-                            slider.setValueFrom(-50);
-                            slider.setValueTo(50);
-                            slider.setStepSize(1);
-                            slider.setValue(brightnessBias);
-                            coordinatorLayout.addView(slider, sliderParams);
+//                            slider.setValueFrom(-50);
+//                            slider.setValueTo(50);
+//                            slider.setStepSize(1);
+//                            slider.setValue(brightnessBias);
+//                            coordinatorLayout.addView(slider, sliderParams);
                         /*} else if (item.getItemId() == R.id.horizontal) {
                             cord = null;
                             AlertDialog dialog = builder.create();
@@ -328,6 +361,52 @@ public class MainActivity extends AppCompatActivity {
                         }
                         return true;
                     });
+
+//                    slider.addOnChangeListener((slider1, value, fromUser) -> {
+//
+//                        if (FLAG == FLAG_BLUR) {
+//                            HokoBlur.with(getApplicationContext())
+//                                    .radius((int) value)
+//                                    .sampleFactor(1.0f)
+//                                    .forceCopy(true)
+//                                    .needUpscale(true)
+//                                    .asyncBlur(bitmap, new AsyncBlurTask.Callback() {
+//                                        @Override
+//                                        public void onBlurSuccess(Bitmap bitmap) {
+//                                            blur = bitmap;
+//                                            imageView.setImageBitmap(bitmap);
+//                                        }
+//
+//                                        @Override
+//                                        public void onBlurFailed(Throwable error) {
+//
+//                                        }
+//                                    });
+//                        } else if (FLAG == FLAG_BRIGHTNESS) {
+//                            new Thread(() -> {
+//                                brightness = Util.adjustBrightness(bitmap, (int) value);
+//
+//                                runOnUiThread(() -> imageView.setImageBitmap(brightness));
+//                            }).start();
+//                        }
+//
+//                    });
+//
+//                    slider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
+//                        @Override
+//                        public void onStartTrackingTouch(@NonNull Slider slider) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onStopTrackingTouch(@NonNull Slider slider) {
+//                            if (FLAG == FLAG_BLUR) {
+//                                blurBias = (int) slider.getValue();
+//                            } else if (FLAG == FLAG_BRIGHTNESS) {
+//                                brightnessBias = (int) slider.getValue();
+//                            }
+//                        }
+//                    });
 
                     //Show Image
                     imageView.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -436,9 +515,9 @@ public class MainActivity extends AppCompatActivity {
                     //disable gesture for slider bar
                     List<Rect> rects = new ArrayList<>();
                     int wrapSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-                    slider.measure(wrapSpec, wrapSpec);
+//                    slider.measure(wrapSpec, wrapSpec);
                     bottomAppBar.measure(wrapSpec, wrapSpec);
-                    rects.add(new Rect(0, device_height - (slider.getMeasuredHeight() + bottomAppBar.getMeasuredHeight() * 2), device_width, device_height));
+//                    rects.add(new Rect(0, device_height - (slider.getMeasuredHeight() + bottomAppBar.getMeasuredHeight() * 2), device_width, device_height));
                     //Log.e("rect",String.valueOf(device_height-(slider.getMeasuredHeight()+bottomAppBar.getMeasuredHeight())*2));
 
 
