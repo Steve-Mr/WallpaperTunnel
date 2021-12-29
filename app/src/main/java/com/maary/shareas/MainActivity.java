@@ -39,6 +39,7 @@ import androidx.core.view.WindowCompat;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.dialog.MaterialDialogs;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.slider.Slider;
 import com.hoko.blur.HokoBlur;
@@ -265,7 +266,8 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
 
-                            AlertDialog dialog = builder.create();
+                            //AlertDialog dialog = builder.create();
+                            AlertDialog dialog = createSliderDialog(this);
                             dialog.getWindow()
                                     .clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                             dialog.getWindow().setGravity(Gravity.BOTTOM);
@@ -542,5 +544,24 @@ public class MainActivity extends AppCompatActivity {
             local.setAction("done");
             context.sendBroadcast(local);
         }
+    }
+
+    private AlertDialog createSliderDialog(MainActivity savedInstanceState){
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+
+        builder.setView(inflater.inflate(R.layout.layout_dialog_adjustment, null))
+                .setPositiveButton(R.string.finish_blur, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                })
+                .setNegativeButton(R.string.app_name, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+        return builder.create();
     }
 }
