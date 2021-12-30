@@ -20,10 +20,11 @@
         android:title="@string/brightness"
         app:showAsAction="always"/>
 
-    <item
+    <!--<item
         android:id="@+id/horizontal"
         android:icon="@drawable/ic_horizontal"
         android:title="@string/horizontal"
         app:showAsAction="always"/>
+        -->
 
 </menu>
