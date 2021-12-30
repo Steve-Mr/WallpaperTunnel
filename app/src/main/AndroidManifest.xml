@@ -4,6 +4,7 @@
     package="com.maary.shareas">
 
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -12,20 +13,29 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".MainActivity"
-            android:noHistory="true"
-            android:exported="true">
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
-        <receiver android:name=".MainActivity$ShareReceiver"
-            android:exported="false"/>
+
+        <receiver
+            android:name=".MainActivity$ShareReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>
