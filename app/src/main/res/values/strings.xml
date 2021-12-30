@@ -11,4 +11,6 @@
     <string name="finish_blur">Finish blur setting</string>
     <string name="finish_brightness">Finish brightness setting</string>
     <string name="reset">Reset</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
 </resources>
