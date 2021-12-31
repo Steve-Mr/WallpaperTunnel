@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -28,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -149,6 +151,12 @@ public class MainActivity extends AppCompatActivity {
                     bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
                     imageView.setImageBitmap(bitmap);
 
+                    SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+                    if (!sharedPreferences.contains(getString(R.string.enabled_history_key))) {
+                        AlertDialog dialog_history = saveHistoryDialog();
+                        dialog_history.show();
+                    }
+
                     //setup the fab click listener
                     fab.setOnClickListener(view -> {
                         if (isVertical) {
@@ -164,6 +172,14 @@ public class MainActivity extends AppCompatActivity {
                     });
 
                     fab.setOnLongClickListener(view -> {
+
+                        if (sharedPreferences.getBoolean(getString(R.string.enabled_history_key), true)){
+                            //TODO:save current wallpaper
+                            Toast.makeText(this, "save wallpaper", Toast.LENGTH_SHORT).show();
+                        }else{
+                            Toast.makeText(this, "not save wallpaper", Toast.LENGTH_SHORT).show();
+                        }
+
                         cord = null;
                         AlertDialog dialog = builder.create();
                         dialog.show();
@@ -350,6 +366,31 @@ public class MainActivity extends AppCompatActivity {
         .setNeutralButton(R.string.reset, null)
         .setNegativeButton(R.string.cancel, null);
 
+        return builder.create();
+    }
+
+    private AlertDialog saveHistoryDialog(){
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setMessage(R.string.dialog_wallpaper_history)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putBoolean(getString(R.string.enabled_history_key), true);
+                        editor.apply();
+                        //TODO:ask for permission
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putBoolean(getString(R.string.enabled_history_key), false);
+                        editor.apply();
+                    }
+                });
         return builder.create();
     }
 
