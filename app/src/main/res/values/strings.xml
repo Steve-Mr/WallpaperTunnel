@@ -17,4 +17,5 @@
     <string name="dialog_wallpaper_history">Save wallpapers history?</string>
     <string name="yes">Yes</string>
     <string name="enabled_history_key">enabled_history_key</string>
+    <string name="no_permission">Wallpaper history saving cannot work without permission.</string>
 </resources>

@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     buildToolsVersion '31.0.0'
     defaultConfig {
         applicationId "com.maary.shareas"
-        minSdkVersion 28
-        targetSdkVersion 31
+        minSdkVersion 29
+        targetSdkVersion 32
         versionCode 3
         versionName "2.0_beta_0816"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
