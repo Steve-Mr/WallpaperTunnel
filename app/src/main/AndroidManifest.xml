@@ -40,7 +40,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.maary.shareas"
+            android:authorities="com.maary.shareas.provider"
             android:grantUriPermissions="true"
             android:exported="false">
             <meta-data

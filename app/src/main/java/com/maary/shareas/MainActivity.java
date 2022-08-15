@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -34,6 +35,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.ActionMenuItemView;
@@ -52,6 +54,7 @@ import com.hoko.blur.HokoBlur;
 import com.hoko.blur.task.AsyncBlurTask;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -367,7 +370,8 @@ public class MainActivity extends AppCompatActivity {
                                         break;
                                     case 3:
                                         state = 3;
-                                        SetImageAs(bitmap, getBaseContext());
+//                                        SetImageAs(bitmap, getBaseContext());
+                                        shareBitmap(bitmap, getApplicationContext());
                                         break;
                                     default:
                                         throw new IllegalStateException("Unexpected value: " + which);
@@ -490,53 +494,114 @@ public class MainActivity extends AppCompatActivity {
         if(bitmap != null){
             File result;
             // save bitmap to cache directory
-            try {
+            Uri imageUri = Util_Files.saveEditedWallpaper(bitmap, MainActivity.this);
 
-//                File cachePath = new File(context.getCacheDir(), "images");
-//                cachePath.mkdirs(); // don't forget to make the directory
-//                FileOutputStream stream = new FileOutputStream(cachePath + "/image.png"); // overwrites this image every time
-//                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-//                stream.close();
-                result =  File.createTempFile("image", null, context.getCacheDir());
-                Log.v("CACHE DIR", context.getCacheDir().toString());
+            Intent sendIntent = new Intent(Intent.ACTION_ATTACH_DATA);
+            sendIntent.setDataAndType(imageUri, "image/*");
+            sendIntent.putExtra("mimeType", "image/*");
+            sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-//                FileOutputStream fileOutputStream = context.openFileOutput("image", Context.MODE_PRIVATE);
-                FileOutputStream fileOutputStream = new FileOutputStream(result);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
-                fileOutputStream.flush();
-                fileOutputStream.close();
+            Intent receiver = new Intent(context, ShareReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
+                    receiver,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
 
-                File tempBitmap = new File(context.getCacheDir(), "image");
-                Uri imageUri = FileProvider.getUriForFile(context, "com.maary.shareas", tempBitmap);
-
-//                Toast.makeText(context, String.valueOf(imageUri), Toast.LENGTH_SHORT).show();
-
-                Intent sendIntent = new Intent(Intent.ACTION_ATTACH_DATA);
-                sendIntent.setDataAndType(imageUri, "image/*");
-                sendIntent.putExtra("mimeType", "image/*");
-                sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                Intent receiver = new Intent(context, ShareReceiver.class);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
-                        receiver,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
-
-                startActivity(Intent.createChooser(
-                        sendIntent
-                        , String.valueOf(R.string.use_others)
-                        , pendingIntent.getIntentSender()
-                ));
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-//            File imagePath = new File(context.getCacheDir(), "images");
-//            File newFile = new File(imagePath, "image.png");
-//            Uri imageUri = FileProvider.getUriForFile(context, "com.maary.shareas", newFile);
+            startActivity(Intent.createChooser(
+                    sendIntent
+                    , String.valueOf(R.string.use_others)
+                    , pendingIntent.getIntentSender()
+            ));
 
 
         }
     }
+
+    private void shareBitmap(@NonNull Bitmap bitmap, Context context)
+    {
+        //---Save bitmap to external cache directory---//
+        //get cache directory
+        File cachePath = new File(getExternalCacheDir(), "my_images/");
+        cachePath.mkdirs();
+
+        //create png file
+        File file = new File(cachePath, "Image_123.png");
+        FileOutputStream fileOutputStream;
+        try
+        {
+            fileOutputStream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+            fileOutputStream.flush();
+            fileOutputStream.close();
+
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        //---Share File---//
+        //get file uri
+        Uri myImageFileUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
+
+        //create a intent
+//        Intent intent = new Intent(Intent.ACTION_ATTACH_DATA);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//        intent.putExtra(Intent.EXTRA_STREAM, myImageFileUri);
+//        intent.setType("image/png");
+//        startActivity(Intent.createChooser(intent, "Share with"));
+
+        Intent sendIntent = new Intent(Intent.ACTION_ATTACH_DATA);
+        sendIntent.setDataAndType(myImageFileUri, "image/*");
+        sendIntent.putExtra("mimeType", "image/*");
+        sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        Intent receiver = new Intent(context, ShareReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
+                receiver,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
+
+        startActivity(Intent.createChooser(
+                sendIntent
+                , String.valueOf(R.string.use_others)
+                , pendingIntent.getIntentSender()
+        ));
+    }
+
+//    void SetImageAs(Bitmap bitmap, Context context){
+//        if(bitmap != null){
+//            File result;
+//            // save bitmap to cache directory
+//            try {
+//                result =  File.createTempFile("image", null, context.getCacheDir());
+//                Log.v("CACHE DIR", context.getCacheDir().toString());
+//
+//                FileOutputStream fileOutputStream = new FileOutputStream(result);
+//                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+//                fileOutputStream.flush();
+//                fileOutputStream.close();
+//
+//                File tempBitmap = new File(context.getCacheDir(), "image");
+//                Uri imageUri = FileProvider.getUriForFile(context, "com.maary.shareas", tempBitmap);
+//
+//                Intent sendIntent = new Intent(Intent.ACTION_ATTACH_DATA);
+//                sendIntent.setDataAndType(imageUri, "image/*");
+//                sendIntent.putExtra("mimeType", "image/*");
+//                sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//
+//                Intent receiver = new Intent(context, ShareReceiver.class);
+//                PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
+//                        receiver,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
+//
+//                startActivity(Intent.createChooser(
+//                        sendIntent
+//                        , String.valueOf(R.string.use_others)
+//                        , pendingIntent.getIntentSender()
+//                ));
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//        }
+//    }
 
 //    private void saveWallpaper(Bitmap bitmap){
 //        Calendar calendar = Calendar.getInstance();

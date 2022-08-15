@@ -49,6 +49,33 @@ public class Util_Files {
         }
     }
 
+    public static Uri saveEditedWallpaper(Bitmap bitmap, Activity activity){
+        Calendar calendar = Calendar.getInstance();
+        String fileName = "image";
+        final ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, customDir);
+
+        final ContentResolver contentResolver = activity.getContentResolver();
+        Uri uri;
+
+        final Uri contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        uri = contentResolver.insert(contentUri, contentValues);
+
+        try {
+            final OutputStream outputStream = contentResolver.openOutputStream(uri);
+            if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)) {
+                throw new IOException("failed to save bitmap");
+            }
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return uri;
+    }
+
     public static Uri getWallpapersList(){
         ArrayList<Uri> uriArrayList = new ArrayList<>();
         File file = new File(customDir);
