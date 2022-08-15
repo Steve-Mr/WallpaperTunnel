@@ -194,10 +194,10 @@ public class MainActivity extends AppCompatActivity {
                         AlertDialog dialog = builder.create();
                         dialog.show();
 
-                        if (state == 3){
-                            Toast.makeText(getApplicationContext(), "state == 3 ", Toast.LENGTH_SHORT).show();
-                            SetImageAs(bitmap, MainActivity.this);
-                        }
+//                        if (state == 3){
+//                            Toast.makeText(getApplicationContext(), "state == 3 ", Toast.LENGTH_SHORT).show();
+//                            SetImageAs(bitmap, MainActivity.this);
+//                        }
 
                     });
 
@@ -370,7 +370,6 @@ public class MainActivity extends AppCompatActivity {
                                         break;
                                     case 3:
                                         state = 3;
-//                                        SetImageAs(bitmap, getBaseContext());
                                         shareBitmap(bitmap, getApplicationContext());
                                         break;
                                     default:
@@ -490,37 +489,12 @@ public class MainActivity extends AppCompatActivity {
         return FileProvider.getUriForFile(context, "com.maary.shareas", newFile);
     }
 
-    void SetImageAs(Bitmap bitmap, Context context){
-        if(bitmap != null){
-            File result;
-            // save bitmap to cache directory
-            Uri imageUri = Util_Files.saveEditedWallpaper(bitmap, MainActivity.this);
-
-            Intent sendIntent = new Intent(Intent.ACTION_ATTACH_DATA);
-            sendIntent.setDataAndType(imageUri, "image/*");
-            sendIntent.putExtra("mimeType", "image/*");
-            sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-            Intent receiver = new Intent(context, ShareReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
-                    receiver,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
-
-            startActivity(Intent.createChooser(
-                    sendIntent
-                    , String.valueOf(R.string.use_others)
-                    , pendingIntent.getIntentSender()
-            ));
-
-
-        }
-    }
-
     private void shareBitmap(@NonNull Bitmap bitmap, Context context)
     {
         //---Save bitmap to external cache directory---//
         //get cache directory
         File cachePath = new File(getExternalCacheDir(), "my_images/");
-        cachePath.mkdirs();
+        boolean result = cachePath.mkdirs();
 
         //create png file
         File file = new File(cachePath, "Image_123.png");
@@ -541,14 +515,6 @@ public class MainActivity extends AppCompatActivity {
         //get file uri
         Uri myImageFileUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
 
-        //create a intent
-//        Intent intent = new Intent(Intent.ACTION_ATTACH_DATA);
-//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//        intent.putExtra(Intent.EXTRA_STREAM, myImageFileUri);
-//        intent.setType("image/png");
-//        startActivity(Intent.createChooser(intent, "Share with"));
-
         Intent sendIntent = new Intent(Intent.ACTION_ATTACH_DATA);
         sendIntent.setDataAndType(myImageFileUri, "image/*");
         sendIntent.putExtra("mimeType", "image/*");
@@ -565,73 +531,6 @@ public class MainActivity extends AppCompatActivity {
         ));
     }
 
-//    void SetImageAs(Bitmap bitmap, Context context){
-//        if(bitmap != null){
-//            File result;
-//            // save bitmap to cache directory
-//            try {
-//                result =  File.createTempFile("image", null, context.getCacheDir());
-//                Log.v("CACHE DIR", context.getCacheDir().toString());
-//
-//                FileOutputStream fileOutputStream = new FileOutputStream(result);
-//                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
-//                fileOutputStream.flush();
-//                fileOutputStream.close();
-//
-//                File tempBitmap = new File(context.getCacheDir(), "image");
-//                Uri imageUri = FileProvider.getUriForFile(context, "com.maary.shareas", tempBitmap);
-//
-//                Intent sendIntent = new Intent(Intent.ACTION_ATTACH_DATA);
-//                sendIntent.setDataAndType(imageUri, "image/*");
-//                sendIntent.putExtra("mimeType", "image/*");
-//                sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//
-//                Intent receiver = new Intent(context, ShareReceiver.class);
-//                PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
-//                        receiver,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
-//
-//                startActivity(Intent.createChooser(
-//                        sendIntent
-//                        , String.valueOf(R.string.use_others)
-//                        , pendingIntent.getIntentSender()
-//                ));
-//
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//        }
-//    }
 
-//    private void saveWallpaper(Bitmap bitmap){
-//        Calendar calendar = Calendar.getInstance();
-//        String fileName = "WLP_" +
-//                (calendar.get(Calendar.YEAR) - 1900) +
-//                calendar.get(Calendar.MONTH) +
-//                calendar.get(Calendar.DAY_OF_MONTH) +
-//                calendar.get(Calendar.HOUR_OF_DAY) +
-//                calendar.get(Calendar.MINUTE) +
-//                calendar.get(Calendar.MILLISECOND);
-//        final ContentValues contentValues = new ContentValues();
-//        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-//        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
-//        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "Wallpaper History");
-//
-//        final ContentResolver contentResolver = getContentResolver();
-//        Uri uri;
-//
-//        final Uri contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-//        uri = contentResolver.insert(contentUri, contentValues);
-//
-//        try {
-//            final OutputStream outputStream = contentResolver.openOutputStream(uri);
-//            if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)) {
-//                throw new IOException("failed to save bitmap");
-//            }
-//            outputStream.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
 }
