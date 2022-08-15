@@ -18,4 +18,6 @@
     <string name="yes">Yes</string>
     <string name="enabled_history_key">enabled_history_key</string>
     <string name="no_permission">Wallpaper history saving cannot work without permission.</string>
+    <string name="disabled_history_lacking_permission">Wallpapers History is disabled duo to lacking permission.</string>
+    <string name="use_others">Use Other App to Set</string>
 </resources>

@@ -9,7 +9,8 @@
     <GridView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:numColumns="2"
+        android:numColumns="3"
+        android:id="@+id/grid_view"
         tools:listitem="@layout/grid_image"/>
 
 </ScrollView>
