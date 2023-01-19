@@ -20,4 +20,10 @@
     <string name="no_permission">Wallpaper history saving cannot work without permission.</string>
     <string name="disabled_history_lacking_permission">Wallpapers History is disabled duo to lacking permission.</string>
     <string name="use_others">Use Other App to Set</string>
+
+    <string name="delete_dialog_title">Delete?</string>
+    <string name="delete_dialog_message">Delete %1$s?</string>
+    <string name="delete_dialog_positive">Delete</string>
+    <string name="delete_dialog_negative">Cancel</string>
+    <string name="used_wallpaper">Used Wallpaper</string>
 </resources>
