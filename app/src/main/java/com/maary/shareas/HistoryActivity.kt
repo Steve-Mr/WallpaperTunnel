@@ -52,7 +52,7 @@ class HistoryActivity : AppCompatActivity(){
         }
 
         binding.gallery.also { view ->
-            view.layoutManager = GridLayoutManager(this, 2)
+            view.layoutManager = GridLayoutManager(this, 3)
             view.adapter = galleryAdapter
         }
 
@@ -209,7 +209,7 @@ class HistoryActivity : AppCompatActivity(){
 
             Glide.with(holder.imageView)
                 .load(mediaStoreImage.contentUri)
-                .thumbnail(0.5f)
+                .thumbnail(0.33f)
                 .centerCrop()
                 .into(holder.imageView)
         }
