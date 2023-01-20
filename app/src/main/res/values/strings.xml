@@ -26,4 +26,7 @@
     <string name="delete_dialog_positive">Delete</string>
     <string name="delete_dialog_negative">Cancel</string>
     <string name="used_wallpaper">Used Wallpaper</string>
+    <string name="device_height">device_height</string>
+    <string name="device_width">device_width</string>
+    <string name="preference_file_key">tunnel_preferences</string>
 </resources>

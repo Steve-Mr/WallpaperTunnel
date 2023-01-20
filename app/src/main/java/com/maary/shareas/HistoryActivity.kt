@@ -2,6 +2,7 @@ package com.maary.shareas
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentSender
@@ -17,6 +18,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -48,7 +50,8 @@ class HistoryActivity : AppCompatActivity(){
         binding = DataBindingUtil.setContentView(this, R.layout.activity_history)
 
         val galleryAdapter = GalleryAdapter { image ->
-            deleteImage(image)
+            openImage(image)
+
         }
 
         binding.gallery.also { view ->
@@ -200,6 +203,17 @@ class HistoryActivity : AppCompatActivity(){
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
             val layoutInflater = LayoutInflater.from(parent.context)
             val view = layoutInflater.inflate(R.layout.gallery_layout, parent, false)
+
+            val imageView:ImageView = view.findViewById(R.id.image)
+            val sharedPreferences = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE)
+            val device_height = sharedPreferences.getInt(
+                getString(R.string.device_height), Util.getDeviceBounds(this@HistoryActivity).y)
+            val device_width = sharedPreferences.getInt(
+                getString(R.string.device_width), Util.getDeviceBounds(this@HistoryActivity).x)
+            val ratio = String.format("%d:%d", device_width, device_height)
+            (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = ratio
+            imageView.clipToOutline = true
+
             return ImageViewHolder(view, onClick)
         }
 
@@ -213,6 +227,18 @@ class HistoryActivity : AppCompatActivity(){
                 .centerCrop()
                 .into(holder.imageView)
         }
+    }
+
+    private fun openImage(image: MediaStoreImage){
+
+        val intent = Intent(application, MainActivity::class.java).apply {
+            action = Intent.ACTION_SEND
+            setDataAndType(image.contentUri, "image/*")
+            putExtra("mimeType", "image/*")
+            putExtra(Intent.EXTRA_STREAM, image.contentUri);
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(intent)
     }
 }
 

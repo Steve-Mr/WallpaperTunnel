@@ -3,10 +3,7 @@ package com.maary.shareas
 import android.annotation.SuppressLint
 import android.app.Application
 import android.app.RecoverableSecurityException
-import android.content.ContentProvider
-import android.content.ContentResolver
-import android.content.ContentUris
-import android.content.IntentSender
+import android.content.*
 import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
@@ -124,19 +121,14 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
              * Note that we've included a `?` in our selection. This stands in for a variable
              * which will be provided by the next variable.
              */
-            val selection = "${MediaStore.Images.Media.DATE_ADDED} >= ?"
+            val selection = "${MediaStore.Images.ImageColumns.RELATIVE_PATH} like ?"
 
             /**
              * The `selectionArgs` is a list of values that will be filled in for each `?`
              * in the `selection`.
              */
-            /**
-             * The `selectionArgs` is a list of values that will be filled in for each `?`
-             * in the `selection`.
-             */
             val selectionArgs = arrayOf(
-                // Release day of the G1. :)
-                dateToTimestamp(day = 22, month = 10, year = 2008).toString()
+                "Pictures/Wallpaper History/%"
             )
 
             /**
@@ -205,7 +197,6 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
                     val dateModified =
                         Date(TimeUnit.SECONDS.toMillis(cursor.getLong(dateModifiedColumn)))
                     val displayName = cursor.getString(displayNameColumn)
-
 
                     /**
                      * This is one of the trickiest parts:

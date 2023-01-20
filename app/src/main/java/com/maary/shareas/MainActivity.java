@@ -57,6 +57,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -74,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
     int brightnessBias = 0;
     MaterialAlertDialogBuilder builder;
 
+    int device_height,device_width;
+
     //TODO:change later
     int state = 0;
 
@@ -83,34 +86,31 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
-        Point deviceBounds = Util.getDeviceBounds(MainActivity.this);
-        int device_height = deviceBounds.y;
-        int device_width = deviceBounds.x;
+        SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+
+        if (sharedPreferences.contains(getString(R.string.device_height))){
+            device_height = sharedPreferences.getInt(getString(R.string.device_height),
+                    Util.getDeviceBounds(MainActivity.this).y);
+            device_width = sharedPreferences.getInt(getString(R.string.device_width),
+                    Util.getDeviceBounds(MainActivity.this).x);
+        }else{
+            Point deviceBounds = Util.getDeviceBounds(MainActivity.this);
+            device_height = deviceBounds.y;
+            device_width = deviceBounds.x;
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt(getString(R.string.device_height), device_height);
+            editor.putInt(getString(R.string.device_width), device_width);
+            editor.apply();
+        }
 
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
 
-        Log.d("tag", "started");
-//        Toast.makeText(this, Util_Files.getWallpapersList(), Toast.LENGTH_SHORT).show();
-        //TODO:test
-//        Uri fileUri = Util_Files.getWallpapersList();
-//        Cursor cursor = getContentResolver().query(fileUri, null, null, null, null);
-//        int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-//        cursor.moveToFirst();
-//        Log.v("index", String.valueOf(nameIndex));
-//        if (nameIndex > 0){
-//            Toast.makeText(this, cursor.getString(nameIndex), Toast.LENGTH_SHORT).show();
-//        }
-
-        System.out.println("just for test");
-
         try {
             if (Intent.ACTION_SEND.equals(action) && type != null) {
                 if (type.startsWith("image/")) {
-
                     bitmap = Util.getBitmap(intent, MainActivity.this);
-
                     final WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
                     //Parent layout
                     ConstraintLayout container = findViewById(R.id.container);
@@ -174,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
                     imageView.setImageBitmap(bitmap);
 
                     //如果 SharedPreferences 里没有关于是否保存图像历史的偏好就询问是否保存
-                    SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
                     if (!sharedPreferences.contains(getString(R.string.enabled_history_key))) {
                         AlertDialog dialog_history = saveHistoryDialog();
                         dialog_history.show();
@@ -431,7 +430,7 @@ public class MainActivity extends AppCompatActivity {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setMessage(R.string.dialog_wallpaper_history)
                 .setPositiveButton(R.string.yes, (dialogInterface, i) -> {
-                    SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+                    SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preference_file_key), MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putBoolean(getString(R.string.enabled_history_key), true);
                     editor.apply();
@@ -526,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
 
         startActivity(Intent.createChooser(
                 sendIntent
-                , String.valueOf(R.string.use_others)
+                , getString(R.string.use_others)
                 , pendingIntent.getIntentSender()
         ));
     }
