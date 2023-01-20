@@ -12,7 +12,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/gallery"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"/>
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/top_guideline"

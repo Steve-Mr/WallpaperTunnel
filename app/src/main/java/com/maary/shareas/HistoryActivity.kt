@@ -15,12 +15,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
+import android.view.WindowInsets
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
@@ -28,6 +31,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.shape.MaterialShapeDrawable
 import com.maary.shareas.databinding.ActivityHistoryBinding
 
 
@@ -46,8 +50,15 @@ class HistoryActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_history)
+
+        binding.gallery.setOnApplyWindowInsetsListener { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.updatePadding(top = insets.top + view.paddingTop, bottom = insets.bottom)
+            WindowInsets.CONSUMED
+        }
 
         val galleryAdapter = GalleryAdapter { image ->
             openImage(image)

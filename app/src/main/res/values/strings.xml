@@ -29,4 +29,7 @@
     <string name="device_height">device_height</string>
     <string name="device_width">device_width</string>
     <string name="preference_file_key">tunnel_preferences</string>
+    <string name="history_activity">Used Wallpaper</string>
+    <string name="delete_all">Delete All</string>
+    <string name="delete_all_used_images">Delete all used wallpapers listed here.</string>
 </resources>
