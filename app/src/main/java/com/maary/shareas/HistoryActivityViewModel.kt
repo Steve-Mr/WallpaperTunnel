@@ -102,7 +102,9 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
             val projection = arrayOf(
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DISPLAY_NAME,
-                MediaStore.Images.Media.DATE_ADDED
+                MediaStore.Images.Media.DATE_ADDED,
+                MediaStore.Images.Media.WIDTH,
+                MediaStore.Images.Media.HEIGHT
             )
 
             /**
@@ -188,6 +190,10 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
                     cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED)
                 val displayNameColumn =
                     cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
+                val widthColumn =
+                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH)
+                val heightColumn =
+                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT)
 
                 Log.i(TAG, "Found ${cursor.count} images")
                 while (cursor.moveToNext()) {
@@ -197,6 +203,8 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
                     val dateModified =
                         Date(TimeUnit.SECONDS.toMillis(cursor.getLong(dateModifiedColumn)))
                     val displayName = cursor.getString(displayNameColumn)
+                    val width = cursor.getInt(widthColumn)
+                    val height = cursor.getInt(heightColumn)
 
                     /**
                      * This is one of the trickiest parts:
@@ -227,7 +235,7 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
                         id
                     )
 
-                    val image = MediaStoreImage(id, displayName, dateModified, contentUri)
+                    val image = MediaStoreImage(id, displayName, dateModified, contentUri, width, height)
                     images += image
 
                     // For debugging, we'll output the image objects we create to logcat.

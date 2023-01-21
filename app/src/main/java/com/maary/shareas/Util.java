@@ -28,15 +28,8 @@ public class Util {
     }
 
     public static Point getDeviceBounds(Context context) {
-        Point point = new Point();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            WindowMetrics windowMetrics = ((Activity)context).getWindowManager().getMaximumWindowMetrics();
-            point = new Point(windowMetrics.getBounds().width(), windowMetrics.getBounds().height());
-        } else {
-            Display display = ((Activity)context).getWindowManager().getDefaultDisplay();
-            display.getRealSize(point);
-        }
-        return point;
+        WindowMetrics windowMetrics = ((Activity)context).getWindowManager().getMaximumWindowMetrics();
+        return new Point(windowMetrics.getBounds().width(), windowMetrics.getBounds().height());
     }
 
     public static Boolean isVertical(int dheight, int dwidth, Bitmap bitmap) {

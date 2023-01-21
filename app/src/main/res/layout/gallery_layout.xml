@@ -18,4 +18,17 @@
         app:layout_constraintTop_toTopOf="parent"
         android:contentDescription="@string/used_wallpaper" />
 
+    <ImageView
+        android:id="@+id/image_label_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:padding="4dp"
+        android:visibility="invisible"
+        android:background="@drawable/round_outline_small"
+        android:backgroundTint="@color/semiBlack"
+        android:src="@drawable/ic_horizontal"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

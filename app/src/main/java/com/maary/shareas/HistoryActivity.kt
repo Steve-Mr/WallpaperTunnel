@@ -2,10 +2,7 @@ package com.maary.shareas
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
-import android.content.IntentSender
+import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
@@ -31,7 +28,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.shape.MaterialShapeDrawable
 import com.maary.shareas.databinding.ActivityHistoryBinding
 
 
@@ -240,11 +236,11 @@ class HistoryActivity : AppCompatActivity(){
 
             val imageView:ImageView = view.findViewById(R.id.image)
             val sharedPreferences = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE)
-            val device_height = sharedPreferences.getInt(
+            val deviceHeight = sharedPreferences.getInt(
                 getString(R.string.device_height), Util.getDeviceBounds(this@HistoryActivity).y)
-            val device_width = sharedPreferences.getInt(
+            val deviceWidth = sharedPreferences.getInt(
                 getString(R.string.device_width), Util.getDeviceBounds(this@HistoryActivity).x)
-            val ratio = String.format("%d:%d", device_width, device_height)
+            val ratio = String.format("%d:%d", deviceWidth, deviceHeight)
             (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = ratio
             imageView.clipToOutline = true
 
@@ -254,6 +250,12 @@ class HistoryActivity : AppCompatActivity(){
         override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
             val mediaStoreImage = getItem(position)
             holder.rootView.tag = mediaStoreImage
+
+            val labelView: ImageView = holder.rootView.findViewById(R.id.image_label_horizontal)
+
+            if (mediaStoreImage.width > mediaStoreImage.height){
+                labelView.visibility = View.VISIBLE
+            }
 
             Glide.with(holder.imageView)
                 .load(mediaStoreImage.contentUri)
@@ -285,6 +287,7 @@ private class ImageViewHolder(view: View, onClick: (MediaStoreImage) -> Unit, on
     val imageView: ImageView = view.findViewById(R.id.image)
 
     init {
+
         imageView.setOnClickListener {
             val image = rootView.tag as? MediaStoreImage ?: return@setOnClickListener
             onClick(image)
@@ -293,5 +296,6 @@ private class ImageViewHolder(view: View, onClick: (MediaStoreImage) -> Unit, on
             val image = rootView.tag as? MediaStoreImage ?: return@setOnLongClickListener true
             onLongClick(image)
         }
+
     }
 }
