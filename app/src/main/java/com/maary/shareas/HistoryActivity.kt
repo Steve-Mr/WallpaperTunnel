@@ -184,8 +184,22 @@ class HistoryActivity : AppCompatActivity(){
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun showImages() {
         viewModel.loadImages()
+        GlobalScope.launch {
+            val list = withContext(Dispatchers.IO){
+                getUriList()
+            }
+            if (list.size == 0){
+                binding.layoutNoHistory.visibility = View.VISIBLE
+                binding.buttonClearAll.visibility = View.GONE
+            }else {
+                binding.layoutNoHistory.visibility = View.INVISIBLE
+                binding.buttonClearAll.visibility = View.VISIBLE
+            }
+        }
+
     }
 
     private fun openMediaStore() {
