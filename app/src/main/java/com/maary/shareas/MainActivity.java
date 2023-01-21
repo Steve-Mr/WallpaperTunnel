@@ -83,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
     //TODO:change later
     int state = 0;
 
+    String permission;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +107,18 @@ public class MainActivity extends AppCompatActivity {
             editor.putInt(getString(R.string.device_width), device_width);
             editor.apply();
         }
+
+        if (Build.VERSION.SDK_INT > 32){
+            permission = Manifest.permission.READ_MEDIA_IMAGES;
+        }else{
+             permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+        }
+
+        //如果需要
+//        if (sharedPreferences.getBoolean(getString(R.string.enabled_history_key), false)){
+
+
+//        }
 
         Intent intent = getIntent();
         String action = intent.getAction();
@@ -192,6 +206,15 @@ public class MainActivity extends AppCompatActivity {
                             int start = horizontalScrollView.getScrollX();
                             cord = new Rect(start, 0, start + device_width, device_height);
                         }
+
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                        if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                            Toast.makeText(getApplicationContext(), R.string.disabled_history_lacking_permission, Toast.LENGTH_SHORT).show();
+                            editor.putBoolean(getString(R.string.enabled_history_key), false);
+                            editor.apply();
+                        }
+
                         bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
                         AlertDialog dialog = builder.create();
                         dialog.show();
@@ -205,6 +228,14 @@ public class MainActivity extends AppCompatActivity {
 
                     fab.setOnLongClickListener(view -> {
 
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                        if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                            Toast.makeText(getApplicationContext(), R.string.disabled_history_lacking_permission, Toast.LENGTH_SHORT).show();
+                            editor.putBoolean(getString(R.string.enabled_history_key), false);
+                            editor.apply();
+                        }
+
                         if (sharedPreferences.getBoolean(getString(R.string.enabled_history_key), true)) {
                             Toast.makeText(this, "save wallpaper", Toast.LENGTH_SHORT).show();
                         } else {
@@ -216,9 +247,6 @@ public class MainActivity extends AppCompatActivity {
                         dialog.show();
                         return false;
                     });
-
-                    //TODO:JUST FOR TEST
-                    Util_Files.getWallpapersList();
 
                     //TODO:ADD zoom (if possible
 
@@ -343,16 +371,17 @@ public class MainActivity extends AppCompatActivity {
                     builder.setItems(options, (dialog, which) -> {
                         executorService.execute(() -> {
                             try {
-
                                 //若已经选择保存选项，弹出「设置图片为」选项之前保存图片
                                 if (wallpaperManager.getWallpaperInfo() == null) {
-                                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                                    Log.v("WLP", permission);
+                                    if (ActivityCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
                                         Bitmap currentWallpaper = ((BitmapDrawable) wallpaperManager.getDrawable()).getBitmap();
                                         Util_Files.saveWallpaper(currentWallpaper, this);
 //                                        saveWallpaper(currentWallpaper);
-                                    } else {
-                                        Toast.makeText(getApplicationContext(), R.string.no_permission, Toast.LENGTH_SHORT).show();
                                     }
+//                                    else {
+//                                        Toast.makeText(getApplicationContext(), R.string.no_permission, Toast.LENGTH_SHORT).show();
+//                                    }
                                 }
 
                                 switch (which) {
@@ -429,7 +458,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //询问是否需要保存壁纸历史记录
-    @RequiresApi(api = Build.VERSION_CODES.S)
     private AlertDialog saveHistoryDialog(){
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setMessage(R.string.dialog_wallpaper_history)
@@ -439,27 +467,13 @@ public class MainActivity extends AppCompatActivity {
                     editor.putBoolean(getString(R.string.enabled_history_key), true);
                     editor.apply();
 
-                    //如果需要
-                    if (sharedPreferences.getBoolean(getString(R.string.enabled_history_key), false)){
-                        if (ContextCompat.checkSelfPermission(
-                                getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                            requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
-                        }
-                        if (ContextCompat.checkSelfPermission(
-                                getApplicationContext(), Manifest.permission.MANAGE_MEDIA) != PackageManager.PERMISSION_GRANTED){
-                            Intent intent = new Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA);
-                            startActivity(intent);
-                        }
-                    }
-
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(getApplicationContext(), R.string.disabled_history_lacking_permission, Toast.LENGTH_SHORT).show();
-                        editor.putBoolean(getString(R.string.enabled_history_key), false);
-                        editor.apply();
+                    if (ContextCompat.checkSelfPermission(
+                            getApplicationContext(), permission) != PackageManager.PERMISSION_GRANTED){
+                        requestPermissionLauncher.launch(permission);
                     }
                 })
                 .setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
-                    SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+                    SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preference_file_key), MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putBoolean(getString(R.string.enabled_history_key), false);
                     editor.apply();
@@ -472,7 +486,7 @@ public class MainActivity extends AppCompatActivity {
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                if (!isGranted){
                    Toast.makeText(this, R.string.no_permission, Toast.LENGTH_SHORT).show();
-                   SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+                   SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preference_file_key), MODE_PRIVATE);
                    SharedPreferences.Editor editor = sharedPreferences.edit();
                    editor.putBoolean(getString(R.string.enabled_history_key), false);
                    editor.apply();

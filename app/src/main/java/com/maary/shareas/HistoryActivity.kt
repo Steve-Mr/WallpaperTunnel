@@ -6,21 +6,20 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
-import android.provider.Settings.Global
-import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
-import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
@@ -28,7 +27,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -51,6 +49,7 @@ class HistoryActivity : AppCompatActivity(){
     private val viewModel: HistoryActivityViewModel by viewModels()
     private lateinit var binding: ActivityHistoryBinding
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -114,6 +113,14 @@ class HistoryActivity : AppCompatActivity(){
                     0,
                     null
                 )
+            }
+
+            if (ContextCompat.checkSelfPermission(
+                    applicationContext, Manifest.permission.MANAGE_MEDIA
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                val intent = Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA)
+                startActivity(intent)
             }
         })
 
