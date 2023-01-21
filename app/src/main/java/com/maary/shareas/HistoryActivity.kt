@@ -7,19 +7,19 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.provider.Settings
-import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowInsets
+import android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -54,9 +54,33 @@ class HistoryActivity : AppCompatActivity(){
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_history)
 
+        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_NO -> {
+                recreate()
+                binding.appBarContainer.setBackgroundColor(getColor(R.color.semiTransparent))
+                window.decorView.windowInsetsController?.setSystemBarsAppearance(
+                    APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS)
+            } // Night mode is not active, we're using the light theme
+            Configuration.UI_MODE_NIGHT_YES -> {
+                recreate()
+                binding.appBarContainer.setBackgroundColor(getColor(R.color.semiBlack))
+                window.decorView.windowInsetsController?.setSystemBarsAppearance(
+                    0, APPEARANCE_LIGHT_STATUS_BARS)
+            } // Night mode is active, we're using dark theme
+        }
+
+
+
+        val typedValue = TypedValue()
+        var actionBarHeight = 0
+        if(theme.resolveAttribute(R.attr.actionBarSize, typedValue, true)){
+            actionBarHeight = TypedValue.complexToDimensionPixelOffset(
+                typedValue.data, resources.displayMetrics)
+        }
+
         binding.gallery.setOnApplyWindowInsetsListener { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updatePadding(top = insets.top + view.paddingTop, bottom = insets.bottom)
+            val insets = windowInsets.getInsets(WindowInsets.Type.systemBars())
+            view.updatePadding(top = insets.top + actionBarHeight, bottom = insets.bottom * 2)
             WindowInsets.CONSUMED
         }
 
