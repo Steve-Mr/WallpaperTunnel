@@ -16,10 +16,12 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -36,6 +38,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.ActionMenuItemView;
@@ -426,6 +429,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //询问是否需要保存壁纸历史记录
+    @RequiresApi(api = Build.VERSION_CODES.S)
     private AlertDialog saveHistoryDialog(){
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setMessage(R.string.dialog_wallpaper_history)
@@ -440,6 +444,11 @@ public class MainActivity extends AppCompatActivity {
                         if (ContextCompat.checkSelfPermission(
                                 getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                             requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                        }
+                        if (ContextCompat.checkSelfPermission(
+                                getApplicationContext(), Manifest.permission.MANAGE_MEDIA) != PackageManager.PERMISSION_GRANTED){
+                            Intent intent = new Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA);
+                            startActivity(intent);
                         }
                     }
 

@@ -1,6 +1,7 @@
 package com.maary.shareas
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
 import android.app.RecoverableSecurityException
 import android.content.*
@@ -21,6 +22,7 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 
 class HistoryActivityViewModel(application: Application) : AndroidViewModel(application) {
     private val _images = MutableLiveData<List<MediaStoreImage>>()
@@ -51,6 +53,17 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
         }
     }
 
+    fun getUriList(): ArrayList<Uri> {
+        val uriList = ArrayList<Uri>()
+        viewModelScope.launch {
+            val images = queryImages()
+
+            for (image in images) uriList.add(image.contentUri)
+
+        }
+        return uriList
+    }
+
     fun deleteImage(image: MediaStoreImage) {
         viewModelScope.launch {
             performDeleteImage(image)
@@ -64,7 +77,7 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
         }
     }
 
-    private suspend fun queryImages(): List<MediaStoreImage> {
+    suspend fun queryImages(): List<MediaStoreImage> {
         val images = mutableListOf<MediaStoreImage>()
 
         /**
@@ -235,7 +248,9 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
                         id
                     )
 
-                    val image = MediaStoreImage(id, displayName, dateModified, contentUri, width, height)
+                    val image = MediaStoreImage(id, displayName, dateModified, contentUri, width = width, height = height)
+
+                    Log.v("WLAP", width.toString() + " " + height.toString())
                     images += image
 
                     // For debugging, we'll output the image objects we create to logcat.
@@ -271,11 +286,15 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
                  * activity can use to prompt the user to grant permission to the item
                  * so it can be either updated or deleted.
                  */
-                getApplication<Application>().contentResolver.delete(
-                    image.contentUri,
-                    "${MediaStore.Images.Media._ID} = ?",
-                    arrayOf(image.id.toString())
-                )
+
+                val pendingIntent = MediaStore.createDeleteRequest(getApplication<Application>().contentResolver, arrayListOf(image.contentUri))
+//                getApplication<Activity>().startIntentSenderForResult(pendingIntent.intentSender, null, 0, 0, 0)
+
+//                getApplication<Application>().contentResolver.delete(
+//                    image.contentUri,
+//                    "${MediaStore.Images.Media._ID} = ?",
+//                    arrayOf(image.id.toString())
+//                )
             } catch (securityException: SecurityException) {
                 val recoverableSecurityException =
                     securityException as? RecoverableSecurityException

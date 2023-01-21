@@ -10,40 +10,40 @@
         tools:context=".MainActivity">
 
         <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:liftOnScroll="true"
-            android:fitsSystemWindows="true"
             android:background="@android:color/transparent"
-            android:id="@+id/appBarContainer">
+            android:fitsSystemWindows="true"
+            android:stateListAnimator="@null"
+            app:liftOnScroll="true">
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/virtual_app_bar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:id="@+id/virtual_app_bar"
-                android:paddingTop="8dp"
                 android:paddingStart="16dp"
+                android:paddingTop="8dp"
                 android:paddingEnd="16dp">
 
                 <Button
+                    android:id="@+id/button_clear_all"
+                    style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:id="@+id/button_clear_all"
                     android:text="@string/delete_all"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <Button
+                    android:id="@+id/close_activity"
+                    style="@style/Widget.Material3.Button.TonalButton.Icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    android:id="@+id/close_activity"
                     android:text="@string/history_activity"
-                    style="@style/Widget.Material3.Button.TonalButton.Icon"
-                    app:icon="@drawable/ic_action_close"/>
-
+                    app:icon="@drawable/ic_action_close"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -53,9 +53,9 @@
             android:id="@+id/gallery"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="?attr/actionBarSize"
             android:clipChildren="false"
-            android:clipToPadding="false"/>
+            android:clipToPadding="false"
+            android:paddingTop="?attr/actionBarSize" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

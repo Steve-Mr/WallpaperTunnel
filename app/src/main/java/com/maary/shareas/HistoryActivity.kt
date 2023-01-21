@@ -7,14 +7,19 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.Settings
+import android.provider.Settings.Global
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+import android.widget.Button
 import android.widget.ImageView
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -23,12 +28,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.maary.shareas.databinding.ActivityHistoryBinding
+import kotlinx.coroutines.*
 
 
 /** The request code for requesting [Manifest.permission.READ_EXTERNAL_STORAGE] permission. */
@@ -109,6 +116,17 @@ class HistoryActivity : AppCompatActivity(){
                 )
             }
         })
+
+        binding.appBarContainer.elevation = 8.0f
+
+        binding.closeActivity.setOnClickListener {
+            finish()
+        }
+
+        binding.buttonClearAll.setOnClickListener {
+            deleteAllImages()
+
+        }
 
         if (!haveStoragePermission()) {
 //            binding.welcomeView.visibility = View.VISIBLE
@@ -215,13 +233,39 @@ class HistoryActivity : AppCompatActivity(){
             .setTitle(R.string.delete_dialog_title)
             .setMessage(getString(R.string.delete_dialog_message, image.displayName))
             .setPositiveButton(R.string.delete_dialog_positive) { _: DialogInterface, _: Int ->
-                viewModel.deleteImage(image)
+//                viewModel.deleteImage(image)
+
+                val pendingIntent = MediaStore.createDeleteRequest(contentResolver, arrayListOf(image.contentUri))
+                val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
+                startIntentSenderForResult(pendingIntent.intentSender, 42, null, 0, 0, 0, null)
             }
             .setNegativeButton(R.string.delete_dialog_negative) { dialog: DialogInterface, _: Int ->
                 dialog.dismiss()
             }
             .show()
         return true
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun deleteAllImages() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.delete_dialog_title)
+            .setMessage(getString(R.string.delete_all_dialog_message))
+            .setPositiveButton(R.string.delete_dialog_positive) { _: DialogInterface, _: Int ->
+//                viewModel.deleteImage(image)
+                GlobalScope.launch {
+                    val list = withContext(Dispatchers.IO){
+                        getUriList()
+                    }
+                    val pendingIntent = MediaStore.createDeleteRequest(contentResolver, list)
+                    startIntentSenderForResult(pendingIntent.intentSender, 42, null, 0, 0, 0, null)
+                }
+//                val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
+            }
+            .setNegativeButton(R.string.delete_dialog_negative) { dialog: DialogInterface, _: Int ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     /**
@@ -251,10 +295,10 @@ class HistoryActivity : AppCompatActivity(){
             val mediaStoreImage = getItem(position)
             holder.rootView.tag = mediaStoreImage
 
-            val labelView: ImageView = holder.rootView.findViewById(R.id.image_label_horizontal)
-
             if (mediaStoreImage.width > mediaStoreImage.height){
-                labelView.visibility = View.VISIBLE
+                holder.labelView.visibility = View.VISIBLE
+            }else{
+                holder.labelView.visibility = View.INVISIBLE
             }
 
             Glide.with(holder.imageView)
@@ -276,6 +320,13 @@ class HistoryActivity : AppCompatActivity(){
         }
         startActivity(intent)
     }
+
+    private suspend fun getUriList(): ArrayList<Uri> {
+        val uriList = ArrayList<Uri>()
+        val images = viewModel.queryImages()
+        for (image in images) uriList.add(image.contentUri)
+        return uriList
+    }
 }
 
 /**
@@ -285,6 +336,7 @@ private class ImageViewHolder(view: View, onClick: (MediaStoreImage) -> Unit, on
     RecyclerView.ViewHolder(view) {
     val rootView = view
     val imageView: ImageView = view.findViewById(R.id.image)
+    val labelView: ImageView = view.findViewById(R.id.image_label_horizontal)
 
     init {
 
