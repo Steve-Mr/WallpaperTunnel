@@ -69,8 +69,6 @@ class HistoryActivity : AppCompatActivity(){
             } // Night mode is active, we're using dark theme
         }
 
-
-
         val typedValue = TypedValue()
         var actionBarHeight = 0
         if(theme.resolveAttribute(R.attr.actionBarSize, typedValue, true)){
@@ -84,10 +82,10 @@ class HistoryActivity : AppCompatActivity(){
             WindowInsets.CONSUMED
         }
 
-        val galleryAdapter = GalleryAdapter { image ->
-            openImage(image)
-
-        }
+        val galleryAdapter = GalleryAdapter (
+            onClick = {image -> openImage(image)},
+            onLongClick = {image -> deleteImage(image)}
+        )
 
         binding.gallery.also { view ->
             view.layoutManager = GridLayoutManager(this, 3)
@@ -216,7 +214,7 @@ class HistoryActivity : AppCompatActivity(){
         }
     }
 
-    private fun deleteImage(image: MediaStoreImage) {
+    private fun deleteImage(image: MediaStoreImage): Boolean {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.delete_dialog_title)
             .setMessage(getString(R.string.delete_dialog_message, image.displayName))
@@ -227,12 +225,13 @@ class HistoryActivity : AppCompatActivity(){
                 dialog.dismiss()
             }
             .show()
+        return true
     }
 
     /**
      * A [ListAdapter] for [MediaStoreImage]s.
      */
-    private inner class GalleryAdapter(val onClick: (MediaStoreImage) -> Unit) :
+    private inner class GalleryAdapter(val onClick: (MediaStoreImage) -> Unit, val onLongClick: (MediaStoreImage) -> Boolean) :
         ListAdapter<MediaStoreImage, ImageViewHolder>(MediaStoreImage.DiffCallback) {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
@@ -249,7 +248,7 @@ class HistoryActivity : AppCompatActivity(){
             (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = ratio
             imageView.clipToOutline = true
 
-            return ImageViewHolder(view, onClick)
+            return ImageViewHolder(view, onClick, onLongClick)
         }
 
         override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
@@ -280,7 +279,7 @@ class HistoryActivity : AppCompatActivity(){
 /**
  * Basic [RecyclerView.ViewHolder] for our gallery.
  */
-private class ImageViewHolder(view: View, onClick: (MediaStoreImage) -> Unit) :
+private class ImageViewHolder(view: View, onClick: (MediaStoreImage) -> Unit, onLongClick: (MediaStoreImage) -> Boolean) :
     RecyclerView.ViewHolder(view) {
     val rootView = view
     val imageView: ImageView = view.findViewById(R.id.image)
@@ -289,6 +288,10 @@ private class ImageViewHolder(view: View, onClick: (MediaStoreImage) -> Unit) :
         imageView.setOnClickListener {
             val image = rootView.tag as? MediaStoreImage ?: return@setOnClickListener
             onClick(image)
+        }
+        imageView.setOnLongClickListener {
+            val image = rootView.tag as? MediaStoreImage ?: return@setOnLongClickListener true
+            onLongClick(image)
         }
     }
 }
