@@ -38,7 +38,7 @@
 
         <service android:name=".QSTileService"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
-            android:icon="@drawable/ic_vertical"
+            android:icon="@drawable/ic_history"
             android:exported="true">
 
             <intent-filter>
