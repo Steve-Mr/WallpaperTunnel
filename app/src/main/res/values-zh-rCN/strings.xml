@@ -12,4 +12,22 @@
     <string name="finish_blur">完成模糊设置</string>
     <string name="finish_brightness">完成亮度设置</string>
     <string name="reset">重置修改</string>
+    <string name="cancel">取消</string>
+    <string name="save">保存</string>
+    <string name="settings">设置</string>
+    <string name="dialog_wallpaper_history">保存壁纸历史记录？</string>
+    <string name="yes">是的</string>
+    <string name="no_permission">没有权限无法保存壁纸历史记录。</string>
+    <string name="disabled_history_lacking_permission">缺少权限，壁纸历史记录已经禁用</string>
+    <string name="use_others">使用其他应用设置</string>
+    <string name="delete_dialog_title">删除？</string>
+    <string name="delete_dialog_message">删除 %1$s?</string>
+    <string name="delete_dialog_positive">删除</string>
+    <string name="delete_dialog_negative">取消</string>
+    <string name="used_wallpaper">壁纸记录</string>
+    <string name="history_activity">壁纸记录</string>
+    <string name="delete_all">删除全部</string>
+    <string name="delete_all_used_images">删除这里显示的所有壁纸记录。</string>
+    <string name="delete_all_dialog_message">删除所有的壁纸记录？</string>
+    <string name="no_history">看起来你的壁纸历史文件夹是空的，试着先换张壁纸！</string>
 </resources>
