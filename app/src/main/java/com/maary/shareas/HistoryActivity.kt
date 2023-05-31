@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.maary.shareas.databinding.ActivityHistoryBinding
 import kotlinx.coroutines.*
@@ -53,6 +54,7 @@ class HistoryActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        DynamicColors.applyToActivityIfAvailable(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_history)
