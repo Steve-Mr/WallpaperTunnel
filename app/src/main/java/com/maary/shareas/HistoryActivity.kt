@@ -61,13 +61,11 @@ class HistoryActivity : AppCompatActivity(){
 
         when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
             Configuration.UI_MODE_NIGHT_NO -> {
-//                recreate()
                 binding.appBarContainer.setBackgroundColor(getColor(R.color.semiTransparent))
                 window.decorView.windowInsetsController?.setSystemBarsAppearance(
                     APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS)
             } // Night mode is not active, we're using the light theme
             Configuration.UI_MODE_NIGHT_YES -> {
-//                recreate()
                 binding.appBarContainer.setBackgroundColor(getColor(R.color.semiBlack))
                 window.decorView.windowInsetsController?.setSystemBarsAppearance(
                     0, APPEARANCE_LIGHT_STATUS_BARS)
@@ -135,6 +133,13 @@ class HistoryActivity : AppCompatActivity(){
             requestPermission()
         } else {
             showImages()
+            if (galleryAdapter.itemCount == 0){
+                binding.layoutNoHistory.visibility = View.VISIBLE
+                binding.buttonClearAll.visibility = View.GONE
+            }else {
+                binding.layoutNoHistory.visibility = View.INVISIBLE
+                binding.buttonClearAll.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -189,19 +194,6 @@ class HistoryActivity : AppCompatActivity(){
     @OptIn(DelicateCoroutinesApi::class)
     private fun showImages() {
         viewModel.loadImages()
-        GlobalScope.launch {
-            val list = withContext(Dispatchers.IO){
-                getUriList()
-            }
-            if (list.size == 0){
-                binding.layoutNoHistory.visibility = View.VISIBLE
-                binding.buttonClearAll.visibility = View.GONE
-            }else {
-                binding.layoutNoHistory.visibility = View.INVISIBLE
-                binding.buttonClearAll.visibility = View.VISIBLE
-            }
-        }
-
     }
 
     private fun openMediaStore() {

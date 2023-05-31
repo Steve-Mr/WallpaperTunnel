@@ -72,8 +72,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                android:src="@drawable/ic_no_image"
-                app:tint="@color/colorAccent"/>
+                android:src="@drawable/ic_no_image"/>
 
             <TextView
                 android:layout_width="128dp"
