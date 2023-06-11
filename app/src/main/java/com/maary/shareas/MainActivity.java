@@ -50,6 +50,8 @@ import androidx.core.content.FileProvider;
 import androidx.core.view.WindowCompat;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.color.DynamicColors;
+import com.google.android.material.color.DynamicColorsOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.slider.Slider;
@@ -83,10 +85,11 @@ public class MainActivity extends AppCompatActivity {
     //TODO:change later
     int state = 0;
 
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    @SuppressLint("RestrictedApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
         SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
@@ -114,6 +117,15 @@ public class MainActivity extends AppCompatActivity {
             if (Intent.ACTION_SEND.equals(action) && type != null) {
                 if (type.startsWith("image/")) {
                     bitmap = Util.getBitmap(intent, MainActivity.this);
+                    assert bitmap != null;
+                    DynamicColors.applyToActivityIfAvailable(
+                            this,
+                            new DynamicColorsOptions.Builder()
+                                    .setContentBasedSource(bitmap)
+                                    .build()
+                    );
+                    setContentView(R.layout.activity_main);
+
                     final WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
                     //Parent layout
                     ConstraintLayout container = findViewById(R.id.container);
@@ -396,6 +408,8 @@ public class MainActivity extends AppCompatActivity {
 
                     bottomAppBarContainer.bringToFront();
                 }
+            }else {
+                setContentView(R.layout.activity_main);
             }
         } catch (Exception e) {
             e.printStackTrace();
