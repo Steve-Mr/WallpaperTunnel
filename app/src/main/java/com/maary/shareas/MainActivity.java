@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -48,6 +49,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.WindowCompat;
+import androidx.palette.graphics.Palette;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -60,6 +62,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -83,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     //TODO:change later
     int state = 0;
 
+    @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -175,6 +179,23 @@ public class MainActivity extends AppCompatActivity {
                     raw = bitmap;
 //                    bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
                     imageView.setImageBitmap(bitmap);
+
+                    Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+                        @Override
+                        public void onGenerated(Palette palette) {
+                            // Access the colors from the palette
+//                            int dominantColor = palette.getDominantColor(Color.BLACK);
+                            Palette.Swatch vibrant = palette.getVibrantSwatch();
+                            Palette.Swatch muted = palette.getMutedSwatch();
+
+                            fab.setBackgroundTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                            bottomAppBar.setBackgroundTint(ColorStateList.valueOf(muted.getRgb()));
+
+
+
+                        }
+                    });
+
 
                     //如果 SharedPreferences 里没有关于是否保存图像历史的偏好就询问是否保存
                     if (!sharedPreferences.contains(getString(R.string.enabled_history_key))) {
