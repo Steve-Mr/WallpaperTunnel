@@ -51,6 +51,10 @@ class HistoryActivity : AppCompatActivity(){
 
     private val viewModel: HistoryActivityViewModel by viewModels()
     private lateinit var binding: ActivityHistoryBinding
+    private val galleryAdapter = GalleryAdapter (
+        onClick = {image -> openImage(image)},
+        onLongClick = {image -> deleteImage(image)}
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,10 +89,10 @@ class HistoryActivity : AppCompatActivity(){
             WindowInsets.CONSUMED
         }
 
-        val galleryAdapter = GalleryAdapter (
-            onClick = {image -> openImage(image)},
-            onLongClick = {image -> deleteImage(image)}
-        )
+//        val galleryAdapter = GalleryAdapter (
+//            onClick = {image -> openImage(image)},
+//            onLongClick = {image -> deleteImage(image)}
+//        )
 
         binding.gallery.also { view ->
             view.layoutManager = GridLayoutManager(this, 3)
@@ -133,13 +137,15 @@ class HistoryActivity : AppCompatActivity(){
             requestPermission()
         } else {
             showImages()
-            if (galleryAdapter.itemCount == 0){
-                binding.layoutNoHistory.visibility = View.VISIBLE
-                binding.buttonClearAll.visibility = View.GONE
-            }else {
-                binding.layoutNoHistory.visibility = View.INVISIBLE
-                binding.buttonClearAll.visibility = View.VISIBLE
-            }
+//            if (galleryAdapter.itemCount == 0){
+//                Log.v("WALLP", "0")
+//                binding.layoutNoHistory.visibility = View.VISIBLE
+//                binding.buttonClearAll.visibility = View.GONE
+//            }else {
+//                Log.v("WALLP", "1")
+//                binding.layoutNoHistory.visibility = View.INVISIBLE
+//                binding.buttonClearAll.visibility = View.VISIBLE
+//            }
         }
     }
 
@@ -194,6 +200,14 @@ class HistoryActivity : AppCompatActivity(){
     @OptIn(DelicateCoroutinesApi::class)
     private fun showImages() {
         viewModel.loadImages()
+
+        if (viewModel.images.value?.isEmpty() == true){
+            binding.layoutNoHistory.visibility = View.VISIBLE
+            binding.buttonClearAll.visibility = View.GONE
+        }else {
+            binding.layoutNoHistory.visibility = View.INVISIBLE
+            binding.buttonClearAll.visibility = View.VISIBLE
+        }
     }
 
     private fun openMediaStore() {
