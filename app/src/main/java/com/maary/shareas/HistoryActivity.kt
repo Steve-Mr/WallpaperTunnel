@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.maary.shareas.databinding.ActivityHistoryBinding
 import kotlinx.coroutines.*
@@ -50,22 +51,25 @@ class HistoryActivity : AppCompatActivity(){
 
     private val viewModel: HistoryActivityViewModel by viewModels()
     private lateinit var binding: ActivityHistoryBinding
+    private val galleryAdapter = GalleryAdapter (
+        onClick = {image -> openImage(image)},
+        onLongClick = {image -> deleteImage(image)}
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        DynamicColors.applyToActivityIfAvailable(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_history)
 
         when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
             Configuration.UI_MODE_NIGHT_NO -> {
-                recreate()
                 binding.appBarContainer.setBackgroundColor(getColor(R.color.semiTransparent))
                 window.decorView.windowInsetsController?.setSystemBarsAppearance(
                     APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS)
             } // Night mode is not active, we're using the light theme
             Configuration.UI_MODE_NIGHT_YES -> {
-                recreate()
                 binding.appBarContainer.setBackgroundColor(getColor(R.color.semiBlack))
                 window.decorView.windowInsetsController?.setSystemBarsAppearance(
                     0, APPEARANCE_LIGHT_STATUS_BARS)
@@ -85,10 +89,10 @@ class HistoryActivity : AppCompatActivity(){
             WindowInsets.CONSUMED
         }
 
-        val galleryAdapter = GalleryAdapter (
-            onClick = {image -> openImage(image)},
-            onLongClick = {image -> deleteImage(image)}
-        )
+//        val galleryAdapter = GalleryAdapter (
+//            onClick = {image -> openImage(image)},
+//            onLongClick = {image -> deleteImage(image)}
+//        )
 
         binding.gallery.also { view ->
             view.layoutManager = GridLayoutManager(this, 3)
@@ -133,6 +137,15 @@ class HistoryActivity : AppCompatActivity(){
             requestPermission()
         } else {
             showImages()
+//            if (galleryAdapter.itemCount == 0){
+//                Log.v("WALLP", "0")
+//                binding.layoutNoHistory.visibility = View.VISIBLE
+//                binding.buttonClearAll.visibility = View.GONE
+//            }else {
+//                Log.v("WALLP", "1")
+//                binding.layoutNoHistory.visibility = View.INVISIBLE
+//                binding.buttonClearAll.visibility = View.VISIBLE
+//            }
         }
     }
 
@@ -187,19 +200,14 @@ class HistoryActivity : AppCompatActivity(){
     @OptIn(DelicateCoroutinesApi::class)
     private fun showImages() {
         viewModel.loadImages()
-        GlobalScope.launch {
-            val list = withContext(Dispatchers.IO){
-                getUriList()
-            }
-            if (list.size == 0){
-                binding.layoutNoHistory.visibility = View.VISIBLE
-                binding.buttonClearAll.visibility = View.GONE
-            }else {
-                binding.layoutNoHistory.visibility = View.INVISIBLE
-                binding.buttonClearAll.visibility = View.VISIBLE
-            }
-        }
 
+        if (viewModel.images.value?.isEmpty() == true){
+            binding.layoutNoHistory.visibility = View.VISIBLE
+            binding.buttonClearAll.visibility = View.GONE
+        }else {
+            binding.layoutNoHistory.visibility = View.INVISIBLE
+            binding.buttonClearAll.visibility = View.VISIBLE
+        }
     }
 
     private fun openMediaStore() {

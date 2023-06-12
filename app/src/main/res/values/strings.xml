@@ -16,7 +16,7 @@
     <string name="settings">Settings</string>
     <string name="dialog_wallpaper_history">Save wallpapers history?</string>
     <string name="yes">Yes</string>
-    <string name="enabled_history_key">enabled_history_key</string>
+    <string name="enabled_history_key" translatable="false">enabled_history_key</string>
     <string name="no_permission">Wallpaper history saving cannot work without permission.</string>
     <string name="disabled_history_lacking_permission">Wallpapers History is disabled duo to lacking permission.</string>
     <string name="use_others">Use Other App to Set</string>
@@ -26,9 +26,9 @@
     <string name="delete_dialog_positive">Delete</string>
     <string name="delete_dialog_negative">Cancel</string>
     <string name="used_wallpaper">Used Wallpaper</string>
-    <string name="device_height">device_height</string>
-    <string name="device_width">device_width</string>
-    <string name="preference_file_key">tunnel_preferences</string>
+    <string name="device_height" translatable="false">device_height</string>
+    <string name="device_width" translatable="false">device_width</string>
+    <string name="preference_file_key" translatable="false">tunnel_preferences</string>
     <string name="history_activity">Used Wallpapers</string>
     <string name="delete_all">Delete All</string>
     <string name="delete_all_used_images">Delete all used wallpapers listed here.</string>
