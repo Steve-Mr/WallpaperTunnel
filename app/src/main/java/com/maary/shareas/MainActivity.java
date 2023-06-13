@@ -5,6 +5,7 @@ import static com.google.android.material.slider.LabelFormatter.LABEL_GONE;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import android.app.WallpaperColors;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -29,6 +30,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.CompoundButton;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -52,6 +54,7 @@ import androidx.core.view.WindowCompat;
 import androidx.palette.graphics.Palette;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.slider.Slider;
@@ -80,6 +83,10 @@ public class MainActivity extends AppCompatActivity {
     int blurBias = 0;
     int brightnessBias = 0;
     MaterialAlertDialogBuilder builder;
+
+    Boolean applyEditToLock = true;
+    Boolean applyEditToHome = true;
+    Boolean isProcessed = false;
 
     int device_height,device_width;
 
@@ -184,13 +191,17 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onGenerated(Palette palette) {
                             // Access the colors from the palette
-//                            int dominantColor = palette.getDominantColor(Color.BLACK);
                             Palette.Swatch vibrant = palette.getVibrantSwatch();
                             Palette.Swatch muted = palette.getMutedSwatch();
 
-                            fab.setBackgroundTintList(ColorStateList.valueOf(vibrant.getRgb()));
-                            bottomAppBar.setBackgroundTint(ColorStateList.valueOf(muted.getRgb()));
-
+                            if (vibrant != null) {
+                                fab.setBackgroundTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                            } else {
+                                fab.setBackgroundColor(palette.getVibrantColor(getResources().getColor(R.color.colorAccent)));
+                            }
+                            if (muted != null) {
+                                bottomAppBar.setBackgroundTint(ColorStateList.valueOf(muted.getRgb()));
+                            }
 
 
                         }
@@ -267,6 +278,26 @@ public class MainActivity extends AppCompatActivity {
                             slider.setLabelBehavior(LABEL_GONE);
                             slider.setTickVisible(false);
 
+                            Chip chipLock = dialog.findViewById(R.id.chip_apply_lock);
+                            Chip chipHome = dialog.findViewById(R.id.chip_apply_home);
+
+                            assert chipLock != null;
+                            assert chipHome != null;
+
+                            chipLock.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                                @Override
+                                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                    applyEditToLock = isChecked;
+                                }
+                            });
+
+                            chipHome.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                                @Override
+                                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                    applyEditToHome = isChecked;
+                                }
+                            });
+
                             if (item.getItemId() == R.id.blur) {
                                 slider.setValueFrom(0);
                                 slider.setValueTo(30);
@@ -281,6 +312,7 @@ public class MainActivity extends AppCompatActivity {
 
                             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
                                 bitmap = processed;
+                                isProcessed = true;
                                 bottomAppBarContainer.setVisibility(View.VISIBLE);
                                 bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
                                 if (item.getItemId() == R.id.blur) {
@@ -377,27 +409,44 @@ public class MainActivity extends AppCompatActivity {
                                 }
 
                                 switch (which) {
-                                    case 0:
+                                    case 0 -> {
                                         state = 0;
                                         wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
-                                        break;
-                                    case 1:
+                                    }
+                                    case 1 -> {
                                         state = 1;
+
                                         wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
-                                        break;
-                                    case 2:
+                                    }
+                                    case 2 -> {
                                         state = 2;
-                                        wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
-                                        wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
-                                        //应对定制 Rom（如 Color OS）可能存在的魔改导致 "WallpaperManager.FLAG_LOCK | WallpaperManager.FLAG_SYSTEM" 参数失效的情况。
-                                        break;
-                                    case 3:
+                                        if (applyEditToLock){
+                                            wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
+                                        } else {
+                                            wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_LOCK);
+                                        }
+
+                                        if (applyEditToHome) {
+                                            wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
+                                        } else {
+                                            wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_SYSTEM);
+                                        }
+                                    }
+                                    //应对定制 Rom（如 Color OS）可能存在的魔改导致 "WallpaperManager.FLAG_LOCK | WallpaperManager.FLAG_SYSTEM" 参数失效的情况。
+                                    case 3 -> {
                                         state = 3;
                                         shareBitmap(bitmap, getApplicationContext());
-                                        break;
-                                    default:
-                                        throw new IllegalStateException("Unexpected value: " + which);
+                                    }
+                                    default ->
+                                            throw new IllegalStateException("Unexpected value: " + which);
                                 }
+
+                                wallpaperManager.addOnColorsChangedListener(new WallpaperManager.OnColorsChangedListener() {
+                                    @Override
+                                    public void onColorsChanged(WallpaperColors colors, int which) {
+                                        returnToHomeScreen();
+                                    }
+                                }, null);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -432,6 +481,13 @@ public class MainActivity extends AppCompatActivity {
             local.setAction("done");
             context.sendBroadcast(local);
         }
+    }
+
+    private void returnToHomeScreen() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     //用于亮度/模糊的 Slider Bar 对话框

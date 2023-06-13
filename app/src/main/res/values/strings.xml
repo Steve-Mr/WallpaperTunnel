@@ -34,4 +34,6 @@
     <string name="delete_all_used_images">Delete all used wallpapers listed here.</string>
     <string name="delete_all_dialog_message">Delete all used wallpapers?</string>
     <string name="no_history">It seems that the history folder is empy, try setting a new wallpaper!</string>
+    <string name="apply_to_lockscreen">Apply To Lockscreen</string>
+    <string name="apply_to_home">Apply to Home</string>
 </resources>

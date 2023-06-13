@@ -78,7 +78,7 @@ class HistoryActivity : AppCompatActivity(){
 
         val typedValue = TypedValue()
         var actionBarHeight = 0
-        if(theme.resolveAttribute(R.attr.actionBarSize, typedValue, true)){
+        if(theme.resolveAttribute(androidx.appcompat.R.attr.actionBarSize, typedValue, true)){
             actionBarHeight = TypedValue.complexToDimensionPixelOffset(
                 typedValue.data, resources.displayMetrics)
         }
