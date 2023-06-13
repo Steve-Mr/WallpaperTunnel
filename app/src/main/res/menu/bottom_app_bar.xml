@@ -6,19 +6,13 @@
         android:id="@+id/reset"
         android:icon="@drawable/ic_restore"
         android:title="@string/reset"
-        app:showAsAction="always"/>
+        app:showAsAction="ifRoom"/>
 
     <item
-        android:id="@+id/blur"
-        android:icon="@drawable/ic_blur"
+        android:id="@+id/edit"
+        android:icon="@drawable/ic_edit"
         android:title="@string/blur"
-        app:showAsAction="always"/>
-
-    <item
-        android:id="@+id/brightness"
-        android:icon="@drawable/ic_brightness"
-        android:title="@string/brightness"
-        app:showAsAction="always"/>
+        app:showAsAction="ifRoom"/>
 
     <!--<item
         android:id="@+id/horizontal"
