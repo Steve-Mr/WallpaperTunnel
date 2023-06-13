@@ -30,4 +30,6 @@
     <string name="delete_all_used_images">删除这里显示的所有壁纸记录。</string>
     <string name="delete_all_dialog_message">删除所有的壁纸记录？</string>
     <string name="no_history">看起来你的壁纸历史文件夹是空的，试着先换张壁纸！</string>
+    <string name="apply_to_lockscreen">应用到锁屏</string>
+    <string name="apply_to_home">应用到桌面</string>
 </resources>
