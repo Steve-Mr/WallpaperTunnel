@@ -2,7 +2,7 @@ name: Android CI
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -120,6 +120,7 @@ jobs:
           asset_name: WallpaperTunnel-x86.apk
           asset_path: ${{ env.APK_FILE_X86 }}
           asset_content_type: application/zip
+
 
   upload:
     name: Upload Release
