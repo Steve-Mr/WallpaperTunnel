@@ -61,6 +61,29 @@ android {
         gradleVersion = '8.0'
     }
     namespace 'com.maary.shareas'
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def newName = output.outputFileName
+            print(newName)
+            print("\n")
+            if (newName.contains("x86_64")){
+                print("--------")
+                print(newName)
+                newName.replace("x86_64", "x64")
+                print("\n newName")
+                output.outputFileName = "app-x64-release.apk"
+                print("\n")
+                print(newName)
+                print("\n")
+                print(output.outputFileName)
+                print("--------")
+            }
+//            if (output.outputFileName.contains("x86_64")){
+//                def newName = output.outputFile.name
+//                output.outputFileName.replace("x86_64", "x64")
+//            }
+        }
+    }
 }
 
 dependencies {
