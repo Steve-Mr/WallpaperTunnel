@@ -12,8 +12,8 @@ android {
         applicationId "com.maary.shareas"
         minSdkVersion 30
         targetSdkVersion 32
-        versionCode 3
-        versionName "2.0_beta_230613"
+        versionCode 4
+        versionName "2.1_alpha_230613"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
