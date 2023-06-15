@@ -90,6 +90,10 @@ public class MainActivity extends AppCompatActivity {
 
     Boolean currentImageViewIsHome = true;
     int device_height, device_width;
+
+    Palette.Swatch vibrant;
+    Palette.Swatch dominant;
+    Palette.Swatch muted ;
     //TODO:change later
     int state = 0;
 
@@ -223,8 +227,9 @@ public class MainActivity extends AppCompatActivity {
                     Palette.from(bitmap).generate(palette -> {
                         // Access the colors from the palette
                         assert palette != null;
-                        Palette.Swatch vibrant = palette.getVibrantSwatch();
-                        Palette.Swatch muted = palette.getMutedSwatch();
+                        vibrant = palette.getVibrantSwatch();
+                        muted = palette.getMutedSwatch();
+                        dominant = palette.getDominantSwatch();
 
                         if (vibrant != null) {
                             fab.setBackgroundTintList(ColorStateList.valueOf(vibrant.getRgb()));
@@ -294,6 +299,7 @@ public class MainActivity extends AppCompatActivity {
                                     .clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                             dialog.getWindow().setGravity(Gravity.BOTTOM);
                             dialog.setCancelable(false);
+                            dialog.getWindow().setBackgroundDrawableResource(R.drawable.dialog_background);
                             dialog.show();
 
                             Slider sliderBlur = dialog.findViewById(R.id.dialog_slider_blur);
@@ -311,6 +317,17 @@ public class MainActivity extends AppCompatActivity {
 
                             assert chipLock != null;
                             assert chipHome != null;
+
+                            if (vibrant != null){
+                                sliderBlur.setThumbTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                                sliderBlur.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                                sliderBrightness.setThumbTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                                sliderBrightness.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                            }
+
+                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(muted.getRgb());
+                            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(muted.getRgb());
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(muted.getRgb());
 
                             chipLock.setChecked(applyEditToLock);
                             chipHome.setChecked(applyEditToHome);
@@ -536,7 +553,7 @@ public class MainActivity extends AppCompatActivity {
     //用于亮度/模糊的 Slider Bar 对话框
     @SuppressLint("InflateParams")
     private AlertDialog createSliderDialog() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);//, R.style.TransparentDialogTheme);
         LayoutInflater inflater = this.getLayoutInflater();
 
         builder.setView(inflater.inflate(R.layout.layout_dialog_adjustment, null))
