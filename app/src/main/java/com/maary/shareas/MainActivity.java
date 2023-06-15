@@ -87,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
     Boolean applyEditToLock = true;
     Boolean applyEditToHome = true;
     Boolean isProcessed = false;
+
+    Boolean currentImageViewIsHome = true;
     int device_height, device_width;
     //TODO:change later
     int state = 0;
@@ -184,6 +186,40 @@ public class MainActivity extends AppCompatActivity {
 //                    bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
                     imageView.setImageBitmap(bitmap);
 
+                    imageView.setOnClickListener(v -> {
+                        if (!isProcessed || applyEditToHome == applyEditToLock) {
+                            if (currentImageViewIsHome) {
+                                currentImageViewIsHome = false;
+                                fab.setImageResource(R.drawable.ic_lockscreen);
+                            } else {
+                                currentImageViewIsHome = true;
+                                fab.setImageResource(R.drawable.ic_vertical);
+                            }
+                        }
+                        if (applyEditToHome) {
+                            if (currentImageViewIsHome) {
+                                imageView.setImageBitmap(raw);
+                                currentImageViewIsHome = false;
+                                fab.setImageResource(R.drawable.ic_lockscreen);
+                            } else {
+                                imageView.setImageBitmap(bitmap);
+                                currentImageViewIsHome = true;
+                                fab.setImageResource(R.drawable.ic_vertical);
+                            }
+                        }
+                        if (applyEditToLock) {
+                            if (currentImageViewIsHome) {
+                                imageView.setImageBitmap(bitmap);
+                                currentImageViewIsHome = false;
+                                fab.setImageResource(R.drawable.ic_lockscreen);
+                            } else {
+                                imageView.setImageBitmap(raw);
+                                currentImageViewIsHome = true;
+                                fab.setImageResource(R.drawable.ic_vertical);
+                            }
+                        }
+                    });
+
                     Palette.from(bitmap).generate(palette -> {
                         // Access the colors from the palette
                         assert palette != null;
@@ -276,6 +312,9 @@ public class MainActivity extends AppCompatActivity {
                             assert chipLock != null;
                             assert chipHome != null;
 
+                            chipLock.setChecked(applyEditToLock);
+                            chipHome.setChecked(applyEditToHome);
+
                             chipLock.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToLock = isChecked);
 
                             chipHome.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToHome = isChecked);
@@ -297,6 +336,17 @@ public class MainActivity extends AppCompatActivity {
                                 bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
                                 blurBias = (int) sliderBlur.getValue();
                                 brightnessBias = (int) sliderBrightness.getValue();
+                                if (applyEditToHome == applyEditToLock) {
+                                    imageView.setImageBitmap(bitmap);
+                                } else if (applyEditToHome) {
+                                    imageView.setImageBitmap(bitmap);
+                                } else if (applyEditToLock) {
+                                    imageView.setImageBitmap(bitmap);
+                                    currentImageViewIsHome = false;
+                                    fab.setImageResource(R.drawable.ic_lockscreen);
+                                    //todo: set fab icon
+                                }
+
                                 dialog.dismiss();
                             });
 
@@ -304,6 +354,10 @@ public class MainActivity extends AppCompatActivity {
                                 sliderBlur.setValue(0.0f);
                                 sliderBrightness.setValue(0.0f);
                                 bitmap = raw;
+                                isProcessed = false;
+                                applyEditToLock = applyEditToHome = true;
+                                chipHome.setChecked(true);
+                                chipLock.setChecked(applyEditToLock);
                                 imageView.setImageBitmap(raw);
                                 Log.v("WALLP", "SET RAW NEUTRAL");
 
@@ -313,6 +367,10 @@ public class MainActivity extends AppCompatActivity {
                                 bitmap = raw;
                                 blurBias = 0;
                                 brightnessBias = 0;
+                                isProcessed = false;
+                                applyEditToLock = applyEditToHome = true;
+                                chipHome.setChecked(true);
+                                chipLock.setChecked(applyEditToLock);
                                 imageView.setImageBitmap(raw);
                                 Log.v("WALLP", "SET RAW NEGATIVE");
                                 bottomAppBarContainer.setVisibility(View.VISIBLE);
@@ -375,6 +433,8 @@ public class MainActivity extends AppCompatActivity {
                             blurBias = 0;
                             brightnessBias = 0;
                             cord = null;
+                            isProcessed = false;
+                            applyEditToLock = applyEditToHome = true;
                             imageView.setImageBitmap(bitmap);
                             if (isVertical) {
                                 verticalScrollView.post(() -> verticalScrollView.scrollTo(0, 0));
