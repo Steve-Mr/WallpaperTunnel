@@ -32,4 +32,6 @@
     <string name="no_history">看起来你的壁纸历史文件夹是空的，试着先换张壁纸！</string>
     <string name="apply_to_lockscreen">应用到锁屏</string>
     <string name="apply_to_home">应用到桌面</string>
+    <string name="wallpaper_setted">壁纸已改变</string>
+    <string name="gohome">回桌面</string>
 </resources>

@@ -5,6 +5,7 @@ import static com.google.android.material.slider.LabelFormatter.LABEL_GONE;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import android.app.WallpaperColors;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,6 +17,7 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,6 +37,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -52,6 +55,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.slider.Slider;
+import com.google.android.material.snackbar.Snackbar;
 import com.hoko.blur.HokoBlur;
 import com.hoko.blur.task.AsyncBlurTask;
 
@@ -94,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
     Palette.Swatch vibrant;
     Palette.Swatch dominant;
     Palette.Swatch muted ;
+
+    Snackbar snackbarReturnHome;
     //TODO:change later
     int state = 0;
 
@@ -262,6 +268,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                         bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
                         AlertDialog dialog = builder.create();
+//                        if (muted!=null){
+//                            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(muted.getRgb()));
+//                        }
                         dialog.show();
 
                     });
@@ -284,6 +293,24 @@ public class MainActivity extends AppCompatActivity {
                     Util_Files.getWallpapersList();
 
                     //TODO:ADD zoom (if possible
+
+                    WallpaperManager.OnColorsChangedListener wallpaperChangedListener = new WallpaperManager.OnColorsChangedListener() {
+                        @Override
+                        public void onColorsChanged(@Nullable WallpaperColors colors, int which) {
+                            wallpaperManager.removeOnColorsChangedListener(this);
+                            snackbarReturnHome.show();
+                        }
+                    };
+
+                    snackbarReturnHome = Snackbar.make(container, getString(R.string.wallpaper_setted), Snackbar.LENGTH_INDEFINITE)
+                            .setAction(getString(R.string.gohome), new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    returnToHomeScreen();
+                                }
+                            });
+
+                    wallpaperManager.addOnColorsChangedListener(wallpaperChangedListener, null);
 
                     //set bottomAppBar menu item
                     //tap blur and brightness button will disable other menu item
@@ -512,11 +539,14 @@ public class MainActivity extends AppCompatActivity {
                                         wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_LOCK);
                                     }
 
+                                    Log.v("WALLP", "LOCK SET");
+
                                     if (applyEditToHome) {
                                         wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
                                     } else {
                                         wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_SYSTEM);
                                     }
+                                    Log.v("WALLP", "HOME SET");
                                 }
                                 //应对定制 Rom（如 Color OS）可能存在的魔改导致 "WallpaperManager.FLAG_LOCK | WallpaperManager.FLAG_SYSTEM" 参数失效的情况。
                                 case 3 -> {
@@ -526,8 +556,6 @@ public class MainActivity extends AppCompatActivity {
                                 default ->
                                         throw new IllegalStateException("Unexpected value: " + which);
                             }
-
-                            wallpaperManager.addOnColorsChangedListener((colors, which1) -> returnToHomeScreen(), null);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

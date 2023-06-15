@@ -36,4 +36,6 @@
     <string name="no_history">It seems that the history folder is empy, try setting a new wallpaper!</string>
     <string name="apply_to_lockscreen">Apply To Lockscreen</string>
     <string name="apply_to_home">Apply to Home</string>
+    <string name="wallpaper_setted">Wallpaper changed.</string>
+    <string name="gohome">Go Home</string>
 </resources>
