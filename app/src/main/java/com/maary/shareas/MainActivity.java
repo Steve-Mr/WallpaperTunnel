@@ -18,6 +18,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -41,6 +43,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -326,8 +329,26 @@ public class MainActivity extends AppCompatActivity {
                                     .clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                             dialog.getWindow().setGravity(Gravity.BOTTOM);
                             dialog.setCancelable(false);
-                            dialog.getWindow().setBackgroundDrawableResource(R.drawable.dialog_background);
+
+
+                            // 获取 Drawable 对象
+                            Drawable drawable = AppCompatResources.getDrawable(this, R.drawable.dialog_background);
+
+
+                            // 复制 Drawable 对象，以便进行修改
+                            assert drawable != null;
+                            Drawable modifiedDrawable = drawable.getConstantState().newDrawable().mutate();
+                            modifiedDrawable.setTint(muted.getRgb());
+
+                            dialog.getWindow().setBackgroundDrawable(modifiedDrawable);
                             dialog.show();
+
+                            TextView title_blur_view =  dialog.findViewById(R.id.title_blur);
+                            TextView title_brightness_view =  dialog.findViewById(R.id.title_brightness);
+                            assert title_blur_view != null;
+                            title_blur_view.setTextColor(muted.getBodyTextColor());
+                            assert title_brightness_view != null;
+                            title_brightness_view.setTextColor(muted.getBodyTextColor());
 
                             Slider sliderBlur = dialog.findViewById(R.id.dialog_slider_blur);
                             assert sliderBlur != null;
@@ -352,9 +373,9 @@ public class MainActivity extends AppCompatActivity {
                                 sliderBrightness.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
                             }
 
-                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(muted.getRgb());
-                            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(muted.getRgb());
-                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(muted.getRgb());
+                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(muted.getTitleTextColor());
+                            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(muted.getTitleTextColor());
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(muted.getTitleTextColor());
 
                             chipLock.setChecked(applyEditToLock);
                             chipHome.setChecked(applyEditToHome);
@@ -498,7 +519,6 @@ public class MainActivity extends AppCompatActivity {
 
                     //setup AlertDialog builder
                     builder = new MaterialAlertDialogBuilder(MainActivity.this);
-                    //builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle(R.string.setAs);
 
                     String[] options = {
