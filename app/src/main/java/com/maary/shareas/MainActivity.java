@@ -5,6 +5,7 @@ import static com.google.android.material.slider.LabelFormatter.LABEL_GONE;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import android.app.WallpaperColors;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,6 +17,7 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,14 +32,17 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -49,9 +54,11 @@ import androidx.palette.graphics.Palette;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.color.DynamicColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.slider.Slider;
+import com.google.android.material.snackbar.Snackbar;
 import com.hoko.blur.HokoBlur;
 import com.hoko.blur.task.AsyncBlurTask;
 
@@ -87,10 +94,19 @@ public class MainActivity extends AppCompatActivity {
     Boolean applyEditToLock = true;
     Boolean applyEditToHome = true;
     Boolean isProcessed = false;
+
+    Boolean currentImageViewIsHome = true;
     int device_height, device_width;
+
+    Palette.Swatch vibrant;
+    Palette.Swatch dominant;
+    Palette.Swatch muted ;
+
+    Snackbar snackbarReturnHome;
     //TODO:change later
     int state = 0;
 
+    @SuppressLint("RestrictedApi")
     @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,11 +200,46 @@ public class MainActivity extends AppCompatActivity {
 //                    bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
                     imageView.setImageBitmap(bitmap);
 
+                    imageView.setOnClickListener(v -> {
+                        if (!isProcessed || applyEditToHome == applyEditToLock) {
+                            if (currentImageViewIsHome) {
+                                currentImageViewIsHome = false;
+                                fab.setImageResource(R.drawable.ic_lockscreen);
+                            } else {
+                                currentImageViewIsHome = true;
+                                fab.setImageResource(R.drawable.ic_vertical);
+                            }
+                        }
+                        if (applyEditToHome) {
+                            if (currentImageViewIsHome) {
+                                imageView.setImageBitmap(raw);
+                                currentImageViewIsHome = false;
+                                fab.setImageResource(R.drawable.ic_lockscreen);
+                            } else {
+                                imageView.setImageBitmap(bitmap);
+                                currentImageViewIsHome = true;
+                                fab.setImageResource(R.drawable.ic_vertical);
+                            }
+                        }
+                        if (applyEditToLock) {
+                            if (currentImageViewIsHome) {
+                                imageView.setImageBitmap(bitmap);
+                                currentImageViewIsHome = false;
+                                fab.setImageResource(R.drawable.ic_lockscreen);
+                            } else {
+                                imageView.setImageBitmap(raw);
+                                currentImageViewIsHome = true;
+                                fab.setImageResource(R.drawable.ic_vertical);
+                            }
+                        }
+                    });
+
                     Palette.from(bitmap).generate(palette -> {
                         // Access the colors from the palette
                         assert palette != null;
-                        Palette.Swatch vibrant = palette.getVibrantSwatch();
-                        Palette.Swatch muted = palette.getMutedSwatch();
+                        vibrant = palette.getVibrantSwatch();
+                        muted = palette.getMutedSwatch();
+                        dominant = palette.getDominantSwatch();
 
                         if (vibrant != null) {
                             fab.setBackgroundTintList(ColorStateList.valueOf(vibrant.getRgb()));
@@ -244,6 +295,19 @@ public class MainActivity extends AppCompatActivity {
 
                     //TODO:ADD zoom (if possible
 
+                    WallpaperManager.OnColorsChangedListener wallpaperChangedListener = new WallpaperManager.OnColorsChangedListener() {
+                        @Override
+                        public void onColorsChanged(@Nullable WallpaperColors colors, int which) {
+                            wallpaperManager.removeOnColorsChangedListener(this);
+                            snackbarReturnHome.show();
+                        }
+                    };
+
+                    snackbarReturnHome = Snackbar.make(container, getString(R.string.wallpaper_setted), Snackbar.LENGTH_INDEFINITE)
+                            .setAction(getString(R.string.gohome), v -> returnToHomeScreen());
+
+                    wallpaperManager.addOnColorsChangedListener(wallpaperChangedListener, null);
+
                     //set bottomAppBar menu item
                     //tap blur and brightness button will disable other menu item
 
@@ -258,7 +322,24 @@ public class MainActivity extends AppCompatActivity {
                                     .clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                             dialog.getWindow().setGravity(Gravity.BOTTOM);
                             dialog.setCancelable(false);
+
+                            // 获取 Drawable 对象
+                            Drawable drawable = AppCompatResources.getDrawable(this, R.drawable.dialog_background);
+
+                            // 复制 Drawable 对象，以便进行修改
+                            assert drawable != null;
+                            Drawable modifiedDrawable = drawable.getConstantState().newDrawable().mutate();
+                            modifiedDrawable.setTint(muted.getRgb());
+
+                            dialog.getWindow().setBackgroundDrawable(modifiedDrawable);
                             dialog.show();
+
+                            TextView title_blur_view =  dialog.findViewById(R.id.title_blur);
+                            TextView title_brightness_view =  dialog.findViewById(R.id.title_brightness);
+                            assert title_blur_view != null;
+                            title_blur_view.setTextColor(muted.getBodyTextColor());
+                            assert title_brightness_view != null;
+                            title_brightness_view.setTextColor(muted.getBodyTextColor());
 
                             Slider sliderBlur = dialog.findViewById(R.id.dialog_slider_blur);
                             assert sliderBlur != null;
@@ -275,6 +356,20 @@ public class MainActivity extends AppCompatActivity {
 
                             assert chipLock != null;
                             assert chipHome != null;
+
+                            if (vibrant != null){
+                                sliderBlur.setThumbTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                                sliderBlur.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                                sliderBrightness.setThumbTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                                sliderBrightness.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                            }
+
+                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(muted.getTitleTextColor());
+                            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(muted.getTitleTextColor());
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(muted.getTitleTextColor());
+
+                            chipLock.setChecked(applyEditToLock);
+                            chipHome.setChecked(applyEditToHome);
 
                             chipLock.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToLock = isChecked);
 
@@ -297,6 +392,17 @@ public class MainActivity extends AppCompatActivity {
                                 bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
                                 blurBias = (int) sliderBlur.getValue();
                                 brightnessBias = (int) sliderBrightness.getValue();
+                                if (applyEditToHome == applyEditToLock) {
+                                    imageView.setImageBitmap(bitmap);
+                                } else if (applyEditToHome) {
+                                    imageView.setImageBitmap(bitmap);
+                                } else if (applyEditToLock) {
+                                    imageView.setImageBitmap(bitmap);
+                                    currentImageViewIsHome = false;
+                                    fab.setImageResource(R.drawable.ic_lockscreen);
+                                    //todo: set fab icon
+                                }
+
                                 dialog.dismiss();
                             });
 
@@ -304,6 +410,10 @@ public class MainActivity extends AppCompatActivity {
                                 sliderBlur.setValue(0.0f);
                                 sliderBrightness.setValue(0.0f);
                                 bitmap = raw;
+                                isProcessed = false;
+                                applyEditToLock = applyEditToHome = true;
+                                chipHome.setChecked(true);
+                                chipLock.setChecked(applyEditToLock);
                                 imageView.setImageBitmap(raw);
                                 Log.v("WALLP", "SET RAW NEUTRAL");
 
@@ -313,6 +423,10 @@ public class MainActivity extends AppCompatActivity {
                                 bitmap = raw;
                                 blurBias = 0;
                                 brightnessBias = 0;
+                                isProcessed = false;
+                                applyEditToLock = applyEditToHome = true;
+                                chipHome.setChecked(true);
+                                chipLock.setChecked(applyEditToLock);
                                 imageView.setImageBitmap(raw);
                                 Log.v("WALLP", "SET RAW NEGATIVE");
                                 bottomAppBarContainer.setVisibility(View.VISIBLE);
@@ -375,6 +489,8 @@ public class MainActivity extends AppCompatActivity {
                             blurBias = 0;
                             brightnessBias = 0;
                             cord = null;
+                            isProcessed = false;
+                            applyEditToLock = applyEditToHome = true;
                             imageView.setImageBitmap(bitmap);
                             if (isVertical) {
                                 verticalScrollView.post(() -> verticalScrollView.scrollTo(0, 0));
@@ -392,9 +508,12 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     });
 
+                    Context context = DynamicColors.wrapContextIfAvailable(
+                            MainActivity.this
+                    );
+
                     //setup AlertDialog builder
-                    builder = new MaterialAlertDialogBuilder(MainActivity.this);
-                    //builder = new AlertDialog.Builder(MainActivity.this);
+                    builder = new MaterialAlertDialogBuilder(context);
                     builder.setTitle(R.string.setAs);
 
                     String[] options = {
@@ -435,11 +554,14 @@ public class MainActivity extends AppCompatActivity {
                                         wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_LOCK);
                                     }
 
+                                    Log.v("WALLP", "LOCK SET");
+
                                     if (applyEditToHome) {
                                         wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
                                     } else {
                                         wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_SYSTEM);
                                     }
+                                    Log.v("WALLP", "HOME SET");
                                 }
                                 //应对定制 Rom（如 Color OS）可能存在的魔改导致 "WallpaperManager.FLAG_LOCK | WallpaperManager.FLAG_SYSTEM" 参数失效的情况。
                                 case 3 -> {
@@ -449,8 +571,6 @@ public class MainActivity extends AppCompatActivity {
                                 default ->
                                         throw new IllegalStateException("Unexpected value: " + which);
                             }
-
-                            wallpaperManager.addOnColorsChangedListener((colors, which1) -> returnToHomeScreen(), null);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -476,7 +596,7 @@ public class MainActivity extends AppCompatActivity {
     //用于亮度/模糊的 Slider Bar 对话框
     @SuppressLint("InflateParams")
     private AlertDialog createSliderDialog() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);//, R.style.TransparentDialogTheme);
         LayoutInflater inflater = this.getLayoutInflater();
 
         builder.setView(inflater.inflate(R.layout.layout_dialog_adjustment, null))
