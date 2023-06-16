@@ -17,7 +17,6 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -55,6 +54,7 @@ import androidx.palette.graphics.Palette;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.color.DynamicColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.slider.Slider;
@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
     //TODO:change later
     int state = 0;
 
+    @SuppressLint("RestrictedApi")
     @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -271,9 +272,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                         bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
                         AlertDialog dialog = builder.create();
-//                        if (muted!=null){
-//                            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(muted.getRgb()));
-//                        }
                         dialog.show();
 
                     });
@@ -306,12 +304,7 @@ public class MainActivity extends AppCompatActivity {
                     };
 
                     snackbarReturnHome = Snackbar.make(container, getString(R.string.wallpaper_setted), Snackbar.LENGTH_INDEFINITE)
-                            .setAction(getString(R.string.gohome), new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    returnToHomeScreen();
-                                }
-                            });
+                            .setAction(getString(R.string.gohome), v -> returnToHomeScreen());
 
                     wallpaperManager.addOnColorsChangedListener(wallpaperChangedListener, null);
 
@@ -330,10 +323,8 @@ public class MainActivity extends AppCompatActivity {
                             dialog.getWindow().setGravity(Gravity.BOTTOM);
                             dialog.setCancelable(false);
 
-
                             // 获取 Drawable 对象
                             Drawable drawable = AppCompatResources.getDrawable(this, R.drawable.dialog_background);
-
 
                             // 复制 Drawable 对象，以便进行修改
                             assert drawable != null;
@@ -517,8 +508,12 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     });
 
+                    Context context = DynamicColors.wrapContextIfAvailable(
+                            MainActivity.this
+                    );
+
                     //setup AlertDialog builder
-                    builder = new MaterialAlertDialogBuilder(MainActivity.this);
+                    builder = new MaterialAlertDialogBuilder(context);
                     builder.setTitle(R.string.setAs);
 
                     String[] options = {
