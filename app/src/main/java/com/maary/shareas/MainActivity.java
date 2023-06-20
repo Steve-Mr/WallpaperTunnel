@@ -608,7 +608,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //询问是否需要保存壁纸历史记录
-    @RequiresApi(api = Build.VERSION_CODES.S)
     private AlertDialog saveHistoryDialog() {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setMessage(R.string.dialog_wallpaper_history)
@@ -626,7 +625,10 @@ public class MainActivity extends AppCompatActivity {
                         }
                         if (ContextCompat.checkSelfPermission(
                                 getApplicationContext(), Manifest.permission.MANAGE_MEDIA) != PackageManager.PERMISSION_GRANTED) {
-                            Intent intent = new Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA);
+                            Intent intent = null;
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                                intent = new Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA);
+                            }
                             startActivity(intent);
                         }
                     }

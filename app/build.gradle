@@ -10,7 +10,7 @@ android {
     buildToolsVersion '31.0.0'
     defaultConfig {
         applicationId "com.maary.shareas"
-        minSdkVersion 30
+        minSdkVersion 29
         targetSdkVersion 32
         versionCode 4
         versionName "2.1_alpha_230613"
