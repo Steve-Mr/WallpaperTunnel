@@ -1,7 +1,6 @@
 package com.maary.shareas;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -13,7 +12,7 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
-import android.view.Display;
+import android.util.DisplayMetrics;
 import android.view.WindowMetrics;
 
 import java.io.IOException;
@@ -28,8 +27,17 @@ public class Util {
     }
 
     public static Point getDeviceBounds(Context context) {
-        WindowMetrics windowMetrics = ((Activity)context).getWindowManager().getMaximumWindowMetrics();
-        return new Point(windowMetrics.getBounds().width(), windowMetrics.getBounds().height());
+        WindowMetrics windowMetrics;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            windowMetrics = ((Activity)context).getWindowManager().getMaximumWindowMetrics();
+            return new Point(windowMetrics.getBounds().width(), windowMetrics.getBounds().height());
+        }else {
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int height = displayMetrics.heightPixels;
+            int width = displayMetrics.widthPixels;
+            return new Point(width, height);
+        }
     }
 
     public static Boolean isVertical(int dheight, int dwidth, Bitmap bitmap) {

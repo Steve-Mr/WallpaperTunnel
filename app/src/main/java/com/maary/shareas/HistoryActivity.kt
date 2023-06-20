@@ -6,18 +6,16 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
-import android.provider.Settings.Global
-import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
-import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.viewModels
@@ -28,7 +26,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -66,13 +63,22 @@ class HistoryActivity : AppCompatActivity(){
         when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
             Configuration.UI_MODE_NIGHT_NO -> {
                 binding.appBarContainer.setBackgroundColor(getColor(R.color.semiTransparent))
-                window.decorView.windowInsetsController?.setSystemBarsAppearance(
-                    APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    window.decorView.windowInsetsController?.setSystemBarsAppearance(
+                        APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS)
+                }else {
+                    window.statusBarColor = ContextCompat.getColor(this, R.color.semiTransparent)
+                }
             } // Night mode is not active, we're using the light theme
             Configuration.UI_MODE_NIGHT_YES -> {
                 binding.appBarContainer.setBackgroundColor(getColor(R.color.semiBlack))
-                window.decorView.windowInsetsController?.setSystemBarsAppearance(
-                    0, APPEARANCE_LIGHT_STATUS_BARS)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    window.decorView.windowInsetsController?.setSystemBarsAppearance(
+                        0, APPEARANCE_LIGHT_STATUS_BARS)
+                }
+                else {
+                    window.statusBarColor = ContextCompat.getColor(this, R.color.semiBlack)
+                }
             } // Night mode is active, we're using dark theme
         }
 
@@ -84,9 +90,15 @@ class HistoryActivity : AppCompatActivity(){
         }
 
         binding.gallery.setOnApplyWindowInsetsListener { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsets.Type.systemBars())
-            view.updatePadding(top = insets.top + actionBarHeight, bottom = insets.bottom * 2)
-            WindowInsets.CONSUMED
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val insets = windowInsets.getInsets(WindowInsets.Type.systemBars())
+                view.updatePadding(top = insets.top + actionBarHeight, bottom = insets.bottom * 2)
+                WindowInsets.CONSUMED
+            } else {
+                view.updatePadding(top = windowInsets.systemWindowInsetTop + actionBarHeight, bottom =  windowInsets.systemWindowInsetBottom * 2)
+                windowInsets
+            }
+
         }
 
 //        val galleryAdapter = GalleryAdapter (
@@ -99,11 +111,11 @@ class HistoryActivity : AppCompatActivity(){
             view.adapter = galleryAdapter
         }
 
-        viewModel.images.observe(this, Observer<List<MediaStoreImage>> { images ->
+        viewModel.images.observe(this) { images ->
             galleryAdapter.submitList(images)
-        })
+        }
 
-        viewModel.permissionNeededForDelete.observe(this, Observer { intentSender ->
+        viewModel.permissionNeededForDelete.observe(this) { intentSender ->
             intentSender?.let {
                 // On Android 10+, if the app doesn't have permission to modify
                 // or delete an item, it returns an `IntentSender` that we can
@@ -119,7 +131,7 @@ class HistoryActivity : AppCompatActivity(){
                     null
                 )
             }
-        })
+        }
 
         binding.appBarContainer.elevation = 8.0f
 
@@ -257,9 +269,18 @@ class HistoryActivity : AppCompatActivity(){
             .setPositiveButton(R.string.delete_dialog_positive) { _: DialogInterface, _: Int ->
 //                viewModel.deleteImage(image)
 
-                val pendingIntent = MediaStore.createDeleteRequest(contentResolver, arrayListOf(image.contentUri))
-                val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
-                startIntentSenderForResult(pendingIntent.intentSender, 42, null, 0, 0, 0, null)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    val pendingIntent = MediaStore.createDeleteRequest(contentResolver, arrayListOf(image.contentUri))
+                    val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
+                    startIntentSenderForResult(pendingIntent.intentSender, 42, null, 0, 0, 0, null)
+                } else {
+                    application.contentResolver.delete(
+                        image.contentUri,
+                        "${MediaStore.Images.Media._ID} = ?",
+                        arrayOf(image.id.toString())
+                    )
+
+                }
             }
             .setNegativeButton(R.string.delete_dialog_negative) { dialog: DialogInterface, _: Int ->
                 dialog.dismiss()
@@ -279,8 +300,20 @@ class HistoryActivity : AppCompatActivity(){
                     val list = withContext(Dispatchers.IO){
                         getUriList()
                     }
-                    val pendingIntent = MediaStore.createDeleteRequest(contentResolver, list)
-                    startIntentSenderForResult(pendingIntent.intentSender, 42, null, 0, 0, 0, null)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        val pendingIntent = MediaStore.createDeleteRequest(contentResolver, list)
+                        startIntentSenderForResult(pendingIntent.intentSender, 42, null, 0, 0, 0, null)
+                    } else {
+                        val imageCollection = viewModel.queryImages()
+                        for (image in imageCollection){
+                            application.contentResolver.delete(
+                                image.contentUri,
+                                "${MediaStore.Images.Media._ID} = ?",
+                                arrayOf(image.id.toString())
+                            )
+                        }
+
+                    }
                 }
 //                val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
             }
@@ -337,7 +370,7 @@ class HistoryActivity : AppCompatActivity(){
             action = Intent.ACTION_SEND
             setDataAndType(image.contentUri, "image/*")
             putExtra("mimeType", "image/*")
-            putExtra(Intent.EXTRA_STREAM, image.contentUri);
+            putExtra(Intent.EXTRA_STREAM, image.contentUri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         startActivity(intent)
