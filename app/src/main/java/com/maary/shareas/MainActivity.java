@@ -134,12 +134,27 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
+        final WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
 
         try {
             if (Intent.ACTION_SEND.equals(action) && type != null) {
                 if (type.startsWith("image/")) {
-                    bitmap = Util.getBitmap(intent, MainActivity.this);
-                    final WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+                    bitmap = Util.getBitmap(intent, MainActivity.this);}}
+            else {
+                if (ContextCompat.checkSelfPermission(
+                        getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                }
+                if (wallpaperManager.getWallpaperInfo() == null) {
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        bitmap = ((BitmapDrawable) wallpaperManager.getDrawable()).getBitmap();
+                    } else {
+                        Toast.makeText(getApplicationContext(), R.string.cannot_getpermission_lacking_permission, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), R.string.cannot_get_livewallpaper, Toast.LENGTH_SHORT).show();
+                }
+            }
                     //Parent layout
                     ConstraintLayout container = findViewById(R.id.container);
                     //parent layout of bottomAppBar
@@ -252,7 +267,6 @@ public class MainActivity extends AppCompatActivity {
 
 
                     });
-
 
                     //如果 SharedPreferences 里没有关于是否保存图像历史的偏好就询问是否保存
                     if (!sharedPreferences.contains(getString(R.string.enabled_history_key))) {
@@ -578,10 +592,8 @@ public class MainActivity extends AppCompatActivity {
                     }));
 
                     bottomAppBarContainer.bringToFront();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+                } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
     }

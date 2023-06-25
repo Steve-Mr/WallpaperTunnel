@@ -34,4 +34,6 @@
     <string name="apply_to_home">应用到桌面</string>
     <string name="wallpaper_setted">壁纸已改变</string>
     <string name="gohome">回桌面</string>
+    <string name="cannot_getpermission_lacking_permission">Wallpaper Tunnel 缺少必要权限，无法获得当前壁纸</string>
+    <string name="cannot_get_livewallpaper">Wallpaper Tunnel 无法处理动态壁纸</string>
 </resources>
