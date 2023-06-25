@@ -38,4 +38,6 @@
     <string name="apply_to_home">Apply to Home</string>
     <string name="wallpaper_setted">Wallpaper changed.</string>
     <string name="gohome">Go Home</string>
+    <string name="cannot_getpermission_lacking_permission">Wallpaper Tunnel cannot get current wallpaper due to lacking permission.</string>
+    <string name="cannot_get_livewallpaper">Wallpaper Tunnel cannot process live wallpaper.</string>
 </resources>
