@@ -74,6 +74,9 @@ public class MainActivity extends AppCompatActivity {
     //请求权限
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    recreate();
+                }
                 if (!isGranted) {
                     Toast.makeText(this, R.string.no_permission, Toast.LENGTH_SHORT).show();
                     SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
@@ -155,446 +158,448 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), R.string.cannot_get_livewallpaper, Toast.LENGTH_SHORT).show();
                 }
             }
-                    //Parent layout
-                    ConstraintLayout container = findViewById(R.id.container);
-                    //parent layout of bottomAppBar
-                    CoordinatorLayout bottomAppBarContainer = findViewById(R.id.bottomAppBarContainer);
-                    //progressBar usd in wallpaper setting process
+            if (bitmap != null) {
+                //Parent layout
+                ConstraintLayout container = findViewById(R.id.container);
+                //parent layout of bottomAppBar
+                CoordinatorLayout bottomAppBarContainer = findViewById(R.id.bottomAppBarContainer);
+                //progressBar usd in wallpaper setting process
 
-                    BottomAppBar bottomAppBar = findViewById(R.id.bottomAppBar);
+                BottomAppBar bottomAppBar = findViewById(R.id.bottomAppBar);
 
-                    FloatingActionButton fab = findViewById(R.id.fab);
-                    //make image preview scrollable. parent of imageView.
-                    ScrollView verticalScrollView = new ScrollView(this);
-                    HorizontalScrollView horizontalScrollView = new HorizontalScrollView(this);
-                    //preview image
-                    ImageView imageView = new ImageView(this);
-                    //image ratio > device ratio?
-                    Boolean isVertical = Util.isVertical(device_height, device_width, bitmap);
+                FloatingActionButton fab = findViewById(R.id.fab);
+                //make image preview scrollable. parent of imageView.
+                ScrollView verticalScrollView = new ScrollView(this);
+                HorizontalScrollView horizontalScrollView = new HorizontalScrollView(this);
+                //preview image
+                ImageView imageView = new ImageView(this);
+                //image ratio > device ratio?
+                Boolean isVertical = Util.isVertical(device_height, device_width, bitmap);
 
-                    ExecutorService executorService = Executors.newSingleThreadExecutor();
+                ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-                    //Show Image
-                    imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-                    imageView.setAdjustViewBounds(true);
-                    imageView.setId(View.generateViewId());
+                //Show Image
+                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+                imageView.setAdjustViewBounds(true);
+                imageView.setId(View.generateViewId());
 
-                    //show image to imageview
-                    int bitmap_full_width = bitmap.getWidth();
-                    int bitmap_full_height = bitmap.getHeight();
-                    int desired_width;
-                    int desired_height;
+                //show image to imageview
+                int bitmap_full_width = bitmap.getWidth();
+                int bitmap_full_height = bitmap.getHeight();
+                int desired_width;
+                int desired_height;
 
-                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                    );
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                );
 
-                    if (isVertical) {
-                        desired_width = device_width;
-                        float scale = (float) device_width / bitmap_full_width;
-                        desired_height = (int) (scale * bitmap_full_height);
+                if (isVertical) {
+                    desired_width = device_width;
+                    float scale = (float) device_width / bitmap_full_width;
+                    desired_height = (int) (scale * bitmap_full_height);
 
-                        verticalScrollView.setFillViewport(true);
-                        container.addView(verticalScrollView, layoutParams);
-                        verticalScrollView.addView(imageView, layoutParams);
+                    verticalScrollView.setFillViewport(true);
+                    container.addView(verticalScrollView, layoutParams);
+                    verticalScrollView.addView(imageView, layoutParams);
+                } else {
+                    desired_height = device_height;
+                    float scale = (float) device_height / bitmap_full_height;
+                    desired_width = (int) (scale * bitmap_full_width);
+
+                    horizontalScrollView.setFillViewport(true);
+                    container.addView(horizontalScrollView, layoutParams);
+                    horizontalScrollView.addView(imageView, layoutParams);
+                }
+
+                bitmap = Bitmap.createScaledBitmap(bitmap, desired_width, desired_height, true);
+                processed = bitmap;
+
+                raw = bitmap;
+//                    bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
+                imageView.setImageBitmap(bitmap);
+
+                imageView.setOnClickListener(v -> {
+                    if (!isProcessed || applyEditToHome == applyEditToLock) {
+                        if (currentImageViewIsHome) {
+                            currentImageViewIsHome = false;
+                            fab.setImageResource(R.drawable.ic_lockscreen);
+                        } else {
+                            currentImageViewIsHome = true;
+                            fab.setImageResource(R.drawable.ic_vertical);
+                        }
+                    }
+                    if (applyEditToHome) {
+                        if (currentImageViewIsHome) {
+                            imageView.setImageBitmap(raw);
+                            currentImageViewIsHome = false;
+                            fab.setImageResource(R.drawable.ic_lockscreen);
+                        } else {
+                            imageView.setImageBitmap(bitmap);
+                            currentImageViewIsHome = true;
+                            fab.setImageResource(R.drawable.ic_vertical);
+                        }
+                    }
+                    if (applyEditToLock) {
+                        if (currentImageViewIsHome) {
+                            imageView.setImageBitmap(bitmap);
+                            currentImageViewIsHome = false;
+                            fab.setImageResource(R.drawable.ic_lockscreen);
+                        } else {
+                            imageView.setImageBitmap(raw);
+                            currentImageViewIsHome = true;
+                            fab.setImageResource(R.drawable.ic_vertical);
+                        }
+                    }
+                });
+
+                Palette.from(bitmap).generate(palette -> {
+                    // Access the colors from the palette
+                    assert palette != null;
+                    vibrant = palette.getVibrantSwatch();
+                    muted = palette.getMutedSwatch();
+                    dominant = palette.getDominantSwatch();
+
+                    if (vibrant != null) {
+                        fab.setBackgroundTintList(ColorStateList.valueOf(vibrant.getRgb()));
                     } else {
-                        desired_height = device_height;
-                        float scale = (float) device_height / bitmap_full_height;
-                        desired_width = (int) (scale * bitmap_full_width);
-
-                        horizontalScrollView.setFillViewport(true);
-                        container.addView(horizontalScrollView, layoutParams);
-                        horizontalScrollView.addView(imageView, layoutParams);
+                        fab.setBackgroundColor(palette.getVibrantColor(getColor(R.color.colorAccent)));
+                    }
+                    if (muted != null) {
+                        bottomAppBar.setBackgroundTint(ColorStateList.valueOf(muted.getRgb()));
                     }
 
-                    bitmap = Bitmap.createScaledBitmap(bitmap, desired_width, desired_height, true);
-                    processed = bitmap;
 
-                    raw = bitmap;
-//                    bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
-                    imageView.setImageBitmap(bitmap);
+                });
 
-                    imageView.setOnClickListener(v -> {
-                        if (!isProcessed || applyEditToHome == applyEditToLock) {
-                            if (currentImageViewIsHome) {
-                                currentImageViewIsHome = false;
-                                fab.setImageResource(R.drawable.ic_lockscreen);
-                            } else {
-                                currentImageViewIsHome = true;
-                                fab.setImageResource(R.drawable.ic_vertical);
-                            }
-                        }
-                        if (applyEditToHome) {
-                            if (currentImageViewIsHome) {
-                                imageView.setImageBitmap(raw);
-                                currentImageViewIsHome = false;
-                                fab.setImageResource(R.drawable.ic_lockscreen);
-                            } else {
-                                imageView.setImageBitmap(bitmap);
-                                currentImageViewIsHome = true;
-                                fab.setImageResource(R.drawable.ic_vertical);
-                            }
-                        }
-                        if (applyEditToLock) {
-                            if (currentImageViewIsHome) {
-                                imageView.setImageBitmap(bitmap);
-                                currentImageViewIsHome = false;
-                                fab.setImageResource(R.drawable.ic_lockscreen);
-                            } else {
-                                imageView.setImageBitmap(raw);
-                                currentImageViewIsHome = true;
-                                fab.setImageResource(R.drawable.ic_vertical);
-                            }
-                        }
-                    });
+                //如果 SharedPreferences 里没有关于是否保存图像历史的偏好就询问是否保存
+                if (!sharedPreferences.contains(getString(R.string.enabled_history_key))) {
+                    AlertDialog dialog_history = saveHistoryDialog();
+                    dialog_history.show();
+                }
 
-                    Palette.from(bitmap).generate(palette -> {
-                        // Access the colors from the palette
-                        assert palette != null;
-                        vibrant = palette.getVibrantSwatch();
-                        muted = palette.getMutedSwatch();
-                        dominant = palette.getDominantSwatch();
+                //setup the fab click listener
+                fab.setOnClickListener(view -> {
+                    //TODO: temp comment
+                    if (isVertical) {
+                        int start = verticalScrollView.getScrollY();
+                        cord = new Rect(0, start, device_width, start + device_height);
+                    } else {
+                        int start = horizontalScrollView.getScrollX();
+                        cord = new Rect(start, 0, start + device_width, device_height);
+                    }
+                    bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+
+                });
+
+                fab.setOnLongClickListener(view -> {
+
+                    if (sharedPreferences.getBoolean(getString(R.string.enabled_history_key), true)) {
+                        Toast.makeText(this, "save wallpaper", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "not save wallpaper", Toast.LENGTH_SHORT).show();
+                    }
+
+                    cord = null;
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                    return false;
+                });
+
+                //TODO:JUST FOR TEST
+                Util_Files.getWallpapersList();
+
+                //TODO:ADD zoom (if possible
+
+                WallpaperManager.OnColorsChangedListener wallpaperChangedListener = new WallpaperManager.OnColorsChangedListener() {
+                    @Override
+                    public void onColorsChanged(@Nullable WallpaperColors colors, int which) {
+                        wallpaperManager.removeOnColorsChangedListener(this);
+                        snackbarReturnHome.show();
+                    }
+                };
+
+                snackbarReturnHome = Snackbar.make(container, getString(R.string.wallpaper_setted), Snackbar.LENGTH_INDEFINITE)
+                        .setAction(getString(R.string.gohome), v -> returnToHomeScreen());
+
+                wallpaperManager.addOnColorsChangedListener(wallpaperChangedListener, null);
+
+                //set bottomAppBar menu item
+                //tap blur and brightness button will disable other menu item
+
+                bottomAppBar.setOnMenuItemClickListener(item -> {
+
+                    if (item.getItemId() == R.id.edit) {
+                        bottomAppBarContainer.setVisibility(View.INVISIBLE);
+                        AlertDialog dialog;
+
+                        dialog = createSliderDialog();
+                        dialog.getWindow()
+                                .clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                        dialog.getWindow().setGravity(Gravity.BOTTOM);
+                        dialog.setCancelable(false);
+
+                        // 获取 Drawable 对象
+                        Drawable drawable = AppCompatResources.getDrawable(this, R.drawable.dialog_background);
+
+                        // 复制 Drawable 对象，以便进行修改
+                        assert drawable != null;
+                        Drawable modifiedDrawable = drawable.getConstantState().newDrawable().mutate();
+                        modifiedDrawable.setTint(muted.getRgb());
+
+                        dialog.getWindow().setBackgroundDrawable(modifiedDrawable);
+                        dialog.show();
+
+                        TextView title_blur_view = dialog.findViewById(R.id.title_blur);
+                        TextView title_brightness_view = dialog.findViewById(R.id.title_brightness);
+                        assert title_blur_view != null;
+                        title_blur_view.setTextColor(muted.getBodyTextColor());
+                        assert title_brightness_view != null;
+                        title_brightness_view.setTextColor(muted.getBodyTextColor());
+
+                        Slider sliderBlur = dialog.findViewById(R.id.dialog_slider_blur);
+                        assert sliderBlur != null;
+                        sliderBlur.setLabelBehavior(LABEL_GONE);
+                        sliderBlur.setTickVisible(false);
+
+                        Slider sliderBrightness = dialog.findViewById(R.id.dialog_slider_brightness);
+                        assert sliderBrightness != null;
+                        sliderBrightness.setLabelBehavior(LABEL_GONE);
+                        sliderBrightness.setTickVisible(false);
+
+                        Chip chipLock = dialog.findViewById(R.id.chip_apply_lock);
+                        Chip chipHome = dialog.findViewById(R.id.chip_apply_home);
+
+                        assert chipLock != null;
+                        assert chipHome != null;
 
                         if (vibrant != null) {
-                            fab.setBackgroundTintList(ColorStateList.valueOf(vibrant.getRgb()));
-                        } else {
-                            fab.setBackgroundColor(palette.getVibrantColor(getColor(R.color.colorAccent)));
-                        }
-                        if (muted != null) {
-                            bottomAppBar.setBackgroundTint(ColorStateList.valueOf(muted.getRgb()));
+                            sliderBlur.setThumbTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                            sliderBlur.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                            sliderBrightness.setThumbTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                            sliderBrightness.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
                         }
 
+                        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(muted.getTitleTextColor());
+                        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(muted.getTitleTextColor());
+                        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(muted.getTitleTextColor());
 
-                    });
+                        chipLock.setChecked(applyEditToLock);
+                        chipHome.setChecked(applyEditToHome);
 
-                    //如果 SharedPreferences 里没有关于是否保存图像历史的偏好就询问是否保存
-                    if (!sharedPreferences.contains(getString(R.string.enabled_history_key))) {
-                        AlertDialog dialog_history = saveHistoryDialog();
-                        dialog_history.show();
-                    }
+                        chipLock.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToLock = isChecked);
 
-                    //setup the fab click listener
-                    fab.setOnClickListener(view -> {
-                        //TODO: temp comment
-                        if (isVertical) {
-                            int start = verticalScrollView.getScrollY();
-                            cord = new Rect(0, start, device_width, start + device_height);
-                        } else {
-                            int start = horizontalScrollView.getScrollX();
-                            cord = new Rect(start, 0, start + device_width, device_height);
-                        }
-                        bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
+                        chipHome.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToHome = isChecked);
 
-                    });
+                        sliderBlur.setValueFrom(0);
+                        sliderBlur.setValueTo(30);
+                        sliderBlur.setStepSize(1);
+                        sliderBlur.setValue(blurBias);
 
-                    fab.setOnLongClickListener(view -> {
+                        sliderBrightness.setValueFrom(-50);
+                        sliderBrightness.setValueTo(50);
+                        sliderBrightness.setStepSize(1);
+                        sliderBrightness.setValue(brightnessBias);
 
-                        if (sharedPreferences.getBoolean(getString(R.string.enabled_history_key), true)) {
-                            Toast.makeText(this, "save wallpaper", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(this, "not save wallpaper", Toast.LENGTH_SHORT).show();
-                        }
-
-                        cord = null;
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
-                        return false;
-                    });
-
-                    //TODO:JUST FOR TEST
-                    Util_Files.getWallpapersList();
-
-                    //TODO:ADD zoom (if possible
-
-                    WallpaperManager.OnColorsChangedListener wallpaperChangedListener = new WallpaperManager.OnColorsChangedListener() {
-                        @Override
-                        public void onColorsChanged(@Nullable WallpaperColors colors, int which) {
-                            wallpaperManager.removeOnColorsChangedListener(this);
-                            snackbarReturnHome.show();
-                        }
-                    };
-
-                    snackbarReturnHome = Snackbar.make(container, getString(R.string.wallpaper_setted), Snackbar.LENGTH_INDEFINITE)
-                            .setAction(getString(R.string.gohome), v -> returnToHomeScreen());
-
-                    wallpaperManager.addOnColorsChangedListener(wallpaperChangedListener, null);
-
-                    //set bottomAppBar menu item
-                    //tap blur and brightness button will disable other menu item
-
-                    bottomAppBar.setOnMenuItemClickListener(item -> {
-
-                        if (item.getItemId() == R.id.edit) {
-                            bottomAppBarContainer.setVisibility(View.INVISIBLE);
-                            AlertDialog dialog;
-
-                            dialog = createSliderDialog();
-                            dialog.getWindow()
-                                    .clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-                            dialog.getWindow().setGravity(Gravity.BOTTOM);
-                            dialog.setCancelable(false);
-
-                            // 获取 Drawable 对象
-                            Drawable drawable = AppCompatResources.getDrawable(this, R.drawable.dialog_background);
-
-                            // 复制 Drawable 对象，以便进行修改
-                            assert drawable != null;
-                            Drawable modifiedDrawable = drawable.getConstantState().newDrawable().mutate();
-                            modifiedDrawable.setTint(muted.getRgb());
-
-                            dialog.getWindow().setBackgroundDrawable(modifiedDrawable);
-                            dialog.show();
-
-                            TextView title_blur_view =  dialog.findViewById(R.id.title_blur);
-                            TextView title_brightness_view =  dialog.findViewById(R.id.title_brightness);
-                            assert title_blur_view != null;
-                            title_blur_view.setTextColor(muted.getBodyTextColor());
-                            assert title_brightness_view != null;
-                            title_brightness_view.setTextColor(muted.getBodyTextColor());
-
-                            Slider sliderBlur = dialog.findViewById(R.id.dialog_slider_blur);
-                            assert sliderBlur != null;
-                            sliderBlur.setLabelBehavior(LABEL_GONE);
-                            sliderBlur.setTickVisible(false);
-
-                            Slider sliderBrightness = dialog.findViewById(R.id.dialog_slider_brightness);
-                            assert sliderBrightness != null;
-                            sliderBrightness.setLabelBehavior(LABEL_GONE);
-                            sliderBrightness.setTickVisible(false);
-
-                            Chip chipLock = dialog.findViewById(R.id.chip_apply_lock);
-                            Chip chipHome = dialog.findViewById(R.id.chip_apply_home);
-
-                            assert chipLock != null;
-                            assert chipHome != null;
-
-                            if (vibrant != null){
-                                sliderBlur.setThumbTintList(ColorStateList.valueOf(vibrant.getRgb()));
-                                sliderBlur.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
-                                sliderBrightness.setThumbTintList(ColorStateList.valueOf(vibrant.getRgb()));
-                                sliderBrightness.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+                            bitmap = processed;
+                            isProcessed = true;
+                            bottomAppBarContainer.setVisibility(View.VISIBLE);
+                            bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
+                            blurBias = (int) sliderBlur.getValue();
+                            brightnessBias = (int) sliderBrightness.getValue();
+                            if (applyEditToHome == applyEditToLock) {
+                                imageView.setImageBitmap(bitmap);
+                            } else if (applyEditToHome) {
+                                imageView.setImageBitmap(bitmap);
+                            } else if (applyEditToLock) {
+                                imageView.setImageBitmap(bitmap);
+                                currentImageViewIsHome = false;
+                                fab.setImageResource(R.drawable.ic_lockscreen);
+                                //todo: set fab icon
                             }
 
-                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(muted.getTitleTextColor());
-                            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(muted.getTitleTextColor());
-                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(muted.getTitleTextColor());
+                            dialog.dismiss();
+                        });
 
+                        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(view -> {
+                            sliderBlur.setValue(0.0f);
+                            sliderBrightness.setValue(0.0f);
+                            bitmap = raw;
+                            isProcessed = false;
+                            applyEditToLock = applyEditToHome = true;
+                            chipHome.setChecked(true);
                             chipLock.setChecked(applyEditToLock);
-                            chipHome.setChecked(applyEditToHome);
+                            imageView.setImageBitmap(raw);
+                            Log.v("WALLP", "SET RAW NEUTRAL");
 
-                            chipLock.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToLock = isChecked);
+                        });
 
-                            chipHome.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToHome = isChecked);
-
-                            sliderBlur.setValueFrom(0);
-                            sliderBlur.setValueTo(30);
-                            sliderBlur.setStepSize(1);
-                            sliderBlur.setValue(blurBias);
-
-                            sliderBrightness.setValueFrom(-50);
-                            sliderBrightness.setValueTo(50);
-                            sliderBrightness.setStepSize(1);
-                            sliderBrightness.setValue(brightnessBias);
-
-                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
-                                bitmap = processed;
-                                isProcessed = true;
-                                bottomAppBarContainer.setVisibility(View.VISIBLE);
-                                bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
-                                blurBias = (int) sliderBlur.getValue();
-                                brightnessBias = (int) sliderBrightness.getValue();
-                                if (applyEditToHome == applyEditToLock) {
-                                    imageView.setImageBitmap(bitmap);
-                                } else if (applyEditToHome) {
-                                    imageView.setImageBitmap(bitmap);
-                                } else if (applyEditToLock) {
-                                    imageView.setImageBitmap(bitmap);
-                                    currentImageViewIsHome = false;
-                                    fab.setImageResource(R.drawable.ic_lockscreen);
-                                    //todo: set fab icon
-                                }
-
-                                dialog.dismiss();
-                            });
-
-                            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(view -> {
-                                sliderBlur.setValue(0.0f);
-                                sliderBrightness.setValue(0.0f);
-                                bitmap = raw;
-                                isProcessed = false;
-                                applyEditToLock = applyEditToHome = true;
-                                chipHome.setChecked(true);
-                                chipLock.setChecked(applyEditToLock);
-                                imageView.setImageBitmap(raw);
-                                Log.v("WALLP", "SET RAW NEUTRAL");
-
-                            });
-
-                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(view -> {
-                                bitmap = raw;
-                                blurBias = 0;
-                                brightnessBias = 0;
-                                isProcessed = false;
-                                applyEditToLock = applyEditToHome = true;
-                                chipHome.setChecked(true);
-                                chipLock.setChecked(applyEditToLock);
-                                imageView.setImageBitmap(raw);
-                                Log.v("WALLP", "SET RAW NEGATIVE");
-                                bottomAppBarContainer.setVisibility(View.VISIBLE);
-                                dialog.dismiss();
-                            });
-
-                            sliderBlur.addOnChangeListener((slider1, value, fromUser) -> {
-                                Bitmap toProcess = bitmap;
-                                if (brightnessProcessed != null) {
-                                    toProcess = brightnessProcessed;
-                                }
-                                HokoBlur.with(getApplicationContext())
-                                        .radius((int) value)
-                                        .sampleFactor(1.0f)
-                                        .forceCopy(true)
-                                        .needUpscale(true)
-                                        .asyncBlur(toProcess, new AsyncBlurTask.Callback() {
-                                            @Override
-                                            public void onBlurSuccess(Bitmap bitmap) {
-                                                Log.v("WALLP", "BLURRRRRRRRRRRING");
-                                                processed = bitmap;
-                                                blurProcessed = bitmap;
-                                                imageView.setImageBitmap(bitmap);
-                                                if (value == 0.0f && sliderBrightness.getValue() == 0.0f) {
-                                                    imageView.setImageBitmap(bitmap);
-                                                    Log.v("WALLP", "SET RAW IN BLUR");
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onBlurFailed(Throwable error) {
-
-                                            }
-                                        });
-
-                            });
-                            sliderBrightness.addOnChangeListener((slider1, value, fromUser) -> {
-                                Bitmap toProcess = bitmap;
-                                if (blurProcessed != null) {
-                                    toProcess = blurProcessed;
-                                }
-                                Bitmap finalToProcess = toProcess;
-                                new Thread(() -> {
-                                    processed = Util.adjustBrightness(finalToProcess, (int) value);
-                                    brightnessProcessed = processed;
-                                    Log.v("WALLP", "BRIGHTTTTTTTTTTING");
-
-                                    runOnUiThread(() -> {
-                                        imageView.setImageBitmap(processed);
-                                        if (value == 0.0f && sliderBlur.getValue() == 0.0f) {
-                                            imageView.setImageBitmap(bitmap);
-                                            Log.v("WALLP", "SET RAW IN BRIG");
-                                        }
-                                    });
-                                }).start();
-
-                            });
-                        } else if (item.getItemId() == R.id.reset) {
+                        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(view -> {
                             bitmap = raw;
                             blurBias = 0;
                             brightnessBias = 0;
-                            cord = null;
                             isProcessed = false;
                             applyEditToLock = applyEditToHome = true;
-                            imageView.setImageBitmap(bitmap);
-                            if (isVertical) {
-                                verticalScrollView.post(() -> verticalScrollView.scrollTo(0, 0));
-                            } else {
-                                horizontalScrollView.post(() -> horizontalScrollView.scrollTo(0, 0));
+                            chipHome.setChecked(true);
+                            chipLock.setChecked(applyEditToLock);
+                            imageView.setImageBitmap(raw);
+                            Log.v("WALLP", "SET RAW NEGATIVE");
+                            bottomAppBarContainer.setVisibility(View.VISIBLE);
+                            dialog.dismiss();
+                        });
+
+                        sliderBlur.addOnChangeListener((slider1, value, fromUser) -> {
+                            Bitmap toProcess = bitmap;
+                            if (brightnessProcessed != null) {
+                                toProcess = brightnessProcessed;
                             }
+                            HokoBlur.with(getApplicationContext())
+                                    .radius((int) value)
+                                    .sampleFactor(1.0f)
+                                    .forceCopy(true)
+                                    .needUpscale(true)
+                                    .asyncBlur(toProcess, new AsyncBlurTask.Callback() {
+                                        @Override
+                                        public void onBlurSuccess(Bitmap bitmap) {
+                                            Log.v("WALLP", "BLURRRRRRRRRRRING");
+                                            processed = bitmap;
+                                            blurProcessed = bitmap;
+                                            imageView.setImageBitmap(bitmap);
+                                            if (value == 0.0f && sliderBrightness.getValue() == 0.0f) {
+                                                imageView.setImageBitmap(bitmap);
+                                                Log.v("WALLP", "SET RAW IN BLUR");
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onBlurFailed(Throwable error) {
+
+                                        }
+                                    });
+
+                        });
+                        sliderBrightness.addOnChangeListener((slider1, value, fromUser) -> {
+                            Bitmap toProcess = bitmap;
+                            if (blurProcessed != null) {
+                                toProcess = blurProcessed;
+                            }
+                            Bitmap finalToProcess = toProcess;
+                            new Thread(() -> {
+                                processed = Util.adjustBrightness(finalToProcess, (int) value);
+                                brightnessProcessed = processed;
+                                Log.v("WALLP", "BRIGHTTTTTTTTTTING");
+
+                                runOnUiThread(() -> {
+                                    imageView.setImageBitmap(processed);
+                                    if (value == 0.0f && sliderBlur.getValue() == 0.0f) {
+                                        imageView.setImageBitmap(bitmap);
+                                        Log.v("WALLP", "SET RAW IN BRIG");
+                                    }
+                                });
+                            }).start();
+
+                        });
+                    } else if (item.getItemId() == R.id.reset) {
+                        bitmap = raw;
+                        blurBias = 0;
+                        brightnessBias = 0;
+                        cord = null;
+                        isProcessed = false;
+                        applyEditToLock = applyEditToHome = true;
+                        imageView.setImageBitmap(bitmap);
+                        if (isVertical) {
+                            verticalScrollView.post(() -> verticalScrollView.scrollTo(0, 0));
+                        } else {
+                            horizontalScrollView.post(() -> horizontalScrollView.scrollTo(0, 0));
                         }
-                        return true;
-                    });
+                    }
+                    return true;
+                });
 
-                    ActionMenuItemView resetItem = bottomAppBar.findViewById(R.id.reset);
-                    resetItem.setOnLongClickListener(view -> {
-                        Intent intent1 = new Intent(getApplicationContext(), HistoryActivity.class);
-                        startActivity(intent1);
-                        return true;
-                    });
+                ActionMenuItemView resetItem = bottomAppBar.findViewById(R.id.reset);
+                resetItem.setOnLongClickListener(view -> {
+                    Intent intent1 = new Intent(getApplicationContext(), HistoryActivity.class);
+                    startActivity(intent1);
+                    return true;
+                });
 
-                    Context context = DynamicColors.wrapContextIfAvailable(
-                            MainActivity.this
-                    );
+                Context context = DynamicColors.wrapContextIfAvailable(
+                        MainActivity.this
+                );
 
-                    //setup AlertDialog builder
-                    builder = new MaterialAlertDialogBuilder(context);
-                    builder.setTitle(R.string.setAs);
+                //setup AlertDialog builder
+                builder = new MaterialAlertDialogBuilder(context);
+                builder.setTitle(R.string.setAs);
 
-                    String[] options = {
-                            getResources().getString(R.string.home),
-                            getResources().getString(R.string.lockscreen),
-                            getResources().getString(R.string.homeAndLockscreen),
-                            getResources().getString(R.string.use_others)};
+                String[] options = {
+                        getResources().getString(R.string.home),
+                        getResources().getString(R.string.lockscreen),
+                        getResources().getString(R.string.homeAndLockscreen),
+                        getResources().getString(R.string.use_others)};
 
-                    builder.setItems(options, (dialog, which) -> executorService.execute(() -> {
-                        try {
+                builder.setItems(options, (dialog, which) -> executorService.execute(() -> {
+                    try {
 
-                            //若已经选择保存选项，弹出「设置图片为」选项之前保存图片
-                            if (wallpaperManager.getWallpaperInfo() == null) {
-                                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                                    Bitmap currentWallpaper = ((BitmapDrawable) wallpaperManager.getDrawable()).getBitmap();
-                                    Util_Files.saveWallpaper(currentWallpaper, this);
+                        //若已经选择保存选项，弹出「设置图片为」选项之前保存图片
+                        if (wallpaperManager.getWallpaperInfo() == null) {
+                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                                Bitmap currentWallpaper = ((BitmapDrawable) wallpaperManager.getDrawable()).getBitmap();
+                                Util_Files.saveWallpaper(currentWallpaper, this);
 //                                        saveWallpaper(currentWallpaper);
-                                } else {
-                                    Toast.makeText(getApplicationContext(), R.string.no_permission, Toast.LENGTH_SHORT).show();
-                                }
+                            } else {
+                                Toast.makeText(getApplicationContext(), R.string.no_permission, Toast.LENGTH_SHORT).show();
                             }
-
-                            switch (which) {
-                                case 0 -> {
-                                    state = 0;
-                                    wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
-                                }
-                                case 1 -> {
-                                    state = 1;
-
-                                    wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
-                                }
-                                case 2 -> {
-                                    state = 2;
-                                    if (applyEditToLock) {
-                                        wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
-                                    } else {
-                                        wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_LOCK);
-                                    }
-
-                                    Log.v("WALLP", "LOCK SET");
-
-                                    if (applyEditToHome) {
-                                        wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
-                                    } else {
-                                        wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_SYSTEM);
-                                    }
-                                    Log.v("WALLP", "HOME SET");
-                                }
-                                //应对定制 Rom（如 Color OS）可能存在的魔改导致 "WallpaperManager.FLAG_LOCK | WallpaperManager.FLAG_SYSTEM" 参数失效的情况。
-                                case 3 -> {
-                                    state = 3;
-                                    shareBitmap(bitmap, getApplicationContext());
-                                }
-                                default ->
-                                        throw new IllegalStateException("Unexpected value: " + which);
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
                         }
 
-                    }));
+                        switch (which) {
+                            case 0 -> {
+                                state = 0;
+                                wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
+                            }
+                            case 1 -> {
+                                state = 1;
 
-                    bottomAppBarContainer.bringToFront();
+                                wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
+                            }
+                            case 2 -> {
+                                state = 2;
+                                if (applyEditToLock) {
+                                    wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
+                                } else {
+                                    wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_LOCK);
+                                }
+
+                                Log.v("WALLP", "LOCK SET");
+
+                                if (applyEditToHome) {
+                                    wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
+                                } else {
+                                    wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_SYSTEM);
+                                }
+                                Log.v("WALLP", "HOME SET");
+                            }
+                            //应对定制 Rom（如 Color OS）可能存在的魔改导致 "WallpaperManager.FLAG_LOCK | WallpaperManager.FLAG_SYSTEM" 参数失效的情况。
+                            case 3 -> {
+                                state = 3;
+                                shareBitmap(bitmap, getApplicationContext());
+                            }
+                            default -> throw new IllegalStateException("Unexpected value: " + which);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }));
+
+                bottomAppBarContainer.bringToFront();
+            }
                 } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
 
     }
 
