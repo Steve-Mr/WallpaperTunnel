@@ -1,5 +1,6 @@
 package com.maary.shareas;
 
+import static android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION;
 import static com.google.android.material.slider.LabelFormatter.LABEL_GONE;
 
 import android.Manifest;
@@ -21,6 +22,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
@@ -105,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
     Palette.Swatch dominant;
     Palette.Swatch muted ;
 
+    Intent intent;
+
     Snackbar snackbarReturnHome;
     //TODO:change later
     int state = 0;
@@ -134,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
             editor.apply();
         }
 
-        Intent intent = getIntent();
+        intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
         final WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
@@ -144,12 +148,24 @@ public class MainActivity extends AppCompatActivity {
                 if (type.startsWith("image/")) {
                     bitmap = Util.getBitmap(intent, MainActivity.this);}}
             else {
-                if (ContextCompat.checkSelfPermission(
-                        getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ContextCompat.checkSelfPermission(
+                            getApplicationContext(), Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+                        requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
+                    }
+                    if (!Environment.isExternalStorageManager()) {
+                        startActivity(new Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:com.maary.shareas")));
+                    }
+                }else {
+                    if (ContextCompat.checkSelfPermission(
+                            getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                    }
                 }
                 if (wallpaperManager.getWallpaperInfo() == null) {
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                    || (Environment.isExternalStorageManager()
+                            && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED)) {
                         bitmap = ((BitmapDrawable) wallpaperManager.getDrawable()).getBitmap();
                     } else {
                         Toast.makeText(getApplicationContext(), R.string.cannot_getpermission_lacking_permission, Toast.LENGTH_SHORT).show();
@@ -545,7 +561,9 @@ public class MainActivity extends AppCompatActivity {
 
                         //若已经选择保存选项，弹出「设置图片为」选项之前保存图片
                         if (wallpaperManager.getWallpaperInfo() == null) {
-                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                                    || (Environment.isExternalStorageManager() &&
+                            ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED)) {
                                 Bitmap currentWallpaper = ((BitmapDrawable) wallpaperManager.getDrawable()).getBitmap();
                                 Util_Files.saveWallpaper(currentWallpaper, this);
 //                                        saveWallpaper(currentWallpaper);
@@ -636,9 +654,19 @@ public class MainActivity extends AppCompatActivity {
 
                     //如果需要
                     if (sharedPreferences.getBoolean(getString(R.string.enabled_history_key), false)) {
-                        if (ContextCompat.checkSelfPermission(
-                                getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                            requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            if (ContextCompat.checkSelfPermission(
+                                    getApplicationContext(), Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+                                requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
+                            }
+                            if (!Environment.isExternalStorageManager()) {
+                                startActivity(new Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:com.maary.shareas")));
+                            }
+                        }else {
+                            if (ContextCompat.checkSelfPermission(
+                                    getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                                requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                            }
                         }
                         if (ContextCompat.checkSelfPermission(
                                 getApplicationContext(), Manifest.permission.MANAGE_MEDIA) != PackageManager.PERMISSION_GRANTED) {
@@ -650,7 +678,14 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    // A13+ 检查 MANAGE EXTERNAL 13- 检查 READ EXTERNAL
+                    if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            !Environment.isExternalStorageManager() && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
+                            != PackageManager.PERMISSION_GRANTED)
+                            || (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU &&
+                            ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                                    != PackageManager.PERMISSION_GRANTED)){
+
                         Toast.makeText(getApplicationContext(), R.string.disabled_history_lacking_permission, Toast.LENGTH_SHORT).show();
                         editor.putBoolean(getString(R.string.enabled_history_key), false);
                         editor.apply();

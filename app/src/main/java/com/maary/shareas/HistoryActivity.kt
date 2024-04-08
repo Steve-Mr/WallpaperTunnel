@@ -19,13 +19,13 @@ import android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
 import android.widget.ImageView
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -202,6 +202,7 @@ class HistoryActivity : AppCompatActivity(){
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && requestCode == DELETE_PERMISSION_REQUEST) {
@@ -256,9 +257,18 @@ class HistoryActivity : AppCompatActivity(){
         if (!haveStoragePermission()) {
             val permissions = arrayOf(
                 Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+//                Manifest.permission.WRITE_EXTERNAL_STORAGE,
             )
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+                val permissionsT = arrayOf(
+                    Manifest.permission.READ_MEDIA_IMAGES,
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                )
+                ActivityCompat.requestPermissions(this, permissionsT, READ_EXTERNAL_STORAGE_REQUEST)
+            }else{
             ActivityCompat.requestPermissions(this, permissions, READ_EXTERNAL_STORAGE_REQUEST)
+            }
         }
     }
 
@@ -358,7 +368,7 @@ class HistoryActivity : AppCompatActivity(){
 
             Glide.with(holder.imageView)
                 .load(mediaStoreImage.contentUri)
-                .thumbnail(0.33f)
+                .sizeMultiplier(0.33f)
                 .centerCrop()
                 .into(holder.imageView)
         }

@@ -6,14 +6,13 @@ def keystoreProperties = new Properties()
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion '31.0.0'
+    compileSdk = 34
     defaultConfig {
         applicationId "com.maary.shareas"
         minSdkVersion 29
-        targetSdkVersion 32
+        targetSdkVersion 34
         versionCode 4
-        versionName "2.2_beta_230625"
+        versionName "2.2_beta_240408"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
