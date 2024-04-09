@@ -476,7 +476,7 @@ public class MainActivity extends AppCompatActivity {
                                     .radius((int) value)
                                     .sampleFactor(1.0f)
                                     .forceCopy(true)
-                                    .needUpscale(true)
+//                                    .needUpscale(true)
                                     .asyncBlur(toProcess, new AsyncBlurTask.Callback() {
                                         @Override
                                         public void onBlurSuccess(Bitmap bitmap) {

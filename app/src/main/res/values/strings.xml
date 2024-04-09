@@ -40,4 +40,7 @@
     <string name="gohome">Go Home</string>
     <string name="cannot_getpermission_lacking_permission">Wallpaper Tunnel cannot get current wallpaper due to lacking permission.</string>
     <string name="cannot_get_livewallpaper">Wallpaper Tunnel cannot process live wallpaper.</string>
+    <string name="wallpaper_start">Wallpaper Tunnel</string>
+    <string name="photo_picker">Pick Picture</string>
+    <string name="lock">lock</string>
 </resources>
