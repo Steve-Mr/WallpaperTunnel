@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     >
 <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/start_constraintlayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurfaceContainer">
@@ -136,10 +137,6 @@
 
             </LinearLayout>
 
-
-
-
-
         </LinearLayout>
 
 <!--    </com.google.android.material.card.MaterialCardView>-->
@@ -168,7 +165,7 @@
                 android:text="@string/photo_picker"
                 android:backgroundTint="?attr/colorPrimary"
                 android:layout_gravity="center_horizontal"
-                android:layout_margin="16dp" />
+                android:layout_margin="16dp"/>
 
 
         </FrameLayout>

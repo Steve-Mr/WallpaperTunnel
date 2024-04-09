@@ -10,6 +10,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.ParcelFileDescriptor
+import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,6 +20,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toBitmapOrNull
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.marginBottom
+import androidx.core.view.marginLeft
+import androidx.core.view.marginRight
+import androidx.core.view.marginTop
+import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.color.DynamicColors
@@ -36,8 +45,24 @@ class StartActivity : AppCompatActivity(){
         DynamicColors.applyToActivityIfAvailable(this)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_start)
+
         val pickerBottomSheetBehavior = BottomSheetBehavior.from(binding.pickerBottomSheet)
         pickerBottomSheetBehavior.state = BottomSheetBehavior.STATE_HALF_EXPANDED
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.buttonPicker) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updateLayoutParams<MarginLayoutParams> {
+                bottomMargin = systemBars.bottom
+            }
+
+            // some dirty hack
+            pickerBottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+            pickerBottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+
+            insets
+        }
+
+
 
         val wallpaperManager: WallpaperManager = WallpaperManager.getInstance(this)
         val homePFD:ParcelFileDescriptor?
@@ -76,6 +101,8 @@ class StartActivity : AppCompatActivity(){
                 }
             }
 
+        } else {
+            binding.systemWallpContainer.visibility = View.INVISIBLE
         }
 
         val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri->
