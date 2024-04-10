@@ -35,11 +35,13 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.color.DynamicColors
 import com.maary.shareas.databinding.ActivityStartBinding
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -118,13 +120,24 @@ class StartActivity : AppCompatActivity(){
             binding.homeContainer.setImageBitmap(homeBitmap)
             binding.lockContainer.setImageBitmap(lockBitmap)
 
+            var isHomeSaved = false
+            var isLockSaved = false
+
+            lifecycleScope.launch {
+                isHomeSaved = saveBitmapAsync(homeBitmap, "home")
+                isLockSaved = lockBitmap?.let { saveBitmapAsync(it, "lock") } == true
+            }
+
             binding.homeContainer.setOnClickListener {
-                shareBitmap(homeBitmap)
+                while (!isHomeSaved){}
+                shareImg("home")
             }
 
             binding.lockContainer.setOnClickListener {
                 if (lockBitmap != null) {
-                    shareBitmap(lockBitmap)
+//                    shareBitmap(lockBitmap)
+                    while (!isLockSaved){}
+                    shareImg("lock")
                 }
             }
 
@@ -165,6 +178,26 @@ class StartActivity : AppCompatActivity(){
         }
     }
 
+    // Define a suspend function to save the bitmap asynchronously
+    private suspend fun saveBitmapAsync(bitmap: Bitmap, name: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            val cachePath = File(externalCacheDir, "my_images/")
+            cachePath.mkdirs()
+
+            //create png file
+            val file = File(cachePath, "$name.png")
+            try {
+                val fileOutputStream = FileOutputStream(file)
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream)
+                fileOutputStream.flush()
+                fileOutputStream.close()
+                return@withContext true // Return true if saving succeeds
+            } catch (e: IOException) {
+                e.printStackTrace()
+                return@withContext false // Return false if saving fails
+            }
+        }
+    }
 
     private fun shareBitmap(bitmap: Bitmap) {
 
@@ -184,6 +217,31 @@ class StartActivity : AppCompatActivity(){
         } catch (e: IOException) {
             e.printStackTrace()
         }
+
+        //---Share File---//
+        //get file uri
+        val myImageFileUri =
+            FileProvider.getUriForFile(this, applicationContext.packageName + ".provider", file)
+
+        val intent = Intent(application, MainActivity::class.java).apply {
+            action = Intent.ACTION_SEND
+            setDataAndType(myImageFileUri, "image/*")
+            putExtra("mimeType", "image/*")
+            putExtra(Intent.EXTRA_STREAM, myImageFileUri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(intent)
+    }
+
+    private fun shareImg(name: String) {
+
+        //---Save bitmap to external cache directory---//
+        //get cache directory
+        val cachePath = File(externalCacheDir, "my_images/")
+        cachePath.mkdirs()
+
+        //create png file
+        val file = File(cachePath, "$name.png")
 
         //---Share File---//
         //get file uri
