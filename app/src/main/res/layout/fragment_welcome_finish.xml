@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".fragment.WelcomefinishFragment"
+        android:background="?attr/colorSurface">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/container_welcome_finish_appbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.appbar.MaterialToolbar
+                    android:id="@+id/topAppBar_welcome_finish"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="?attr/actionBarSize"
+                    app:title="@string/welcome"
+                    app:navigationIcon="@drawable/ic_back"
+                    app:navigationIconTint="?attr/colorOnSurface"/>
+
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <!--        <com.google.android.material.imageview.ShapeableImageView-->
+            <!--            android:id="@+id/image_welcome_finish"-->
+            <!--            android:layout_width="wrap_content"-->
+            <!--            android:layout_height="wrap_content"-->
+            <!--            app:layout_constraintTop_toBottomOf="@id/container_welcome_finish_appbar"-->
+            <!--            app:layout_constraintStart_toStartOf="parent"-->
+            <!--            app:layout_constraintEnd_toEndOf="parent"-->
+            <!--            android:src="@drawable/img_finish"-->
+            <!--            android:background="?attr/colorPrimary"-->
+            <!--            app:shapeAppearanceOverlay="@style/Circular"-->
+            <!--            android:padding="16dp"-->
+            <!--            />-->
+
+            <TextView
+                android:id="@+id/text_welcome_finish_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/all_setup"
+                android:textColor="?attr/colorOutline"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:layout_margin="16dp"
+                app:layout_constraintBottom_toTopOf="@id/text_welcome_finish_description"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:id="@+id/text_welcome_finish_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:layout_margin="16dp"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toTopOf="@id/container_welcome_finish_permissions" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/container_welcome_finish_permissions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_margin="16dp"
+                android:padding="8dp"
+                style="?attr/materialCardViewElevatedStyle"
+                android:visibility="invisible"
+
+                app:cardBackgroundColor="?attr/colorSecondaryContainer">
+                <!--                app:layout_constraintTop_toBottomOf="@id/start_slogan">-->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="invisible"
+
+                    android:layout_margin="8dp">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="?attr/textInputFilledStyle"
+                        android:id="@+id/text_welcome_finish_permission1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp">
+                        <!--                    app:endIconDrawable="@drawable/ic_info"-->
+                        <!--                    app:endIconMode="custom"-->
+                        <!--                    app:endIconTint="?attr/colorSecondary">-->
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/manage_media"
+                            android:clickable="false"
+                            />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!--                    <com.google.android.material.textfield.TextInputLayout-->
+                    <!--                        style="?attr/textInputFilledStyle"-->
+                    <!--                        android:id="@+id/text_welcome_finish_permission2"-->
+                    <!--                        android:layout_width="match_parent"-->
+                    <!--                        android:layout_height="wrap_content"-->
+                    <!--                        app:helperTextEnabled="true"-->
+                    <!--                        app:helperText="@string/media_images_helper"-->
+                    <!--                        android:visibility="visible">-->
+                    <!--                        &lt;!&ndash;                    app:endIconDrawable="@drawable/ic_info"&ndash;&gt;-->
+                    <!--                        &lt;!&ndash;                    app:endIconMode="custom"&ndash;&gt;-->
+                    <!--                        &lt;!&ndash;                    app:endIconTint="?attr/colorSecondary"&ndash;&gt;-->
+                    <!--                        &lt;!&ndash;                    >&ndash;&gt;-->
+
+                    <!--                        <com.google.android.material.textfield.TextInputEditText-->
+                    <!--                            android:layout_width="match_parent"-->
+                    <!--                            android:layout_height="wrap_content"-->
+                    <!--                            android:text="@string/read_media_images"-->
+                    <!--                            android:clickable="false"-->
+                    <!--                            />-->
+
+                    <!--                    </com.google.android.material.textfield.TextInputLayout>-->
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:id="@+id/container_welcome_finish_buttons"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/container_welcome_finish_permissions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:visibility="invisible"
+
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/button_welcome_finish_no"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cancel"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"/>
+
+                <Button
+                    android:id="@+id/button_welcome_finish_yes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/yes"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_welcome_finish_next"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:src="@drawable/ic_done"
+                android:foregroundTint="?attr/colorOnTertiary"
+                android:tint="?attr/colorTertiary"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+    </FrameLayout>
+</layout>

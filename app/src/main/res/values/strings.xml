@@ -43,4 +43,18 @@
     <string name="wallpaper_start">Wallpaper Tunnel</string>
     <string name="photo_picker">Pick Picture</string>
     <string name="lock">lock</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="welcome">Welcome</string>
+    <string name="permission_description">To preserve the history of wallpapers, we need to read the current wallpaper of the system. Due to limitations in the Android system, this action requires the following permissions. </string>
+    <string name="read_external_storage">READ_EXTERNAL_STORAGE</string>
+    <string name="read_media_images">READ_MEDIA_IMAGES</string>
+    <string name="media_images_helper">Select \'Allow All Images\'.</string>
+    <string name="welcome_media">Allow app to delete media files on device?</string>
+    <string name="welcome_system_permission_description">Set this application as the media management app to delete images from wallpaper history without a secondary confirmation.</string>
+    <string name="manage_media">MANAGE_MEDIA</string>
+    <string name="all_setup">All Setup. Enjoy!</string>
+    <string name="manage_external_storage">MANAGE_EXTERNAL_STORAGE</string>
+    <string name="permission_got">Permission Got.</string>
+    <string name="add_quick_tile">Add Tile</string>
 </resources>

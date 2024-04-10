@@ -2,6 +2,7 @@ package com.maary.shareas
 
 import android.Manifest
 import android.app.WallpaperManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -22,18 +23,28 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.marginBottom
-import androidx.core.view.marginLeft
-import androidx.core.view.marginRight
-import androidx.core.view.marginTop
 import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.color.DynamicColors
 import com.maary.shareas.databinding.ActivityStartBinding
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 class StartActivity : AppCompatActivity(){
 
@@ -45,6 +56,22 @@ class StartActivity : AppCompatActivity(){
         DynamicColors.applyToActivityIfAvailable(this)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_start)
+
+        val SETTINGS_FINISHED = booleanPreferencesKey("SETTING_FINISHED")
+        val settingsFinishedFlow: Flow<Boolean> = applicationContext.dataStore.data
+            .map { preferences ->
+                // No type safety.
+                preferences[SETTINGS_FINISHED] ?: false
+            }
+
+        runBlocking {
+            val settingsFinished = settingsFinishedFlow.first()
+            if (!settingsFinished){
+                val intent = Intent(applicationContext, WelcomeActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+        }
 
         val pickerBottomSheetBehavior = BottomSheetBehavior.from(binding.pickerBottomSheet)
         pickerBottomSheetBehavior.state = BottomSheetBehavior.STATE_HALF_EXPANDED
