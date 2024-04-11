@@ -1,6 +1,8 @@
 package com.maary.shareas
 
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -32,17 +34,17 @@ class WelcomeActivity : FragmentActivity() {
         viewPager.adapter = pagerAdapter
         viewPager.isUserInputEnabled = false
 
-    }
-
-    override fun onBackPressed() {
-        if (viewPager.currentItem == 0) {
-            // If the user is currently looking at the first step, allow the system to handle
-            // the Back button. This calls finish() on this activity and pops the back stack.
-            super.onBackPressed()
-        } else {
-            // Otherwise, select the previous step.
-            viewPager.currentItem -= 1
+        onBackPressedDispatcher.addCallback {
+            if (viewPager.currentItem == 0) {
+                // If the user is currently looking at the first step, allow the system to handle
+                // the Back button. This calls finish() on this activity and pops the back stack.
+                finish()
+            } else {
+                // Otherwise, select the previous step.
+                viewPager.currentItem -= 1
+            }
         }
+
     }
 
 

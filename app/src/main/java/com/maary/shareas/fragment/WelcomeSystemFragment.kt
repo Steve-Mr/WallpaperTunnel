@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -47,6 +48,11 @@ class WelcomeSystemFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+
+//        val backCallBack = requireActivity().onBackPressedDispatcher.addCallback(this) {
+//            val viewPager = requireActivity().findViewById<ViewPager2>(R.id.pager)
+//            viewPager.setCurrentItem(viewPager.currentItem - 1, true)
+//        }
     }
 
     private var _binding: FragmentWelcomeSystemBinding? = null
@@ -80,27 +86,7 @@ class WelcomeSystemFragment : Fragment() {
         }
 
         _binding!!.topAppBarWelcomeSystem.setNavigationOnClickListener {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (ContextCompat.checkSelfPermission(
-                        requireContext(), Manifest.permission.READ_MEDIA_IMAGES
-                    ) == PackageManager.PERMISSION_GRANTED
-                && Environment.isExternalStorageManager()) {
-                    viewPager.setCurrentItem(viewPager.currentItem - 1, true)
-                }else{
-                    viewPager.setCurrentItem(viewPager.currentItem - 2, true)
-                }
-            } else {
-                if (ContextCompat.checkSelfPermission(
-                        requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    viewPager.setCurrentItem(viewPager.currentItem - 1, true)
-
-                }else{
-                    viewPager.setCurrentItem(viewPager.currentItem - 2, true)
-                }
-            }
-
+            viewPager.setCurrentItem(viewPager.currentItem - 1, true)
         }
 
         _binding!!.buttonWelcomeSystemYes.setOnClickListener {
