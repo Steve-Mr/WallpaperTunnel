@@ -44,7 +44,6 @@
     <string name="photo_picker">Pick Picture</string>
     <string name="lock">lock</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="welcome">Welcome</string>
     <string name="permission_description">To preserve the history of wallpapers, we need to read the current wallpaper of the system. Due to limitations in the Android system, this action requires the following permissions. </string>
     <string name="read_external_storage" translatable="false">READ_EXTERNAL_STORAGE</string>
@@ -57,4 +56,5 @@
     <string name="manage_external_storage" translatable="false">MANAGE_EXTERNAL_STORAGE</string>
     <string name="permission_got">Permission Got.</string>
     <string name="add_quick_tile">Add Tile</string>
+    <string name="finish_settings">Finish initial settings.</string>
 </resources>

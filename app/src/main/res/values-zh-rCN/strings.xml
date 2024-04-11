@@ -46,4 +46,5 @@
     <string name="all_setup">设置完毕！</string>
     <string name="permission_got">权限已获取</string>
     <string name="add_quick_tile">添加磁贴</string>
+    <string name="finish_settings">完成初始设置。</string>
 </resources>

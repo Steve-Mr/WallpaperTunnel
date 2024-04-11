@@ -105,11 +105,6 @@ class HistoryActivity : AppCompatActivity(){
 
         }
 
-//        val galleryAdapter = GalleryAdapter (
-//            onClick = {image -> openImage(image)},
-//            onLongClick = {image -> deleteImage(image)}
-//        )
-
         binding.gallery.also { view ->
             view.layoutManager = GridLayoutManager(this, 3)
             view.adapter = galleryAdapter

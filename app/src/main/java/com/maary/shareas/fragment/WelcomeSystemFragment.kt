@@ -1,21 +1,14 @@
 package com.maary.shareas.fragment
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.addCallback
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.marginBottom
@@ -48,11 +41,6 @@ class WelcomeSystemFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
-
-//        val backCallBack = requireActivity().onBackPressedDispatcher.addCallback(this) {
-//            val viewPager = requireActivity().findViewById<ViewPager2>(R.id.pager)
-//            viewPager.setCurrentItem(viewPager.currentItem - 1, true)
-//        }
     }
 
     private var _binding: FragmentWelcomeSystemBinding? = null
@@ -69,7 +57,7 @@ class WelcomeSystemFragment : Fragment() {
         val viewPager = requireActivity().findViewById<ViewPager2>(R.id.pager)
 
         // Inflate the layout for this fragment
-        val rootView = _binding!!.root
+        val rootView = binding.root
         ViewCompat.setOnApplyWindowInsetsListener(rootView.findViewById(R.id.fab_welcome_system_next)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
@@ -85,18 +73,18 @@ class WelcomeSystemFragment : Fragment() {
             viewPager.setCurrentItem(viewPager.currentItem + 1, true)
         }
 
-        _binding!!.topAppBarWelcomeSystem.setNavigationOnClickListener {
+        binding.topAppBarWelcomeSystem.setNavigationOnClickListener {
             viewPager.setCurrentItem(viewPager.currentItem - 1, true)
         }
 
-        _binding!!.buttonWelcomeSystemYes.setOnClickListener {
+        binding.buttonWelcomeSystemYes.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 val intent = Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA)
                 startActivity(intent)
 
             }
         }
-        _binding!!.buttonWelcomeSystemNo.setOnClickListener {
+        binding.buttonWelcomeSystemNo.setOnClickListener {
             viewPager.setCurrentItem(viewPager.currentItem + 1, true)
         }
 
@@ -112,9 +100,9 @@ class WelcomeSystemFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (MediaStore.canManageMedia(requireContext())) {
-            _binding!!.buttonWelcomeSystemNo.visibility = View.INVISIBLE
-            _binding!!.buttonWelcomeSystemYes.visibility = View.INVISIBLE
-            _binding!!.textWelcomeSystemPermission1.helperText = getText(R.string.permission_got)
+            binding.buttonWelcomeSystemNo.visibility = View.INVISIBLE
+            binding.buttonWelcomeSystemYes.visibility = View.INVISIBLE
+            binding.textWelcomeSystemPermission1.helperText = getText(R.string.permission_got)
         }
     }
 

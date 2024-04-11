@@ -39,7 +39,9 @@ public class Util_Files {
         uri = contentResolver.insert(contentUri, contentValues);
 
         try {
+            assert uri != null;
             final OutputStream outputStream = contentResolver.openOutputStream(uri);
+            assert outputStream != null;
             if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)) {
                 throw new IOException("failed to save bitmap");
             }
@@ -47,16 +49,5 @@ public class Util_Files {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static Uri getWallpapersList(){
-        ArrayList<Uri> uriArrayList = new ArrayList<>();
-        File file = new File(customDir);
-
-        Uri collection;
-        collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);
-        System.out.println(collection);
-
-        return collection;
     }
 }

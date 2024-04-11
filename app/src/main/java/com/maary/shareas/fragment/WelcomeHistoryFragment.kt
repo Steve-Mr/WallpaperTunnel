@@ -70,7 +70,7 @@ class WelcomeHistoryFragment : Fragment() {
         val viewPager = requireActivity().findViewById<ViewPager2>(R.id.pager)
 
         // Inflate the layout for this fragment
-        val rootView = _binding!!.root
+        val rootView = binding.root
         rootView.findViewById<FloatingActionButton>(R.id.fab_welcome_history_next).setOnClickListener {
             if (checkPermission()){
                 lifecycleScope.launch {
@@ -89,13 +89,13 @@ class WelcomeHistoryFragment : Fragment() {
 
             }
         }
-        _binding!!.topAppBarWelcomeHistory.setNavigationOnClickListener {
+        binding.topAppBarWelcomeHistory.setNavigationOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU){
-            _binding!!.textWelcomeHistoryPermission2.visibility = View.GONE
-            _binding!!.textWelcomeHistoryPermission1Edit.setText(R.string.read_external_storage)
+            binding.textWelcomeHistoryPermission2.visibility = View.GONE
+            binding.textWelcomeHistoryPermission1Edit.setText(R.string.read_external_storage)
         }
 
         val requestPermissionLauncher =
@@ -116,14 +116,14 @@ class WelcomeHistoryFragment : Fragment() {
                 }
             }
 
-        _binding!!.buttonWelcomeHistoryYes.setOnClickListener {
+        binding.buttonWelcomeHistoryYes.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
             } else {
                 requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
             }
         }
-        _binding!!.buttonWelcomeHistoryNo.setOnClickListener {
+        binding.buttonWelcomeHistoryNo.setOnClickListener {
             lifecycleScope.launch {
                 PreferencesHelper(requireContext()).setSettingsHistory(false)
             }
@@ -152,15 +152,15 @@ class WelcomeHistoryFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (checkPermission()){
-            _binding!!.textWelcomeHistoryPermission1.helperText = getText(R.string.permission_got)
-            _binding!!.textWelcomeHistoryPermission2.helperText = getText(R.string.permission_got)
-            _binding!!.buttonWelcomeHistoryNo.visibility = View.INVISIBLE
+            binding.textWelcomeHistoryPermission1.helperText = getText(R.string.permission_got)
+            binding.textWelcomeHistoryPermission2.helperText = getText(R.string.permission_got)
+            binding.buttonWelcomeHistoryNo.visibility = View.INVISIBLE
 
-            _binding!!.buttonWelcomeHistoryYes.text = getText(R.string.add_quick_tile)
-            _binding!!.buttonWelcomeHistoryYes.setOnClickListener {
+            binding.buttonWelcomeHistoryYes.text = getText(R.string.add_quick_tile)
+            binding.buttonWelcomeHistoryYes.setOnClickListener {
                 val statusBarManager = requireActivity().getSystemService(StatusBarManager::class.java)
                 val resultSuccessExecutor = Executor {
-                    _binding!!.buttonWelcomeHistoryYes.visibility = View.INVISIBLE
+                    binding.buttonWelcomeHistoryYes.visibility = View.INVISIBLE
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     statusBarManager.requestAddTileService(
@@ -184,11 +184,11 @@ class WelcomeHistoryFragment : Fragment() {
                 val hasExternalStorageManagerPermission = Environment.isExternalStorageManager()
 
                 if (hasExternalStorageManagerPermission) {
-                    _binding!!.textWelcomeHistoryPermission1.helperText = getText(R.string.permission_got)
+                    binding.textWelcomeHistoryPermission1.helperText = getText(R.string.permission_got)
                 }
 
                 if (hasStoragePermission) {
-                    _binding!!.textWelcomeHistoryPermission2.helperText = getText(R.string.permission_got)
+                    binding.textWelcomeHistoryPermission2.helperText = getText(R.string.permission_got)
                 }
             }
         }

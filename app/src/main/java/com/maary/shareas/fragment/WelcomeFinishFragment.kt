@@ -53,7 +53,7 @@ class WelcomeFinishFragment : Fragment() {
     ): View {
         _binding = FragmentWelcomeFinishBinding.inflate(inflater, container, false)
         // Inflate the layout for this fragment
-        val rootView = _binding!!.root
+        val rootView = binding.root
         ViewCompat.setOnApplyWindowInsetsListener(rootView.findViewById(R.id.fab_welcome_finish_next)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
@@ -73,7 +73,7 @@ class WelcomeFinishFragment : Fragment() {
             val intent = Intent(activity, StartActivity::class.java)
             startActivity(intent)
         }
-        _binding!!.topAppBarWelcomeFinish.setNavigationOnClickListener {
+        binding.topAppBarWelcomeFinish.setNavigationOnClickListener {
             val viewPager = requireActivity().findViewById<ViewPager2>(R.id.pager)
             viewPager.setCurrentItem(viewPager.currentItem - 1, true)
         }

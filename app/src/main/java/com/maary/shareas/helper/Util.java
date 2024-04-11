@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.graphics.ImageDecoder;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.net.Uri;
@@ -16,13 +18,15 @@ import android.util.DisplayMetrics;
 import android.view.WindowMetrics;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 public class Util {
 
     public static Bitmap getBitmap(Intent intent, Context context) throws IOException {
         Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if (imageUri != null) {
-            return MediaStore.Images.Media.getBitmap(context.getContentResolver(), imageUri);
+            InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
+            return BitmapFactory.decodeStream(inputStream);
         } else return null;
     }
 

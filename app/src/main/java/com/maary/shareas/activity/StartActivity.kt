@@ -184,40 +184,6 @@ class StartActivity : AppCompatActivity(){
         }
     }
 
-    private fun shareBitmap(bitmap: Bitmap) {
-
-        //---Save bitmap to external cache directory---//
-        //get cache directory
-        val cachePath = File(externalCacheDir, "my_images/")
-        cachePath.mkdirs()
-
-        //create png file
-        val file = File(cachePath, "Image_123.png")
-        val fileOutputStream: FileOutputStream
-        try {
-            fileOutputStream = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream)
-            fileOutputStream.flush()
-            fileOutputStream.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-
-        //---Share File---//
-        //get file uri
-        val myImageFileUri =
-            FileProvider.getUriForFile(this, applicationContext.packageName + ".provider", file)
-
-        val intent = Intent(application, MainActivity::class.java).apply {
-            action = Intent.ACTION_SEND
-            setDataAndType(myImageFileUri, "image/*")
-            putExtra("mimeType", "image/*")
-            putExtra(Intent.EXTRA_STREAM, myImageFileUri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        startActivity(intent)
-    }
-
     private fun shareImg(name: String) {
 
         //---Save bitmap to external cache directory---//
