@@ -72,6 +72,7 @@ class WelcomeFinishFragment : Fragment() {
             }
             val intent = Intent(activity, StartActivity::class.java)
             startActivity(intent)
+            requireActivity().finish()
         }
         binding.topAppBarWelcomeFinish.setNavigationOnClickListener {
             val viewPager = requireActivity().findViewById<ViewPager2>(R.id.pager)

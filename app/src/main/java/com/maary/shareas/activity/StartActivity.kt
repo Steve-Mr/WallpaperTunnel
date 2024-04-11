@@ -27,9 +27,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.color.DynamicColors
-import com.maary.shareas.helper.PreferencesHelper
 import com.maary.shareas.R
 import com.maary.shareas.databinding.ActivityStartBinding
+import com.maary.shareas.helper.PreferencesHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

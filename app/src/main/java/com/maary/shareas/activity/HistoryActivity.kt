@@ -367,7 +367,6 @@ class HistoryActivity : AppCompatActivity(){
 
             Glide.with(holder.imageView)
                 .load(mediaStoreImage.contentUri)
-                .sizeMultiplier(0.33f)
                 .centerCrop()
                 .into(holder.imageView)
         }
