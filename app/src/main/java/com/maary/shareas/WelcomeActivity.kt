@@ -27,12 +27,6 @@ class WelcomeActivity : FragmentActivity() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_welcome)
 
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.pager)) { v, insets ->
-//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-//            insets
-//        }
-
         viewPager = binding.pager
         val pagerAdapter = WelcomeFragmentAdapter(this)
         viewPager.adapter = pagerAdapter
@@ -50,6 +44,8 @@ class WelcomeActivity : FragmentActivity() {
             viewPager.currentItem -= 1
         }
     }
+
+
 
 
     private inner class WelcomeFragmentAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {

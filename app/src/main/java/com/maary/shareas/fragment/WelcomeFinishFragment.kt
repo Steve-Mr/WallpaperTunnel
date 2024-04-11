@@ -2,7 +2,6 @@ package com.maary.shareas.fragment
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,17 +9,15 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.marginBottom
 import androidx.core.view.updateLayoutParams
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.maary.shareas.PreferencesHelper
 import com.maary.shareas.R
 import com.maary.shareas.StartActivity
-import com.maary.shareas.dataStore
 import com.maary.shareas.databinding.FragmentWelcomeFinishBinding
-import com.maary.shareas.databinding.FragmentWelcomeSystemBinding
 import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
@@ -37,7 +34,6 @@ class WelcomeFinishFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -54,10 +50,9 @@ class WelcomeFinishFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentWelcomeFinishBinding.inflate(inflater, container, false)
         // Inflate the layout for this fragment
-//        val rootView = inflater.inflate(R.layout.fragment_welcome_finish, container, false)
         val rootView = _binding!!.root
         ViewCompat.setOnApplyWindowInsetsListener(rootView.findViewById(R.id.fab_welcome_finish_next)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -68,10 +63,8 @@ class WelcomeFinishFragment : Fragment() {
             }
             rootView.findViewById<FloatingActionButton>(R.id.fab_welcome_finish_next).setOnClickListener {
                 lifecycleScope.launch {
-                    requireContext().dataStore.edit { settings ->
-                        val SETTINGS_FINISHED = booleanPreferencesKey("SETTING_FINISHED")
-                        settings[SETTINGS_FINISHED] = true
-                    }
+                    val preferencesHelper = PreferencesHelper(requireContext())
+                    preferencesHelper.setSettingsFinished()
                 }
 
                 val intent = Intent(activity, StartActivity::class.java)

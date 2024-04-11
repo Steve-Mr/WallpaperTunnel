@@ -1,6 +1,5 @@
 package com.maary.shareas;
 
-import static android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION;
 import static com.google.android.material.slider.LabelFormatter.LABEL_GONE;
 
 import android.Manifest;
@@ -11,7 +10,6 @@ import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -23,7 +21,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -35,10 +32,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -48,7 +42,6 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.WindowCompat;
@@ -99,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
     Snackbar snackbarReturnHome;
 
+
     @SuppressLint("RestrictedApi")
     @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
@@ -107,21 +101,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
-        SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        PreferencesHelper preferencesHelper = new PreferencesHelper(this);
 
-        if (sharedPreferences.contains(getString(R.string.device_height))) {
-            device_height = sharedPreferences.getInt(getString(R.string.device_height),
-                    Util.getDeviceBounds(MainActivity.this).y);
-            device_width = sharedPreferences.getInt(getString(R.string.device_width),
-                    Util.getDeviceBounds(MainActivity.this).x);
-        } else {
+        device_height = preferencesHelper.getHeight();
+        if (device_height == -1){
             Point deviceBounds = Util.getDeviceBounds(MainActivity.this);
             device_height = deviceBounds.y;
             device_width = deviceBounds.x;
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putInt(getString(R.string.device_height), device_height);
-            editor.putInt(getString(R.string.device_width), device_width);
-            editor.apply();
+
+            preferencesHelper.setWidthAndHeight(device_width, device_height);
+        } else {
+            device_width = preferencesHelper.getWidth();
         }
 
         intent = getIntent();
@@ -194,7 +184,6 @@ public class MainActivity extends AppCompatActivity {
                 processed = bitmap;
 
                 raw = bitmap;
-//                    bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
                 imageView.setImageBitmap(bitmap);
 
                 imageView.setOnClickListener(v -> {
@@ -252,7 +241,6 @@ public class MainActivity extends AppCompatActivity {
 
                 //setup the fab click listener
                 fab.setOnClickListener(view -> {
-                    //TODO: temp comment
                     if (isVertical) {
                         int start = verticalScrollView.getScrollY();
                         cord = new Rect(0, start, device_width, start + device_height);
@@ -422,7 +410,6 @@ public class MainActivity extends AppCompatActivity {
                                     .radius((int) value)
                                     .sampleFactor(1.0f)
                                     .forceCopy(true)
-//                                    .needUpscale(true)
                                     .asyncBlur(toProcess, new AsyncBlurTask.Callback() {
                                         @Override
                                         public void onBlurSuccess(Bitmap bitmap) {
@@ -504,13 +491,15 @@ public class MainActivity extends AppCompatActivity {
 
                 builder.setItems(options, (dialog, which) -> executorService.execute(() -> {
                     try {
-
-                        //若已经选择保存选项，弹出「设置图片为」选项之前保存图片
-                        if (checkPermission()) {
+                        if (new PreferencesHelper(this).getSettingsHistory()){
+                            //若已经选择保存选项，弹出「设置图片为」选项之前保存图片
+                            if (checkPermission()) {
                                 Bitmap currentWallpaper = ((BitmapDrawable) wallpaperManager.getDrawable()).getBitmap();
                                 Util_Files.saveWallpaper(currentWallpaper, this);
-                        }else {
-                            //todo: snakbar no permission
+                            }else {
+                                Snackbar.make(container, R.string.no_permission, Snackbar.LENGTH_SHORT)
+                                        .show();
+                            }
                         }
 
                         switch (which) {

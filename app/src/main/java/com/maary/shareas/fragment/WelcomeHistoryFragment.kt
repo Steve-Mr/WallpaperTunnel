@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,13 +21,19 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.marginBottom
 import androidx.core.view.updateLayoutParams
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.maary.shareas.PreferencesHelper
 import com.maary.shareas.QSTileService
 import com.maary.shareas.R
+import com.maary.shareas.dataStore
 import com.maary.shareas.databinding.FragmentWelcomeHistoryBinding
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 
 // TODO: Rename parameter arguments, choose names that match
@@ -70,10 +75,21 @@ class WelcomeHistoryFragment : Fragment() {
         // Inflate the layout for this fragment
         val rootView = _binding!!.root
         rootView.findViewById<FloatingActionButton>(R.id.fab_welcome_history_next).setOnClickListener {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && checkPermission()) {
-                viewPager.setCurrentItem(viewPager.currentItem + 1, true)
-            }else{
+            if (checkPermission()){
+                lifecycleScope.launch {
+                    PreferencesHelper(requireContext()).setSettingsHistory(true)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+                    viewPager.setCurrentItem(viewPager.currentItem + 1, true)
+                }else{
+                    viewPager.setCurrentItem(viewPager.currentItem + 2, true)
+                }
+            } else{
+                lifecycleScope.launch {
+                    PreferencesHelper(requireContext()).setSettingsHistory(false)
+                }
                 viewPager.setCurrentItem(viewPager.currentItem + 2, true)
+
             }
         }
         _binding!!.topAppBarWelcomeHistory.setNavigationOnClickListener {
@@ -111,6 +127,9 @@ class WelcomeHistoryFragment : Fragment() {
             }
         }
         _binding!!.buttonWelcomeHistoryNo.setOnClickListener {
+            lifecycleScope.launch {
+                PreferencesHelper(requireContext()).setSettingsHistory(false)
+            }
             viewPager.setCurrentItem(viewPager.currentItem + 2, true)
         }
         return rootView
