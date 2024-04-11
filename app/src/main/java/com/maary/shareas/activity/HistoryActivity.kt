@@ -1,4 +1,4 @@
-package com.maary.shareas
+package com.maary.shareas.activity
 
 import android.Manifest
 import android.app.Activity
@@ -19,19 +19,23 @@ import android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
 import android.widget.ImageView
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.maary.shareas.HistoryActivityViewModel
+import com.maary.shareas.MediaStoreImage
+import com.maary.shareas.R
+import com.maary.shareas.helper.Util
 import com.maary.shareas.databinding.ActivityHistoryBinding
 import kotlinx.coroutines.*
 
@@ -100,11 +104,6 @@ class HistoryActivity : AppCompatActivity(){
             }
 
         }
-
-//        val galleryAdapter = GalleryAdapter (
-//            onClick = {image -> openImage(image)},
-//            onLongClick = {image -> deleteImage(image)}
-//        )
 
         binding.gallery.also { view ->
             view.layoutManager = GridLayoutManager(this, 3)
@@ -202,6 +201,7 @@ class HistoryActivity : AppCompatActivity(){
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && requestCode == DELETE_PERMISSION_REQUEST) {
@@ -256,9 +256,18 @@ class HistoryActivity : AppCompatActivity(){
         if (!haveStoragePermission()) {
             val permissions = arrayOf(
                 Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+//                Manifest.permission.WRITE_EXTERNAL_STORAGE,
             )
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+                val permissionsT = arrayOf(
+                    Manifest.permission.READ_MEDIA_IMAGES,
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                )
+                ActivityCompat.requestPermissions(this, permissionsT, READ_EXTERNAL_STORAGE_REQUEST)
+            }else{
             ActivityCompat.requestPermissions(this, permissions, READ_EXTERNAL_STORAGE_REQUEST)
+            }
         }
     }
 
@@ -358,7 +367,6 @@ class HistoryActivity : AppCompatActivity(){
 
             Glide.with(holder.imageView)
                 .load(mediaStoreImage.contentUri)
-                .thumbnail(0.33f)
                 .centerCrop()
                 .into(holder.imageView)
         }

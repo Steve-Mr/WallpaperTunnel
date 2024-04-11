@@ -1,4 +1,4 @@
-package com.maary.shareas;
+package com.maary.shareas.activity;
 
 import static com.google.android.material.slider.LabelFormatter.LABEL_GONE;
 
@@ -10,7 +10,6 @@ import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -21,7 +20,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -33,10 +32,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -46,7 +42,6 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.WindowCompat;
@@ -61,10 +56,15 @@ import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.Snackbar;
 import com.hoko.blur.HokoBlur;
 import com.hoko.blur.task.AsyncBlurTask;
+import com.maary.shareas.helper.PreferencesHelper;
+import com.maary.shareas.R;
+import com.maary.shareas.helper.Util;
+import com.maary.shareas.helper.Util_Files;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -72,19 +72,6 @@ public class MainActivity extends AppCompatActivity {
 
     static final int MENU_RESET = 0;
     //请求权限
-    private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    recreate();
-                }
-                if (!isGranted) {
-                    Toast.makeText(this, R.string.no_permission, Toast.LENGTH_SHORT).show();
-                    SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putBoolean(getString(R.string.enabled_history_key), false);
-                    editor.apply();
-                }
-            });
     Bitmap bitmap;
     Bitmap processed;
     Bitmap blurProcessed;
@@ -105,9 +92,10 @@ public class MainActivity extends AppCompatActivity {
     Palette.Swatch dominant;
     Palette.Swatch muted ;
 
+    Intent intent;
+
     Snackbar snackbarReturnHome;
-    //TODO:change later
-    int state = 0;
+
 
     @SuppressLint("RestrictedApi")
     @RequiresApi(api = Build.VERSION_CODES.S)
@@ -117,24 +105,20 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
-        SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        PreferencesHelper preferencesHelper = new PreferencesHelper(this);
 
-        if (sharedPreferences.contains(getString(R.string.device_height))) {
-            device_height = sharedPreferences.getInt(getString(R.string.device_height),
-                    Util.getDeviceBounds(MainActivity.this).y);
-            device_width = sharedPreferences.getInt(getString(R.string.device_width),
-                    Util.getDeviceBounds(MainActivity.this).x);
-        } else {
+        device_height = preferencesHelper.getHeight();
+        if (device_height == -1){
             Point deviceBounds = Util.getDeviceBounds(MainActivity.this);
             device_height = deviceBounds.y;
             device_width = deviceBounds.x;
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putInt(getString(R.string.device_height), device_height);
-            editor.putInt(getString(R.string.device_width), device_width);
-            editor.apply();
+
+            preferencesHelper.setWidthAndHeight(device_width, device_height);
+        } else {
+            device_width = preferencesHelper.getWidth();
         }
 
-        Intent intent = getIntent();
+        intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
         final WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
@@ -142,22 +126,10 @@ public class MainActivity extends AppCompatActivity {
         try {
             if (Intent.ACTION_SEND.equals(action) && type != null) {
                 if (type.startsWith("image/")) {
-                    bitmap = Util.getBitmap(intent, MainActivity.this);}}
-            else {
-                if (ContextCompat.checkSelfPermission(
-                        getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
-                }
-                if (wallpaperManager.getWallpaperInfo() == null) {
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                        bitmap = ((BitmapDrawable) wallpaperManager.getDrawable()).getBitmap();
-                    } else {
-                        Toast.makeText(getApplicationContext(), R.string.cannot_getpermission_lacking_permission, Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Toast.makeText(getApplicationContext(), R.string.cannot_get_livewallpaper, Toast.LENGTH_SHORT).show();
+                    bitmap = Util.getBitmap(intent, MainActivity.this);
                 }
             }
+
             if (bitmap != null) {
                 //Parent layout
                 ConstraintLayout container = findViewById(R.id.container);
@@ -216,7 +188,6 @@ public class MainActivity extends AppCompatActivity {
                 processed = bitmap;
 
                 raw = bitmap;
-//                    bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(false);
                 imageView.setImageBitmap(bitmap);
 
                 imageView.setOnClickListener(v -> {
@@ -272,15 +243,8 @@ public class MainActivity extends AppCompatActivity {
 
                 });
 
-                //如果 SharedPreferences 里没有关于是否保存图像历史的偏好就询问是否保存
-                if (!sharedPreferences.contains(getString(R.string.enabled_history_key))) {
-                    AlertDialog dialog_history = saveHistoryDialog();
-                    dialog_history.show();
-                }
-
                 //setup the fab click listener
                 fab.setOnClickListener(view -> {
-                    //TODO: temp comment
                     if (isVertical) {
                         int start = verticalScrollView.getScrollY();
                         cord = new Rect(0, start, device_width, start + device_height);
@@ -295,21 +259,11 @@ public class MainActivity extends AppCompatActivity {
                 });
 
                 fab.setOnLongClickListener(view -> {
-
-                    if (sharedPreferences.getBoolean(getString(R.string.enabled_history_key), true)) {
-                        Toast.makeText(this, "save wallpaper", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(this, "not save wallpaper", Toast.LENGTH_SHORT).show();
-                    }
-
                     cord = null;
                     AlertDialog dialog = builder.create();
                     dialog.show();
                     return false;
                 });
-
-                //TODO:JUST FOR TEST
-                Util_Files.getWallpapersList();
 
                 //TODO:ADD zoom (if possible
 
@@ -336,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
                         AlertDialog dialog;
 
                         dialog = createSliderDialog();
-                        dialog.getWindow()
+                        Objects.requireNonNull(dialog.getWindow())
                                 .clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                         dialog.getWindow().setGravity(Gravity.BOTTOM);
                         dialog.setCancelable(false);
@@ -460,7 +414,6 @@ public class MainActivity extends AppCompatActivity {
                                     .radius((int) value)
                                     .sampleFactor(1.0f)
                                     .forceCopy(true)
-                                    .needUpscale(true)
                                     .asyncBlur(toProcess, new AsyncBlurTask.Callback() {
                                         @Override
                                         public void onBlurSuccess(Bitmap bitmap) {
@@ -542,48 +495,38 @@ public class MainActivity extends AppCompatActivity {
 
                 builder.setItems(options, (dialog, which) -> executorService.execute(() -> {
                     try {
-
-                        //若已经选择保存选项，弹出「设置图片为」选项之前保存图片
-                        if (wallpaperManager.getWallpaperInfo() == null) {
-                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        if (new PreferencesHelper(this).getSettingsHistory()){
+                            //若已经选择保存选项，弹出「设置图片为」选项之前保存图片
+                            if (checkPermission()) {
                                 Bitmap currentWallpaper = ((BitmapDrawable) wallpaperManager.getDrawable()).getBitmap();
                                 Util_Files.saveWallpaper(currentWallpaper, this);
-//                                        saveWallpaper(currentWallpaper);
-                            } else {
-                                Toast.makeText(getApplicationContext(), R.string.no_permission, Toast.LENGTH_SHORT).show();
+                            }else {
+                                Snackbar.make(container, R.string.no_permission, Snackbar.LENGTH_SHORT)
+                                        .show();
                             }
                         }
 
                         switch (which) {
                             case 0 -> {
-                                state = 0;
                                 wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
                             }
                             case 1 -> {
-                                state = 1;
-
                                 wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
                             }
                             case 2 -> {
-                                state = 2;
                                 if (applyEditToLock) {
                                     wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
                                 } else {
                                     wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_LOCK);
                                 }
-
-                                Log.v("WALLP", "LOCK SET");
-
                                 if (applyEditToHome) {
                                     wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
                                 } else {
                                     wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_SYSTEM);
                                 }
-                                Log.v("WALLP", "HOME SET");
                             }
                             //应对定制 Rom（如 Color OS）可能存在的魔改导致 "WallpaperManager.FLAG_LOCK | WallpaperManager.FLAG_SYSTEM" 参数失效的情况。
                             case 3 -> {
-                                state = 3;
                                 shareBitmap(bitmap, getApplicationContext());
                             }
                             default -> throw new IllegalStateException("Unexpected value: " + which);
@@ -599,8 +542,20 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
 
-
+    private Boolean checkPermission(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Boolean hasStoragePermission = ContextCompat.checkSelfPermission(
+                    getApplicationContext(),
+                    Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED;
+            Boolean hasExternalStorageManagerPermission = Environment.isExternalStorageManager();
+            return hasStoragePermission && hasExternalStorageManagerPermission;
+        } else {
+            return ContextCompat.checkSelfPermission(
+                    getApplicationContext(),
+                    Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
     }
 
     private void returnToHomeScreen() {
@@ -624,46 +579,7 @@ public class MainActivity extends AppCompatActivity {
         return builder.create();
     }
 
-    //询问是否需要保存壁纸历史记录
-    private AlertDialog saveHistoryDialog() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        builder.setMessage(R.string.dialog_wallpaper_history)
-                .setPositiveButton(R.string.yes, (dialogInterface, i) -> {
-                    SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preference_file_key), MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putBoolean(getString(R.string.enabled_history_key), true);
-                    editor.apply();
 
-                    //如果需要
-                    if (sharedPreferences.getBoolean(getString(R.string.enabled_history_key), false)) {
-                        if (ContextCompat.checkSelfPermission(
-                                getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                            requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
-                        }
-                        if (ContextCompat.checkSelfPermission(
-                                getApplicationContext(), Manifest.permission.MANAGE_MEDIA) != PackageManager.PERMISSION_GRANTED) {
-                            Intent intent = null;
-                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                                intent = new Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA);
-                            }
-                            startActivity(intent);
-                        }
-                    }
-
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(getApplicationContext(), R.string.disabled_history_lacking_permission, Toast.LENGTH_SHORT).show();
-                        editor.putBoolean(getString(R.string.enabled_history_key), false);
-                        editor.apply();
-                    }
-                })
-                .setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
-                    SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putBoolean(getString(R.string.enabled_history_key), false);
-                    editor.apply();
-                });
-        return builder.create();
-    }
 
     private void shareBitmap(@NonNull Bitmap bitmap, Context context) {
         //---Save bitmap to external cache directory---//
