@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build
 import android.service.quicksettings.TileService
+import com.maary.shareas.activity.HistoryActivity
 
 class QSTileService: TileService() {
     override fun onClick() {

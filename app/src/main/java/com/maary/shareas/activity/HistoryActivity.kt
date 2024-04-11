@@ -1,4 +1,4 @@
-package com.maary.shareas
+package com.maary.shareas.activity
 
 import android.Manifest
 import android.app.Activity
@@ -32,6 +32,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.maary.shareas.HistoryActivityViewModel
+import com.maary.shareas.MediaStoreImage
+import com.maary.shareas.R
+import com.maary.shareas.helper.Util
 import com.maary.shareas.databinding.ActivityHistoryBinding
 import kotlinx.coroutines.*
 

@@ -1,4 +1,4 @@
-package com.maary.shareas;
+package com.maary.shareas.activity;
 
 import static com.google.android.material.slider.LabelFormatter.LABEL_GONE;
 
@@ -56,6 +56,10 @@ import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.Snackbar;
 import com.hoko.blur.HokoBlur;
 import com.hoko.blur.task.AsyncBlurTask;
+import com.maary.shareas.helper.PreferencesHelper;
+import com.maary.shareas.R;
+import com.maary.shareas.helper.Util;
+import com.maary.shareas.helper.Util_Files;
 
 import java.io.File;
 import java.io.FileOutputStream;

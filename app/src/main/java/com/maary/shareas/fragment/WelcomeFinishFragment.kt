@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.marginBottom
@@ -15,12 +14,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.maary.shareas.PreferencesHelper
+import com.maary.shareas.helper.PreferencesHelper
 import com.maary.shareas.R
-import com.maary.shareas.StartActivity
+import com.maary.shareas.activity.StartActivity
 import com.maary.shareas.databinding.FragmentWelcomeFinishBinding
 import kotlinx.coroutines.launch
-import org.w3c.dom.Text
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER

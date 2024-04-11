@@ -1,4 +1,4 @@
-package com.maary.shareas
+package com.maary.shareas.activity
 
 import android.Manifest
 import android.app.WallpaperManager
@@ -27,6 +27,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.color.DynamicColors
+import com.maary.shareas.helper.PreferencesHelper
+import com.maary.shareas.R
 import com.maary.shareas.databinding.ActivityStartBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first

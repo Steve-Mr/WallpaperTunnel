@@ -1,17 +1,15 @@
-package com.maary.shareas
+package com.maary.shareas.activity
 
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.color.DynamicColors
+import com.maary.shareas.R
 import com.maary.shareas.databinding.ActivityWelcomeBinding
 import com.maary.shareas.fragment.WelcomeFinishFragment
 import com.maary.shareas.fragment.WelcomeHistoryFragment

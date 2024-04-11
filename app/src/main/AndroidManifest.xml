@@ -28,7 +28,7 @@
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="tiramisu">
         <activity
-            android:name=".WelcomeActivity"
+            android:name=".activity.WelcomeActivity"
             android:exported="true">
 <!--            <intent-filter>-->
 <!--                <action android:name="android.intent.action.MAIN" />-->
@@ -36,11 +36,11 @@
 <!--            </intent-filter>-->
         </activity>
         <activity
-            android:name=".HistoryActivity"
+            android:name=".activity.HistoryActivity"
             android:configChanges="uiMode"
             android:exported="true" />
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -49,7 +49,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".StartActivity"
+            android:name=".activity.StartActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -68,7 +68,7 @@
         </service>
 
         <receiver
-            android:name=".MainActivity$ShareReceiver"
+            android:name=".activity.MainActivity$ShareReceiver"
             android:exported="false" />
 
         <provider
