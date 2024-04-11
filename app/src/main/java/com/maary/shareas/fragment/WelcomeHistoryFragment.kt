@@ -171,10 +171,10 @@ class WelcomeHistoryFragment : Fragment() {
                             requireContext(),
                             QSTileService::class.java
                         ),
-                        getString(R.string.app_name),
+                        getString(R.string.history_activity),
                         Icon.createWithResource(
                             requireContext(),
-                            R.mipmap.ic_launcher_monochrome
+                            R.drawable.ic_history
                         ),
                         resultSuccessExecutor
                     ) {

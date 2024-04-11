@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.marginBottom
@@ -19,6 +20,7 @@ import com.maary.shareas.R
 import com.maary.shareas.StartActivity
 import com.maary.shareas.databinding.FragmentWelcomeFinishBinding
 import kotlinx.coroutines.launch
+import org.w3c.dom.Text
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -61,18 +63,17 @@ class WelcomeFinishFragment : Fragment() {
                     bottomMargin = systemBars.bottom + v.marginBottom
                 }
             }
-            rootView.findViewById<FloatingActionButton>(R.id.fab_welcome_finish_next).setOnClickListener {
-                lifecycleScope.launch {
-                    val preferencesHelper = PreferencesHelper(requireContext())
-                    preferencesHelper.setSettingsFinished()
-                }
-
-                val intent = Intent(activity, StartActivity::class.java)
-                startActivity(intent)
-            }
             rootView.findViewById<AppBarLayout>(R.id.container_welcome_finish_appbar)
                 .setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+        rootView.findViewById<FloatingActionButton>(R.id.fab_welcome_finish_next).setOnClickListener {
+            lifecycleScope.launch {
+                val preferencesHelper = PreferencesHelper(requireContext())
+                preferencesHelper.setSettingsFinished()
+            }
+            val intent = Intent(activity, StartActivity::class.java)
+            startActivity(intent)
         }
         _binding!!.topAppBarWelcomeFinish.setNavigationOnClickListener {
             val viewPager = requireActivity().findViewById<ViewPager2>(R.id.pager)

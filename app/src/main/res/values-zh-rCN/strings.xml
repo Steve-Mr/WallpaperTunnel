@@ -36,4 +36,14 @@
     <string name="gohome">回桌面</string>
     <string name="cannot_getpermission_lacking_permission">Wallpaper Tunnel 缺少必要权限，无法获得当前壁纸</string>
     <string name="cannot_get_livewallpaper">Wallpaper Tunnel 无法处理动态壁纸</string>
+    <string name="photo_picker">选择图片</string>
+    <string name="lock">锁屏壁纸</string>
+    <string name="welcome">开始设置</string>
+    <string name="permission_description">为了保存壁纸历史记录，本应用需要读取当前壁纸。由于 Android 系统限制，此操作需要以下权限。</string>
+    <string name="media_images_helper">选择「允许所有」</string>
+    <string name="welcome_media">是否允许本应用删除图片？</string>
+    <string name="welcome_system_permission_description">设置本应用为「媒体管理应用」后，在壁纸记录中删除图片无需二次确认。</string>
+    <string name="all_setup">设置完毕！</string>
+    <string name="permission_got">权限已获取</string>
+    <string name="add_quick_tile">添加磁贴</string>
 </resources>
