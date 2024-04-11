@@ -10,8 +10,10 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -64,12 +66,14 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
         return uriList
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     fun deleteImage(image: MediaStoreImage) {
         viewModelScope.launch {
             performDeleteImage(image)
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     fun deletePendingImage() {
         pendingDeleteImage?.let { image ->
             pendingDeleteImage = null
@@ -250,7 +254,7 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
 
                     val image = MediaStoreImage(id, displayName, dateModified, contentUri, width = width, height = height)
 
-                    Log.v("WLAP", width.toString() + " " + height.toString())
+                    Log.v("WLAP", "$width $height")
                     images += image
 
                     // For debugging, we'll output the image objects we create to logcat.
@@ -263,6 +267,7 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
         return images
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     private suspend fun performDeleteImage(image: MediaStoreImage) {
         withContext(Dispatchers.IO) {
             try {
@@ -342,7 +347,7 @@ private fun ContentResolver.registerObserver(
     uri: Uri,
     observer: (selfChange: Boolean) -> Unit
 ): ContentObserver {
-    val contentObserver = object : ContentObserver(Handler()) {
+    val contentObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) {
             observer(selfChange)
         }

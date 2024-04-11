@@ -34,5 +34,11 @@
         <item name="paddingRightSystemWindowInsets">true</item>
     </style>
 
+    <style name="StartBottomSheet" parent="Widget.Material3.BottomSheet">
+        <item name="behavior_hideable">false</item>
+        <item name="behavior_draggable">true</item>
+        <item name="behavior_fitToContents">false</item>
+    </style>
+
 
 </resources>
