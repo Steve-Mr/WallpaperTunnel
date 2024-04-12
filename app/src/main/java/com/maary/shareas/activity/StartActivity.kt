@@ -71,12 +71,24 @@ class StartActivity : AppCompatActivity(){
 
             // some dirty hack
             pickerBottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-            pickerBottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            pickerBottomSheetBehavior.state = BottomSheetBehavior.STATE_HALF_EXPANDED
 
             insets
         }
 
+        val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri->
+            if (uri != null) {
+                val intent = Intent(application, MainActivity::class.java).apply {
+                    action = Intent.ACTION_SEND
+                    setDataAndType(uri, "image/*")
+                    putExtra("mimeType", "image/*")
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                startActivity(intent)
+            }
 
+        }
 
         val wallpaperManager: WallpaperManager = WallpaperManager.getInstance(this)
         val homePFD:ParcelFileDescriptor?
@@ -105,6 +117,8 @@ class StartActivity : AppCompatActivity(){
             binding.homeContainer.setImageBitmap(homeBitmap)
             binding.lockContainer.setImageBitmap(lockBitmap)
 
+            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+
             var isHomeSaved = false
             var isLockSaved = false
 
@@ -130,19 +144,7 @@ class StartActivity : AppCompatActivity(){
             binding.systemWallpContainer.visibility = View.INVISIBLE
         }
 
-        val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri->
-            if (uri != null) {
-                val intent = Intent(application, MainActivity::class.java).apply {
-                    action = Intent.ACTION_SEND
-                    setDataAndType(uri, "image/*")
-                    putExtra("mimeType", "image/*")
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                startActivity(intent)
-            }
 
-        }
 
         binding.buttonPicker.setOnClickListener {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
