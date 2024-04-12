@@ -18,6 +18,7 @@
         android:padding="8dp"
         android:text="@string/blur"
         android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="24sp"
         />
 
@@ -37,6 +38,7 @@
         app:layout_constraintStart_toStartOf="parent"
         android:padding="8dp"
         android:text="@string/brightness"
+        android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
         android:textSize="24sp"
         />

@@ -12,7 +12,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -89,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
     int device_height, device_width;
 
     Palette.Swatch vibrant;
+    Palette.Swatch darkVibrant;
     Palette.Swatch dominant;
     Palette.Swatch muted ;
 
@@ -230,14 +233,13 @@ public class MainActivity extends AppCompatActivity {
                     vibrant = palette.getVibrantSwatch();
                     muted = palette.getMutedSwatch();
                     dominant = palette.getDominantSwatch();
+                    darkVibrant = palette.getDarkVibrantSwatch();
+
 
                     if (vibrant != null) {
                         fab.setBackgroundTintList(ColorStateList.valueOf(vibrant.getRgb()));
                     } else {
                         fab.setBackgroundColor(palette.getVibrantColor(getColor(R.color.colorAccent)));
-                    }
-                    if (muted != null) {
-                        bottomAppBar.setBackgroundTint(ColorStateList.valueOf(muted.getRgb()));
                     }
 
 
@@ -298,20 +300,21 @@ public class MainActivity extends AppCompatActivity {
                         // 获取 Drawable 对象
                         Drawable drawable = AppCompatResources.getDrawable(this, R.drawable.dialog_background);
 
-                        // 复制 Drawable 对象，以便进行修改
                         assert drawable != null;
-                        Drawable modifiedDrawable = drawable.getConstantState().newDrawable().mutate();
-                        modifiedDrawable.setTint(muted.getRgb());
+                        Drawable modifiedDrawable = Objects.requireNonNull(drawable.getConstantState()).newDrawable().mutate();
+                        // 复制 Drawable 对象，以便进行修改
+                        int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+                        switch (currentNightMode) {
+                            case Configuration.UI_MODE_NIGHT_NO:
+                                modifiedDrawable.setTint(Color.WHITE);
+                                break;
+                            case Configuration.UI_MODE_NIGHT_YES:
+                                modifiedDrawable.setTint(Color.BLACK);
+                                break;
+                        }
 
                         dialog.getWindow().setBackgroundDrawable(modifiedDrawable);
                         dialog.show();
-
-                        TextView title_blur_view = dialog.findViewById(R.id.title_blur);
-                        TextView title_brightness_view = dialog.findViewById(R.id.title_brightness);
-                        assert title_blur_view != null;
-                        title_blur_view.setTextColor(muted.getBodyTextColor());
-                        assert title_brightness_view != null;
-                        title_brightness_view.setTextColor(muted.getBodyTextColor());
 
                         Slider sliderBlur = dialog.findViewById(R.id.dialog_slider_blur);
                         assert sliderBlur != null;
@@ -336,15 +339,10 @@ public class MainActivity extends AppCompatActivity {
                             sliderBrightness.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
                         }
 
-                        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(muted.getTitleTextColor());
-                        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(muted.getTitleTextColor());
-                        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(muted.getTitleTextColor());
-
                         chipLock.setChecked(applyEditToLock);
                         chipHome.setChecked(applyEditToHome);
 
                         chipLock.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToLock = isChecked);
-
                         chipHome.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToHome = isChecked);
 
                         sliderBlur.setValueFrom(0);
