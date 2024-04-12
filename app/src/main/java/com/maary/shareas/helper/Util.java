@@ -17,6 +17,8 @@ import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.view.WindowMetrics;
 
+import com.maary.shareas.activity.MainActivity;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -31,17 +33,27 @@ public class Util {
     }
 
     public static Point getDeviceBounds(Context context) {
-        WindowMetrics windowMetrics;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            windowMetrics = ((Activity)context).getWindowManager().getMaximumWindowMetrics();
-            return new Point(windowMetrics.getBounds().width(), windowMetrics.getBounds().height());
-        }else {
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            int height = displayMetrics.heightPixels;
-            int width = displayMetrics.widthPixels;
-            return new Point(width, height);
+        PreferencesHelper preferencesHelper = new PreferencesHelper(context);
+        int device_height, device_width;
+
+        device_height = preferencesHelper.getHeight();
+        if (device_height == -1){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                WindowMetrics windowMetrics = ((Activity)context).getWindowManager().getMaximumWindowMetrics();
+                device_height = windowMetrics.getBounds().height();
+                device_width = windowMetrics.getBounds().width();
+            }else {
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                device_height = displayMetrics.heightPixels;
+                device_width = displayMetrics.widthPixels;
+            }
+            preferencesHelper.setWidthAndHeight(device_width, device_height);
+        } else {
+            device_width = preferencesHelper.getWidth();
         }
+        return new Point(device_width, device_height);
+
     }
 
     public static Boolean isVertical(int dheight, int dwidth, Bitmap bitmap) {
