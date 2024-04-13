@@ -27,13 +27,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.HorizontalScrollView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -58,10 +52,11 @@ import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.Snackbar;
 import com.hoko.blur.HokoBlur;
 import com.hoko.blur.task.AsyncBlurTask;
-import com.maary.shareas.helper.PreferencesHelper;
 import com.maary.shareas.R;
+import com.maary.shareas.helper.PreferencesHelper;
 import com.maary.shareas.helper.Util;
 import com.maary.shareas.helper.Util_Files;
+import com.maary.shareas.view.ScrollableImageView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -130,20 +125,11 @@ public class MainActivity extends AppCompatActivity {
             BottomAppBar bottomAppBar = findViewById(R.id.bottomAppBar);
 
             FloatingActionButton fab = findViewById(R.id.fab);
-            //make image preview scrollable. parent of imageView.
-            ScrollView verticalScrollView = new ScrollView(this);
-            HorizontalScrollView horizontalScrollView = new HorizontalScrollView(this);
-            //preview image
-            ImageView imageView = new ImageView(this);
+            ScrollableImageView imageView = findViewById(R.id.main_view);
             //image ratio > device ratio?
             Boolean isVertical = Util.isVertical(device_height, device_width, bitmap);
 
             ExecutorService executorService = Executors.newSingleThreadExecutor();
-
-            //Show Image
-            imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-            imageView.setAdjustViewBounds(true);
-            imageView.setId(View.generateViewId());
 
             //show image to imageview
             int bitmap_full_width = bitmap.getWidth();
@@ -151,27 +137,14 @@ public class MainActivity extends AppCompatActivity {
             int desired_width;
             int desired_height;
 
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-            );
-
             if (isVertical) {
                 desired_width = device_width;
                 float scale = (float) device_width / bitmap_full_width;
                 desired_height = (int) (scale * bitmap_full_height);
-
-                verticalScrollView.setFillViewport(true);
-                container.addView(verticalScrollView, layoutParams);
-                verticalScrollView.addView(imageView, layoutParams);
             } else {
                 desired_height = device_height;
                 float scale = (float) device_height / bitmap_full_height;
                 desired_width = (int) (scale * bitmap_full_width);
-
-                horizontalScrollView.setFillViewport(true);
-                container.addView(horizontalScrollView, layoutParams);
-                horizontalScrollView.addView(imageView, layoutParams);
             }
 
             bitmap = Bitmap.createScaledBitmap(bitmap, desired_width, desired_height, true);
@@ -232,17 +205,10 @@ public class MainActivity extends AppCompatActivity {
 
             //setup the fab click listener
             fab.setOnClickListener(view -> {
-                if (isVertical) {
-                    int start = verticalScrollView.getScrollY();
-                    cord = new Rect(0, start, device_width, start + device_height);
-                } else {
-                    int start = horizontalScrollView.getScrollX();
-                    cord = new Rect(start, 0, start + device_width, device_height);
-                }
+                cord = imageView.getVisibleRect();
                 bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
                 AlertDialog dialog = builder.create();
                 dialog.show();
-
             });
 
             fab.setOnLongClickListener(view -> {
@@ -441,15 +407,9 @@ public class MainActivity extends AppCompatActivity {
                     bitmap = raw;
                     blurBias = 0;
                     brightnessBias = 0;
-                    cord = null;
                     isProcessed = false;
                     applyEditToLock = applyEditToHome = true;
                     imageView.setImageBitmap(bitmap);
-                    if (isVertical) {
-                        verticalScrollView.post(() -> verticalScrollView.scrollTo(0, 0));
-                    } else {
-                        horizontalScrollView.post(() -> horizontalScrollView.scrollTo(0, 0));
-                    }
                 }
                 return true;
             });

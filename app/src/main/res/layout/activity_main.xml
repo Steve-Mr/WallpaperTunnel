@@ -18,6 +18,16 @@
 
     </ProgressBar>
 
+    <com.maary.shareas.view.ScrollableImageView
+        android:id="@+id/main_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/bottomAppBarContainer"
         android:layout_width="match_parent"
