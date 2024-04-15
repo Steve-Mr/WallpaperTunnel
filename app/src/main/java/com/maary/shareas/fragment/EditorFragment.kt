@@ -147,7 +147,6 @@ class EditorFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         viewModel.finishEditing()
-//        viewModel.restoreChanges()
     }
 
     companion object {

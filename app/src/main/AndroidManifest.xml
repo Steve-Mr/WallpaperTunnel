@@ -24,10 +24,6 @@
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="tiramisu">
         <activity
-            android:name=".activity.EditorActivity"
-            android:exported="true" >
-        </activity>
-        <activity
             android:name=".activity.WelcomeActivity"
             android:exported="true"/>
         <activity

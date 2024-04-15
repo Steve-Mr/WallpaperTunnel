@@ -20,8 +20,6 @@ class WallpaperViewModel: ViewModel() {
 
     var bitmap: Bitmap? = null
         set(value) {
-            Log.v("EDF HOME", "AA")
-
             field = value
             bakBitmap.bitmapHome = value
             bakBitmap.bitmapLock = value
@@ -30,8 +28,6 @@ class WallpaperViewModel: ViewModel() {
 
     private var inEditor = false
         set(value) {
-            Log.v("EDF HOME", "BB")
-
             field = value
             _inEditor.value = value
         }
@@ -41,8 +37,6 @@ class WallpaperViewModel: ViewModel() {
 
     var currentBitmap = HOME
         set(value) {
-            Log.v("EDF HOME", "CC")
-
             field = value
             _currentBitmapState.value = value
         }
@@ -60,20 +54,15 @@ class WallpaperViewModel: ViewModel() {
     val inEditorLiveData: LiveData<Boolean> = _inEditor.asLiveData()
 
     fun getBitmapHome(): Bitmap? {
-        Log.v("EDF HOME", "11")
-
         return _viewerState.value.bitmapHome
     }
 
     fun getBitmapLock(): Bitmap? {
-        Log.v("EDF HOME", "12")
-
         return _viewerState.value.bitmapLock
     }
 
     // 丢弃所有可能的修改
     fun restoreChanges() {
-        Log.v("EDF HOME", "1")
         bakBitmap.bitmapLock = bitmap
         bakBitmap.bitmapHome = bitmap
         _viewerState.update { currentState ->
@@ -86,8 +75,6 @@ class WallpaperViewModel: ViewModel() {
 
     // 丢弃当前的修改
     fun abortEdit() {
-        Log.v("EDF HOME", "2")
-
         _viewerState.update { current ->
             current.copy(
                 bitmapHome = bakBitmap.bitmapHome,
@@ -97,8 +84,6 @@ class WallpaperViewModel: ViewModel() {
     }
 
     fun abortEditHome() {
-        Log.v("EDF HOME", "3")
-
         _viewerState.update { current ->
             current.copy(
                 bitmapHome = bakBitmap.bitmapHome
@@ -107,8 +92,6 @@ class WallpaperViewModel: ViewModel() {
     }
 
     fun abortEditLock() {
-        Log.v("EDF HOME", "4")
-
         _viewerState.update { current ->
             current.copy(
                 bitmapLock = bakBitmap.bitmapLock
@@ -117,33 +100,23 @@ class WallpaperViewModel: ViewModel() {
     }
 
     fun startEditing() {
-        Log.v("EDF HOME", "5")
-
         inEditor = true
     }
 
     fun finishEditing() {
-        Log.v("EDF HOME", "6")
-
         inEditor = false
     }
 
     fun getDisplayBitmap(): Bitmap? {
-        Log.v("EDF HOME", "7")
-
         if (currentBitmap == HOME){
-            Log.v("EDF HOME", _viewerState.value.toString())
             return _viewerState.value.bitmapHome
         } else if (currentBitmap == LOCK) {
-            Log.v("EDF LOCK", _viewerState.value.toString())
             return _viewerState.value.bitmapLock
         }
         return bitmap
     }
 
     fun currentBitmapToggle() {
-        Log.v("EDF HOME", "8")
-
         if (currentBitmap == HOME) {
             currentBitmap = LOCK
         }else if (currentBitmap == LOCK) {
@@ -152,8 +125,6 @@ class WallpaperViewModel: ViewModel() {
     }
 
     fun getFabResource(): Int {
-        Log.v("EDF HOME", "9")
-
         if (currentBitmap == HOME) {
             return R.drawable.ic_vertical
         }
@@ -164,8 +135,6 @@ class WallpaperViewModel: ViewModel() {
     }
 
     fun editBlur(context: Context, value: Float) {
-        Log.v("EDF HOME", "10")
-
         HokoBlur.with(context)
             .radius(value.toInt())
             .forceCopy(true)
@@ -234,6 +203,5 @@ class WallpaperViewModel: ViewModel() {
     fun saveEdit() {
         bakBitmap.bitmapHome = _viewerState.value.bitmapHome
         bakBitmap.bitmapLock = _viewerState.value.bitmapLock
-        Log.v("EDF SAVE", _viewerState.value.toString())
     }
 }

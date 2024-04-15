@@ -291,11 +291,6 @@ public class MainActivity extends AppCompatActivity {
                     chipLock.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToLock = isChecked);
                     chipHome.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToHome = isChecked);
 
-                    sliderBlur.setValueFrom(0);
-                    sliderBlur.setValueTo(30);
-                    sliderBlur.setStepSize(1);
-                    sliderBlur.setValue(blurBias);
-
                     sliderBrightness.setValueFrom(-50);
                     sliderBrightness.setValueTo(50);
                     sliderBrightness.setStepSize(1);
@@ -349,35 +344,6 @@ public class MainActivity extends AppCompatActivity {
                         dialog.dismiss();
                     });
 
-                    sliderBlur.addOnChangeListener((slider1, value, fromUser) -> {
-                        Bitmap toProcess = bitmap;
-                        if (brightnessProcessed != null) {
-                            toProcess = brightnessProcessed;
-                        }
-                        HokoBlur.with(getApplicationContext())
-                                .radius((int) value)
-                                .sampleFactor(1.0f)
-                                .forceCopy(true)
-                                .asyncBlur(toProcess, new AsyncBlurTask.Callback() {
-                                    @Override
-                                    public void onBlurSuccess(Bitmap bitmap) {
-                                        Log.v("WALLP", "BLURRRRRRRRRRRING");
-                                        processed = bitmap;
-                                        blurProcessed = bitmap;
-                                        imageView.setImageBitmap(bitmap);
-                                        if (value == 0.0f && sliderBrightness.getValue() == 0.0f) {
-                                            imageView.setImageBitmap(bitmap);
-                                            Log.v("WALLP", "SET RAW IN BLUR");
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onBlurFailed(Throwable error) {
-
-                                    }
-                                });
-
-                    });
                     sliderBrightness.addOnChangeListener((slider1, value, fromUser) -> {
                         Bitmap toProcess = bitmap;
                         if (blurProcessed != null) {
@@ -542,38 +508,6 @@ public class MainActivity extends AppCompatActivity {
                 , getString(R.string.use_others)
                 , pendingIntent.getIntentSender()
         ));
-    }
-
-    private void editBitmap(@NonNull Bitmap bitmap, Context context) {
-        //---Save bitmap to external cache directory---//
-        //get cache directory
-        File cachePath = new File(getExternalCacheDir(), "my_images/");
-        cachePath.mkdirs();
-
-        //create png file
-        File file = new File(cachePath, "unprocessed.png");
-        FileOutputStream fileOutputStream;
-        try {
-            fileOutputStream = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
-            fileOutputStream.flush();
-            fileOutputStream.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        //---Share File---//
-        //get file uri
-        Uri myImageFileUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
-
-        Intent sendIntent = new Intent(context, EditorActivity.class);
-        sendIntent.setAction(Intent.ACTION_ATTACH_DATA);
-        sendIntent.setDataAndType(myImageFileUri, "image/*");
-        sendIntent.putExtra("mimeType", "image/*");
-        sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        startActivity(sendIntent);
     }
 
     public static class ShareReceiver extends BroadcastReceiver {
