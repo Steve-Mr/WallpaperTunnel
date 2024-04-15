@@ -33,7 +33,7 @@ import com.bumptech.glide.Glide
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.maary.shareas.HistoryActivityViewModel
-import com.maary.shareas.MediaStoreImage
+import com.maary.shareas.data.MediaStoreImage
 import com.maary.shareas.R
 import com.maary.shareas.helper.Util
 import com.maary.shareas.databinding.ActivityHistoryBinding

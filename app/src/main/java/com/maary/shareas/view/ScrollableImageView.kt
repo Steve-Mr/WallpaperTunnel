@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Rect
+import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
 import android.widget.HorizontalScrollView
@@ -17,6 +18,7 @@ class ScrollableImageView  @JvmOverloads constructor(
 ) : ScrollView(context, attrs, defStyleAttr) {
 
     private lateinit var horizontalView: CustomHorizontalView
+    private lateinit var imageView: ImageView
 
     init {
         initHorizontalView(context)
@@ -25,14 +27,22 @@ class ScrollableImageView  @JvmOverloads constructor(
     private fun initHorizontalView(context: Context) {
         horizontalView = CustomHorizontalView(context)
         addView(horizontalView)
-    }
-
-    private fun addImageView(bitmap: Bitmap) {
-        horizontalView.addImageView(bitmap)
+        imageView = ImageView(context)
+        horizontalView.addView(imageView)
     }
 
     fun setImageBitmap(bitmap: Bitmap) {
-        addImageView(bitmap)
+        imageView.setImageBitmap(bitmap)
+        imageView.scaleType = ImageView.ScaleType.FIT_XY
+    }
+
+    fun setImageUri(uri: Uri) {
+        imageView.setImageURI(uri)
+        imageView.scaleType = ImageView.ScaleType.FIT_XY
+    }
+
+    fun setOnImageClickListener(listener: OnClickListener) {
+        imageView.setOnClickListener(listener)
     }
 
     fun getVisibleBitmap(): Bitmap {
@@ -83,11 +93,5 @@ class ScrollableImageView  @JvmOverloads constructor(
             isHorizontalScrollBarEnabled = false
         }
 
-        fun addImageView(bitmap: Bitmap) {
-            val imageView = ImageView(context)
-            imageView.setImageBitmap(bitmap)
-            imageView.scaleType = ImageView.ScaleType.FIT_XY
-            addView(imageView)
-        }
     }
 }

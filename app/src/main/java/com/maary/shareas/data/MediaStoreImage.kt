@@ -1,4 +1,4 @@
-package com.maary.shareas
+package com.maary.shareas.data
 
 import android.net.Uri
 import androidx.recyclerview.widget.DiffUtil

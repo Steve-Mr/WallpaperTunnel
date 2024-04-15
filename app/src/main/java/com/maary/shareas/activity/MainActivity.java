@@ -29,6 +29,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -41,6 +42,11 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.WindowCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.palette.graphics.Palette;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
@@ -53,6 +59,8 @@ import com.google.android.material.snackbar.Snackbar;
 import com.hoko.blur.HokoBlur;
 import com.hoko.blur.task.AsyncBlurTask;
 import com.maary.shareas.R;
+import com.maary.shareas.WallpaperViewModel;
+import com.maary.shareas.fragment.EditorFragment;
 import com.maary.shareas.helper.PreferencesHelper;
 import com.maary.shareas.helper.Util;
 import com.maary.shareas.helper.Util_Files;
@@ -112,6 +120,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            WallpaperViewModel viewModel = new ViewModelProvider(this).get(WallpaperViewModel.class);
+
             Point deviceBounds = Util.getDeviceBounds(MainActivity.this);
             int device_height = deviceBounds.y;
             int device_width = deviceBounds.x;
@@ -150,41 +160,28 @@ public class MainActivity extends AppCompatActivity {
             bitmap = Bitmap.createScaledBitmap(bitmap, desired_width, desired_height, true);
             processed = bitmap;
 
-            raw = bitmap;
-            imageView.setImageBitmap(bitmap);
+            viewModel.setBitmap(bitmap);
+            viewModel.getViewerStateLiveData().observe(this, state -> {
+                imageView.setImageBitmap(Objects.requireNonNull(viewModel.getDisplayBitmap()));
+            });
+            viewModel.getCurrentBitmapStateLiveData().observe(this, state -> {
+                imageView.setImageBitmap(Objects.requireNonNull(viewModel.getDisplayBitmap()));
+                fab.setImageResource(viewModel.getFabResource());
+            });
+            viewModel.getInEditorLiveData().observe(this, inEditor -> {
+                if (inEditor) {
+                    bottomAppBarContainer.setVisibility(View.INVISIBLE);
+                    loadFragment(new EditorFragment());
+                } else {
+                    bottomAppBarContainer.setVisibility(View.VISIBLE);
+                    removeFragment();
+                }
+            });
 
-            imageView.setOnClickListener(v -> {
-                if (!isProcessed || applyEditToHome == applyEditToLock) {
-                    if (currentImageViewIsHome) {
-                        currentImageViewIsHome = false;
-                        fab.setImageResource(R.drawable.ic_lockscreen);
-                    } else {
-                        currentImageViewIsHome = true;
-                        fab.setImageResource(R.drawable.ic_vertical);
-                    }
-                }
-                if (applyEditToHome) {
-                    if (currentImageViewIsHome) {
-                        imageView.setImageBitmap(raw);
-                        currentImageViewIsHome = false;
-                        fab.setImageResource(R.drawable.ic_lockscreen);
-                    } else {
-                        imageView.setImageBitmap(bitmap);
-                        currentImageViewIsHome = true;
-                        fab.setImageResource(R.drawable.ic_vertical);
-                    }
-                }
-                if (applyEditToLock) {
-                    if (currentImageViewIsHome) {
-                        imageView.setImageBitmap(bitmap);
-                        currentImageViewIsHome = false;
-                        fab.setImageResource(R.drawable.ic_lockscreen);
-                    } else {
-                        imageView.setImageBitmap(raw);
-                        currentImageViewIsHome = true;
-                        fab.setImageResource(R.drawable.ic_vertical);
-                    }
-                }
+            raw = bitmap;
+
+            imageView.setOnImageClickListener(v -> {
+                viewModel.currentBitmapToggle();
             });
 
             Palette.from(bitmap).generate(palette -> {
@@ -236,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
             //set bottomAppBar menu item
             //tap blur and brightness button will disable other menu item
             bottomAppBar.setOnMenuItemClickListener(item -> {
-
                 if (item.getItemId() == R.id.edit) {
                     bottomAppBarContainer.setVisibility(View.INVISIBLE);
                     AlertDialog dialog;
@@ -404,12 +400,13 @@ public class MainActivity extends AppCompatActivity {
 
                     });
                 } else if (item.getItemId() == R.id.reset) {
-                    bitmap = raw;
                     blurBias = 0;
                     brightnessBias = 0;
                     isProcessed = false;
                     applyEditToLock = applyEditToHome = true;
-                    imageView.setImageBitmap(bitmap);
+                    viewModel.restoreChanges();
+                } else if (item.getItemId() == R.id.horizontal) {
+                    viewModel.startEditing();
                 }
                 return true;
             });
@@ -432,8 +429,8 @@ public class MainActivity extends AppCompatActivity {
             String[] options = {
                     getResources().getString(R.string.home),
                     getResources().getString(R.string.lockscreen),
-                    getResources().getString(R.string.homeAndLockscreen),
-                    getResources().getString(R.string.use_others)};
+                    getResources().getString(R.string.homeAndLockscreen)};
+//                    getResources().getString(R.string.use_others)};
 
             builder.setItems(options, (dialog, which) -> executorService.execute(() -> {
                 try {
@@ -450,26 +447,14 @@ public class MainActivity extends AppCompatActivity {
 
                     switch (which) {
                         case 0 -> {
-                            wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
+                            wallpaperManager.setBitmap(viewModel.getBitmapHome(), cord, true, WallpaperManager.FLAG_SYSTEM);
                         }
                         case 1 -> {
-                            wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
+                            wallpaperManager.setBitmap(viewModel.getBitmapLock(), cord, true, WallpaperManager.FLAG_LOCK);
                         }
                         case 2 -> {
-                            if (applyEditToLock) {
-                                wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_LOCK);
-                            } else {
-                                wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_LOCK);
-                            }
-                            if (applyEditToHome) {
-                                wallpaperManager.setBitmap(bitmap, cord, true, WallpaperManager.FLAG_SYSTEM);
-                            } else {
-                                wallpaperManager.setBitmap(raw, cord, true, WallpaperManager.FLAG_SYSTEM);
-                            }
-                        }
-                        //应对定制 Rom（如 Color OS）可能存在的魔改导致 "WallpaperManager.FLAG_LOCK | WallpaperManager.FLAG_SYSTEM" 参数失效的情况。
-                        case 3 -> {
-                            shareBitmap(bitmap, getApplicationContext());
+                            wallpaperManager.setBitmap(viewModel.getBitmapHome(), cord, true, WallpaperManager.FLAG_SYSTEM);
+                            wallpaperManager.setBitmap(viewModel.getBitmapLock(), cord, true, WallpaperManager.FLAG_LOCK);
                         }
                         default -> throw new IllegalStateException("Unexpected value: " + which);
                     }
@@ -559,6 +544,38 @@ public class MainActivity extends AppCompatActivity {
         ));
     }
 
+    private void editBitmap(@NonNull Bitmap bitmap, Context context) {
+        //---Save bitmap to external cache directory---//
+        //get cache directory
+        File cachePath = new File(getExternalCacheDir(), "my_images/");
+        cachePath.mkdirs();
+
+        //create png file
+        File file = new File(cachePath, "unprocessed.png");
+        FileOutputStream fileOutputStream;
+        try {
+            fileOutputStream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+            fileOutputStream.flush();
+            fileOutputStream.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //---Share File---//
+        //get file uri
+        Uri myImageFileUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
+
+        Intent sendIntent = new Intent(context, EditorActivity.class);
+        sendIntent.setAction(Intent.ACTION_ATTACH_DATA);
+        sendIntent.setDataAndType(myImageFileUri, "image/*");
+        sendIntent.putExtra("mimeType", "image/*");
+        sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        startActivity(sendIntent);
+    }
+
     public static class ShareReceiver extends BroadcastReceiver {
 
         @Override
@@ -567,5 +584,23 @@ public class MainActivity extends AppCompatActivity {
             local.setAction("done");
             context.sendBroadcast(local);
         }
+    }
+
+    private void loadFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.editor_container, fragment);
+        transaction.addToBackStack(null); // 可选，用于返回栈管理
+        transaction.commit();
+    }
+
+    private void removeFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        for (Fragment f: fragmentManager.getFragments()){
+            transaction.remove(f);
+        }
+        transaction.commit();
+        fragmentManager.popBackStack();
     }
 }

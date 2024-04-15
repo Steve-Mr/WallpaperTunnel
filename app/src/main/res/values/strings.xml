@@ -57,4 +57,8 @@
     <string name="permission_got">Permission Got.</string>
     <string name="add_quick_tile">Add Tile</string>
     <string name="finish_settings">Finish initial settings.</string>
+    <string name="confirm">Confirm</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="apply">Apply</string>
 </resources>

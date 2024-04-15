@@ -100,6 +100,7 @@ dependencies {
     implementation "androidx.datastore:datastore-preferences-rxjava2:1.0.0"
     // optional - RxJava3 support
     implementation "androidx.datastore:datastore-preferences-rxjava3:1.0.0"
+    implementation "androidx.fragment:fragment-ktx:1.6.2"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

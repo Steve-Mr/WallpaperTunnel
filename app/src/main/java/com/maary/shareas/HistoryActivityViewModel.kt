@@ -1,7 +1,6 @@
 package com.maary.shareas
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Application
 import android.app.RecoverableSecurityException
 import android.content.*
@@ -18,6 +17,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.maary.shareas.data.MediaStoreImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
