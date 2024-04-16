@@ -19,15 +19,21 @@ import android.view.WindowMetrics;
 
 import com.maary.shareas.activity.MainActivity;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class Util {
 
-    public static Bitmap getBitmap(Intent intent, Context context) throws IOException {
+    public static Bitmap getBitmap(Intent intent, Context context) {
         Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if (imageUri != null) {
-            InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
+            InputStream inputStream = null;
+            try {
+                inputStream = context.getContentResolver().openInputStream(imageUri);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
             return BitmapFactory.decodeStream(inputStream);
         } else return null;
     }
