@@ -2,19 +2,32 @@ package com.maary.shareas
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
+import androidx.core.content.FileProvider
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.hoko.blur.HokoBlur
 import com.hoko.blur.task.AsyncBlurTask
 import com.maary.shareas.data.ViewerBitmap
+import com.maary.shareas.helper.Util
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 class WallpaperViewModel: ViewModel() {
+    init {
+        Log.v("WVM", "INIT")
+    }
 
     private var bakBitmap = ViewerBitmap()
 
@@ -200,8 +213,50 @@ class WallpaperViewModel: ViewModel() {
 //        }
     }
 
+    fun editBrightness(value: Float) {
+        CoroutineScope(Dispatchers.Main).launch {
+            withContext(Dispatchers.IO) {
+                val homeA = Util.adjustBrightness(_viewerState.value.bitmapHome, value)
+                val lockA = Util.adjustBrightness(_viewerState.value.bitmapLock, value)
+                _viewerState.update { current ->
+                    current.copy(
+                        bitmapHome = homeA,
+                        bitmapLock = lockA
+                    )
+                }
+            }
+        }
+    }
+
     fun saveEdit() {
         bakBitmap.bitmapHome = _viewerState.value.bitmapHome
         bakBitmap.bitmapLock = _viewerState.value.bitmapLock
+    }
+
+    fun getBitmapUri(context: Context, cacheDir: File): Uri? {
+        //---Save bitmap to external cache directory---//
+        //get cache directory
+
+        val cachePath = File(cacheDir, "my_images/")
+        cachePath.mkdirs()
+
+        //create png file
+        val file = File(cachePath, "Image_123.png")
+        val fileOutputStream: FileOutputStream
+        try {
+            fileOutputStream = FileOutputStream(file)
+            _viewerState.value.bitmapHome?.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream)
+            fileOutputStream.flush()
+            fileOutputStream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return FileProvider.getUriForFile(
+            context,
+            context.packageName + ".provider",
+            file
+        )
+
     }
 }

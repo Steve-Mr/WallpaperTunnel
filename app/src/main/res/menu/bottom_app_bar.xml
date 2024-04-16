@@ -14,10 +14,10 @@
         android:title="@string/blur"
         app:showAsAction="ifRoom"/>
 
-    <item
-        android:id="@+id/horizontal"
-        android:icon="@drawable/ic_horizontal"
-        android:title="@string/horizontal"
-        app:showAsAction="always"/>
+<!--    <item-->
+<!--        android:id="@+id/horizontal"-->
+<!--        android:icon="@drawable/ic_horizontal"-->
+<!--        android:title="@string/horizontal"-->
+<!--        app:showAsAction="always"/>-->
 
 </menu>

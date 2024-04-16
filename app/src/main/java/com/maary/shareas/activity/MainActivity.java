@@ -77,20 +77,8 @@ public class MainActivity extends AppCompatActivity {
 
     static final int MENU_RESET = 0;
     Bitmap bitmap;
-    Bitmap processed;
-    Bitmap blurProcessed;
-    Bitmap brightnessProcessed;
-    Bitmap raw;
     Rect cord;
-    int blurBias = 0;
-    int brightnessBias = 0;
     MaterialAlertDialogBuilder builder;
-    Boolean applyEditToLock = true;
-    Boolean applyEditToHome = true;
-    Boolean isProcessed = false;
-
-    Boolean currentImageViewIsHome = true;
-
     Palette.Swatch vibrant;
     Palette.Swatch dominant;
     Palette.Swatch muted;
@@ -158,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             bitmap = Bitmap.createScaledBitmap(bitmap, desired_width, desired_height, true);
-            processed = bitmap;
 
             viewModel.setBitmap(bitmap);
             viewModel.getViewerStateLiveData().observe(this, state -> {
@@ -178,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            raw = bitmap;
 
             imageView.setOnImageClickListener(v -> {
                 viewModel.currentBitmapToggle();
@@ -196,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     fab.setBackgroundColor(palette.getVibrantColor(getColor(R.color.colorAccent)));
                 }
-
 
             });
 
@@ -234,145 +219,9 @@ public class MainActivity extends AppCompatActivity {
             //tap blur and brightness button will disable other menu item
             bottomAppBar.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.edit) {
-                    bottomAppBarContainer.setVisibility(View.INVISIBLE);
-                    AlertDialog dialog;
-
-                    dialog = createSliderDialog();
-                    Objects.requireNonNull(dialog.getWindow())
-                            .clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-                    dialog.getWindow().setGravity(Gravity.BOTTOM);
-                    dialog.setCancelable(false);
-
-                    // 获取 Drawable 对象
-                    Drawable drawable = AppCompatResources.getDrawable(this, R.drawable.dialog_background);
-
-                    assert drawable != null;
-                    Drawable modifiedDrawable = Objects.requireNonNull(drawable.getConstantState()).newDrawable().mutate();
-                    // 复制 Drawable 对象，以便进行修改
-                    int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-                    switch (currentNightMode) {
-                        case Configuration.UI_MODE_NIGHT_NO:
-                            modifiedDrawable.setTint(Color.WHITE);
-                            break;
-                        case Configuration.UI_MODE_NIGHT_YES:
-                            modifiedDrawable.setTint(Color.BLACK);
-                            break;
-                    }
-
-                    dialog.getWindow().setBackgroundDrawable(modifiedDrawable);
-                    dialog.show();
-
-                    Slider sliderBlur = dialog.findViewById(R.id.dialog_slider_blur);
-                    assert sliderBlur != null;
-                    sliderBlur.setLabelBehavior(LABEL_GONE);
-                    sliderBlur.setTickVisible(false);
-
-                    Slider sliderBrightness = dialog.findViewById(R.id.dialog_slider_brightness);
-                    assert sliderBrightness != null;
-                    sliderBrightness.setLabelBehavior(LABEL_GONE);
-                    sliderBrightness.setTickVisible(false);
-
-                    Chip chipLock = dialog.findViewById(R.id.chip_apply_lock);
-                    Chip chipHome = dialog.findViewById(R.id.chip_apply_home);
-
-                    assert chipLock != null;
-                    assert chipHome != null;
-
-                    if (vibrant != null) {
-                        sliderBlur.setThumbTintList(ColorStateList.valueOf(vibrant.getRgb()));
-                        sliderBlur.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
-                        sliderBrightness.setThumbTintList(ColorStateList.valueOf(vibrant.getRgb()));
-                        sliderBrightness.setTrackActiveTintList(ColorStateList.valueOf(vibrant.getRgb()));
-                    }
-
-                    chipLock.setChecked(applyEditToLock);
-                    chipHome.setChecked(applyEditToHome);
-
-                    chipLock.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToLock = isChecked);
-                    chipHome.setOnCheckedChangeListener((buttonView, isChecked) -> applyEditToHome = isChecked);
-
-                    sliderBrightness.setValueFrom(-50);
-                    sliderBrightness.setValueTo(50);
-                    sliderBrightness.setStepSize(1);
-                    sliderBrightness.setValue(brightnessBias);
-
-                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
-                        bitmap = processed;
-                        isProcessed = true;
-                        bottomAppBarContainer.setVisibility(View.VISIBLE);
-                        bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
-                        blurBias = (int) sliderBlur.getValue();
-                        brightnessBias = (int) sliderBrightness.getValue();
-                        if (applyEditToHome == applyEditToLock) {
-                            imageView.setImageBitmap(bitmap);
-                        } else if (applyEditToHome) {
-                            imageView.setImageBitmap(bitmap);
-                        } else if (applyEditToLock) {
-                            imageView.setImageBitmap(bitmap);
-                            currentImageViewIsHome = false;
-                            fab.setImageResource(R.drawable.ic_lockscreen);
-                            //todo: set fab icon
-                        }
-
-                        dialog.dismiss();
-                    });
-
-                    dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(view -> {
-                        sliderBlur.setValue(0.0f);
-                        sliderBrightness.setValue(0.0f);
-                        bitmap = raw;
-                        isProcessed = false;
-                        applyEditToLock = applyEditToHome = true;
-                        chipHome.setChecked(true);
-                        chipLock.setChecked(applyEditToLock);
-                        imageView.setImageBitmap(raw);
-                        Log.v("WALLP", "SET RAW NEUTRAL");
-
-                    });
-
-                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(view -> {
-                        bitmap = raw;
-                        blurBias = 0;
-                        brightnessBias = 0;
-                        isProcessed = false;
-                        applyEditToLock = applyEditToHome = true;
-                        chipHome.setChecked(true);
-                        chipLock.setChecked(applyEditToLock);
-                        imageView.setImageBitmap(raw);
-                        Log.v("WALLP", "SET RAW NEGATIVE");
-                        bottomAppBarContainer.setVisibility(View.VISIBLE);
-                        dialog.dismiss();
-                    });
-
-                    sliderBrightness.addOnChangeListener((slider1, value, fromUser) -> {
-                        Bitmap toProcess = bitmap;
-                        if (blurProcessed != null) {
-                            toProcess = blurProcessed;
-                        }
-                        Bitmap finalToProcess = toProcess;
-                        new Thread(() -> {
-                            processed = Util.adjustBrightness(finalToProcess, (int) value);
-                            brightnessProcessed = processed;
-                            Log.v("WALLP", "BRIGHTTTTTTTTTTING");
-
-                            runOnUiThread(() -> {
-                                imageView.setImageBitmap(processed);
-                                if (value == 0.0f && sliderBlur.getValue() == 0.0f) {
-                                    imageView.setImageBitmap(bitmap);
-                                    Log.v("WALLP", "SET RAW IN BRIG");
-                                }
-                            });
-                        }).start();
-
-                    });
-                } else if (item.getItemId() == R.id.reset) {
-                    blurBias = 0;
-                    brightnessBias = 0;
-                    isProcessed = false;
-                    applyEditToLock = applyEditToHome = true;
-                    viewModel.restoreChanges();
-                } else if (item.getItemId() == R.id.horizontal) {
                     viewModel.startEditing();
+                } else if (item.getItemId() == R.id.reset) {
+                    viewModel.restoreChanges();
                 }
                 return true;
             });
@@ -395,8 +244,8 @@ public class MainActivity extends AppCompatActivity {
             String[] options = {
                     getResources().getString(R.string.home),
                     getResources().getString(R.string.lockscreen),
-                    getResources().getString(R.string.homeAndLockscreen)};
-//                    getResources().getString(R.string.use_others)};
+                    getResources().getString(R.string.homeAndLockscreen),
+                    getResources().getString(R.string.use_others)};
 
             builder.setItems(options, (dialog, which) -> executorService.execute(() -> {
                 try {
@@ -421,6 +270,23 @@ public class MainActivity extends AppCompatActivity {
                         case 2 -> {
                             wallpaperManager.setBitmap(viewModel.getBitmapHome(), cord, true, WallpaperManager.FLAG_SYSTEM);
                             wallpaperManager.setBitmap(viewModel.getBitmapLock(), cord, true, WallpaperManager.FLAG_LOCK);
+                        }
+                        case 3 -> {
+                            Uri myImageFileUri = viewModel.getBitmapUri(getApplicationContext(), Objects.requireNonNull(getExternalCacheDir()));
+                            Intent sendIntent = new Intent(Intent.ACTION_ATTACH_DATA);
+                            sendIntent.setDataAndType(myImageFileUri, "image/*");
+                            sendIntent.putExtra("mimeType", "image/*");
+                            sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                            Intent receiver = new Intent(context, ShareReceiver.class);
+                            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
+                                    receiver, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+
+                            startActivity(Intent.createChooser(
+                                    sendIntent
+                                    , getString(R.string.use_others)
+                                    , pendingIntent.getIntentSender()
+                            ));
                         }
                         default -> throw new IllegalStateException("Unexpected value: " + which);
                     }
@@ -469,45 +335,6 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.cancel, null);
 
         return builder.create();
-    }
-
-    private void shareBitmap(@NonNull Bitmap bitmap, Context context) {
-        //---Save bitmap to external cache directory---//
-        //get cache directory
-        File cachePath = new File(getExternalCacheDir(), "my_images/");
-        cachePath.mkdirs();
-
-        //create png file
-        File file = new File(cachePath, "Image_123.png");
-        FileOutputStream fileOutputStream;
-        try {
-            fileOutputStream = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
-            fileOutputStream.flush();
-            fileOutputStream.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        //---Share File---//
-        //get file uri
-        Uri myImageFileUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
-
-        Intent sendIntent = new Intent(Intent.ACTION_ATTACH_DATA);
-        sendIntent.setDataAndType(myImageFileUri, "image/*");
-        sendIntent.putExtra("mimeType", "image/*");
-        sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        Intent receiver = new Intent(context, ShareReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,
-                receiver, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-
-        startActivity(Intent.createChooser(
-                sendIntent
-                , getString(R.string.use_others)
-                , pendingIntent.getIntentSender()
-        ));
     }
 
     public static class ShareReceiver extends BroadcastReceiver {

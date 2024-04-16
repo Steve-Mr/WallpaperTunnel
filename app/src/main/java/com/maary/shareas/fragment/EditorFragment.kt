@@ -1,27 +1,25 @@
 package com.maary.shareas.fragment
 
-import android.graphics.Bitmap
+import android.graphics.BlurMaskFilter.Blur
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.view.ViewStub
 import androidx.activity.addCallback
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.android.material.slider.Slider
-import com.hoko.blur.HokoBlur
-import com.hoko.blur.task.AsyncBlurTask
 import com.maary.shareas.R
 import com.maary.shareas.WallpaperViewModel
 import com.maary.shareas.databinding.FragmentEditorBinding
-import kotlinx.coroutines.flow.collect
+import com.maary.shareas.fragment.editor.BlurFragment
+import com.maary.shareas.fragment.editor.BrightnessFragment
 import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
@@ -39,7 +37,7 @@ class EditorFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
 
-    val viewModel: WallpaperViewModel by activityViewModels()
+    private val viewModel: WallpaperViewModel by activityViewModels()
     private var _binding: FragmentEditorBinding? = null
     private val binding get() = _binding!!
 
@@ -97,11 +95,13 @@ class EditorFragment : Fragment() {
 
         binding.appbarButtonCancel.setOnClickListener {
             viewModel.restoreChanges()
+            removeFragment()
             exit()
         }
 
         binding.appbarButtonConfirm.setOnClickListener {
             viewModel.saveEdit()
+            removeFragment()
             exit()
         }
 
@@ -109,34 +109,20 @@ class EditorFragment : Fragment() {
             if (!chipHome.isChecked) viewModel.abortEditHome()
             if (!chipLock.isChecked) viewModel.abortEditLock()
             viewModel.saveEdit()
-            binding.editorCard.visibility = View.INVISIBLE
+            removeFragment()
         }
 
         binding.editorButtonAbort.setOnClickListener {
             viewModel.abortEdit()
-            binding.editorCard.visibility = View.INVISIBLE
+            removeFragment()
         }
 
         binding.editorButtonBlur.setOnClickListener {
-            binding.editorStub.viewStub?.layoutResource = R.layout.layout_adjustment_slider
-            val layoutBlurSlider = binding.editorStub.viewStub?.inflate()
-            binding.editorCard.visibility = View.VISIBLE
-
-            val sliderBlur = layoutBlurSlider?.findViewById<Slider>(R.id.adjustment_slider)
-            sliderBlur!!.valueFrom = 0f
-            sliderBlur.valueTo = 25f
-            sliderBlur.stepSize = 1f
-            sliderBlur.addOnChangeListener(Slider.OnChangeListener { _: Slider?, value: Float, _: Boolean ->
-                viewModel.editBlur(requireActivity(), value)
-            })
+            loadFragment(BlurFragment())
         }
 
         binding.editorButtonBrightness.setOnClickListener {
-            binding.editorStub.viewStub?.layoutResource = R.layout.layout_adjustment_slider
-            val brightnessSlider = binding.editorStub.viewStub?.inflate()
-            val title = brightnessSlider!!.findViewById<TextView>(R.id.adjustment_title)
-            title.setText(R.string.brightness)
-            binding.editorCard.visibility = View.VISIBLE
+            loadFragment(BrightnessFragment())
         }
 
 
@@ -147,6 +133,11 @@ class EditorFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         viewModel.finishEditing()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {
@@ -174,5 +165,27 @@ class EditorFragment : Fragment() {
         val fragmentManager = activity?.supportFragmentManager
         fragmentManager?.beginTransaction()?.remove(this)?.commit()
         fragmentManager?.popBackStack()
+    }
+
+    private fun loadFragment(fragment: Fragment) {
+        viewModel.abortEdit()
+        removeFragment()
+        val fragmentManager: FragmentManager = childFragmentManager
+        val transaction = fragmentManager.beginTransaction()
+        transaction.replace(binding.editorFragmentContainer.id, fragment)
+        transaction.addToBackStack(null) // 可选，用于返回栈管理
+        transaction.commit()
+        binding.editorCard.visibility = View.VISIBLE
+    }
+
+    private fun removeFragment() {
+        binding.editorCard.visibility = View.INVISIBLE
+        val fragmentManager: FragmentManager = childFragmentManager
+        val transaction = fragmentManager.beginTransaction()
+        for (f in fragmentManager.fragments) {
+            transaction.remove(f)
+        }
+        transaction.commit()
+        fragmentManager.popBackStack()
     }
 }
