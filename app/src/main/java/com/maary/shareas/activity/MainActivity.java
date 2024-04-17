@@ -84,6 +84,8 @@ public class MainActivity extends AppCompatActivity {
 
         WallpaperViewModel viewModel = new ViewModelProvider(this).get(WallpaperViewModel.class);
 
+        viewModel.setBitmapRaw(bitmap);
+
         Point deviceBounds = Util.getDeviceBounds(MainActivity.this);
         int device_height = deviceBounds.y;
         int device_width = deviceBounds.x;

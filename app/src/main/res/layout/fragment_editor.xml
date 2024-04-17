@@ -141,6 +141,7 @@
                     <!-- Chips can be declared here, or added dynamically. -->
                 </com.google.android.material.chip.ChipGroup>
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/editor_buttons_group"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="16dp"
@@ -204,6 +205,7 @@
                     android:layout_marginEnd="16dp"/>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/editor_button_fill"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_fill"
@@ -211,6 +213,7 @@
                     android:layout_marginEnd="16dp"/>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/editor_button_upscale"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_2x"

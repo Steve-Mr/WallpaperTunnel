@@ -2,6 +2,7 @@ package com.maary.shareas.fragment
 
 import android.graphics.BlurMaskFilter.Blur
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ import com.maary.shareas.WallpaperViewModel
 import com.maary.shareas.databinding.FragmentEditorBinding
 import com.maary.shareas.fragment.editor.BlurFragment
 import com.maary.shareas.fragment.editor.BrightnessFragment
+import com.maary.shareas.fragment.editor.UpscaleFragment
 import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
@@ -62,10 +64,10 @@ class EditorFragment : Fragment() {
             }
         }
 
-        requireActivity().onBackPressedDispatcher.addCallback {
+        activity?.onBackPressedDispatcher?.addCallback {
             viewModel.restoreChanges()
             isEnabled = false
-            requireActivity().onBackPressedDispatcher.onBackPressed()
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
     }
 
@@ -125,6 +127,10 @@ class EditorFragment : Fragment() {
             loadFragment(BrightnessFragment())
         }
 
+        binding.editorButtonUpscale.setOnClickListener {
+            loadFragment(UpscaleFragment())
+        }
+
 
         // Inflate the layout for this fragment
         return binding.root
@@ -175,6 +181,10 @@ class EditorFragment : Fragment() {
         transaction.replace(binding.editorFragmentContainer.id, fragment)
         transaction.addToBackStack(null) // 可选，用于返回栈管理
         transaction.commit()
+        if (fragment is UpscaleFragment) {
+            binding.editorButtonsGroup.visibility = View.INVISIBLE
+            Log.v("WVM", "UPSCALE FRAGMENT")
+        }
         binding.editorCard.visibility = View.VISIBLE
     }
 

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="model_names">
+        <item>RealESRGAN-x2p</item>
+        <item>RealESRGAN-x4p</item>
+        <item>RealESRGAN-anime</item>
+    </string-array>
+</resources>

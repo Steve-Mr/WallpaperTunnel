@@ -61,4 +61,9 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="apply">Apply</string>
+    <string name="upscale">Upscale</string>
+    <string name="model_name">Choose Model</string>
+    <string name="cancel_upscale">Cancel Upscale</string>
+    <string name="start_upscale">Start Upscale</string>
+    <string name="beta">beta</string>
 </resources>
