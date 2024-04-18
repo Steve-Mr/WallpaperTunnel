@@ -89,7 +89,6 @@ class EditorFragment : Fragment() {
         _binding = FragmentEditorBinding.inflate(inflater, container, false)
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            binding.appBarContainer.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             binding.editorButtons.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }

@@ -35,14 +35,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
 
-<!--        <ViewStub-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:id="@+id/layout_stub"-->
-<!--            android:inflatedId="@+id/layout_stub"-->
-<!--            tools:visibility="visible"-->
-<!--            android:layout_gravity="bottom"/>-->
-
         <com.google.android.material.bottomappbar.BottomAppBar
             android:id="@+id/bottomAppBar"
             style="@style/ThemeOverlay.App.BottomAppBar"
