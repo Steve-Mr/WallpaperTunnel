@@ -242,8 +242,8 @@ class WallpaperViewModel : ViewModel() {
     fun editBrightness(value: Float) {
         CoroutineScope(Dispatchers.Main).launch {
             withContext(Dispatchers.IO) {
-                val homeA = Util.adjustBrightness(_viewerState.value.bitmapHome, value)
-                val lockA = Util.adjustBrightness(_viewerState.value.bitmapLock, value)
+                val homeA = Util.adjustBrightness(bakBitmap.bitmapHome, value)
+                val lockA = Util.adjustBrightness(bakBitmap.bitmapLock, value)
                 _viewerState.update { current ->
                     current.copy(
                         bitmapHome = homeA,

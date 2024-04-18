@@ -93,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getInEditorLiveData().observe(this, inEditor -> {
             if (inEditor) {
                 binding.bottomAppBarContainer.setVisibility(View.INVISIBLE);
-                loadFragment(new EditorFragment());
             } else {
                 binding.bottomAppBarContainer.setVisibility(View.VISIBLE);
                 removeFragment();
@@ -154,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
         binding.bottomAppBar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.edit) {
                 viewModel.startEditing();
+                loadFragment(new EditorFragment());
             } else if (item.getItemId() == R.id.reset) {
                 viewModel.restoreChanges();
             }
