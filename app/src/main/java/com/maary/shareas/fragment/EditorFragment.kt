@@ -64,6 +64,16 @@ class EditorFragment : Fragment() {
             }
         }
 
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.upscaleProgressState.collect { state ->
+                    if (state == 100) {
+                        binding.editorButtonApply.visibility = View.VISIBLE
+                    }
+                }
+            }
+        }
+
         activity?.onBackPressedDispatcher?.addCallback {
             viewModel.restoreChanges()
             isEnabled = false
@@ -131,7 +141,6 @@ class EditorFragment : Fragment() {
             loadFragment(UpscaleFragment())
         }
 
-
         // Inflate the layout for this fragment
         return binding.root
     }
@@ -182,8 +191,13 @@ class EditorFragment : Fragment() {
         transaction.addToBackStack(null) // 可选，用于返回栈管理
         transaction.commit()
         if (fragment is UpscaleFragment) {
-            binding.editorButtonsGroup.visibility = View.INVISIBLE
-            Log.v("WVM", "UPSCALE FRAGMENT")
+            binding.editorButtonApply.visibility = View.INVISIBLE
+            binding.chipApplyHome.isClickable = false
+            binding.chipApplyLock.isClickable = false
+        } else {
+            binding.editorButtonApply.visibility = View.VISIBLE
+            binding.chipApplyHome.isClickable = true
+            binding.chipApplyLock.isClickable = true
         }
         binding.editorCard.visibility = View.VISIBLE
     }

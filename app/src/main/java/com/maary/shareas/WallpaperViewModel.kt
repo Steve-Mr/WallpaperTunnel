@@ -4,7 +4,6 @@ import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
 import ai.onnxruntime.extensions.OrtxPackage
 import ai.onnxruntime.providers.NNAPIFlags
-import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -18,22 +17,17 @@ import androidx.lifecycle.viewModelScope
 import com.hoko.blur.HokoBlur
 import com.hoko.blur.task.AsyncBlurTask
 import com.maary.shareas.data.ViewerBitmap
-import com.maary.shareas.helper.Result
 import com.maary.shareas.helper.SuperResPerformer
 import com.maary.shareas.helper.Util
-import com.maary.shareas.helper.Util_Files
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -43,17 +37,18 @@ import java.io.IOException
 import java.io.InputStream
 import java.util.EnumSet
 
-class WallpaperViewModel: ViewModel() {
+class WallpaperViewModel : ViewModel() {
     init {
         Log.v("WVM", "INIT")
     }
 
     private var bakBitmap = ViewerBitmap()
 
-    var bitmapRaw: Bitmap? = null
+    private var bitmapRaw: Bitmap? = null
 
-    var bitmap: Bitmap? = null
+    private var bitmap: Bitmap? = null
         set(value) {
+            Log.v("WVM", "BITMAP SET")
             field = value
             bakBitmap.bitmapHome = value
             bakBitmap.bitmapLock = value
@@ -75,20 +70,66 @@ class WallpaperViewModel: ViewModel() {
             _currentBitmapState.value = value
         }
 
+    var upscaleToggle = false
+        set(value) {
+            field = value
+            _upscaleToggleState.value = value
+        }
+
     private val _currentBitmapState = MutableStateFlow(currentBitmap)
     val currentBitmapState: StateFlow<Int?> = _currentBitmapState.asStateFlow()
     val currentBitmapStateLiveData: LiveData<Int?> = _currentBitmapState.asLiveData()
 
     private val _viewerState = MutableStateFlow(ViewerBitmap())
-    val viewerState= _viewerState.asStateFlow()
-    val viewerStateLiveData= _viewerState.asLiveData()
+    val viewerState = _viewerState.asStateFlow()
+    val viewerStateLiveData = _viewerState.asLiveData()
 
     private val _inEditor: MutableStateFlow<Boolean> = MutableStateFlow(inEditor)
     val inEditorState: StateFlow<Boolean> = _inEditor.asStateFlow()
     val inEditorLiveData: LiveData<Boolean> = _inEditor.asLiveData()
 
+    private val _upscaleProgressState = MutableStateFlow(0)
+    val upscaleProgressState = _upscaleProgressState.asStateFlow()
+
+    private val _upscaleToggleState = MutableStateFlow(upscaleToggle)
+    val upscaleToggleState = _upscaleToggleState.asStateFlow()
+
     private var ortEnv: OrtEnvironment = OrtEnvironment.getEnvironment()
     private lateinit var ortSession: OrtSession
+
+
+    fun setBitmapRaw(value: Bitmap, context: Context) {
+        bitmapRaw = value
+        val _bitmap = fitBitmapToScreen(value, context)
+        bitmap = _bitmap
+    }
+    private fun fitBitmapToScreen(value: Bitmap, context: Context): Bitmap {
+        val deviceBounds = Util.getDeviceBounds(context)
+        val deviceHeight = deviceBounds.y
+        val deviceWidth = deviceBounds.x
+
+        //image ratio > device ratio?
+        val isVertical = Util.isVertical(deviceHeight, deviceWidth, value)
+
+        //show image to imageview
+        val bitmapFullWidth = value.width
+        val bitmapFullHeight = value.height
+        val desiredWidth: Int
+        val desiredHeight: Int
+
+        if (isVertical) {
+            desiredWidth = deviceWidth
+            val scale = deviceWidth.toFloat() / bitmapFullWidth
+            desiredHeight = (scale * bitmapFullHeight).toInt()
+        } else {
+            desiredHeight = deviceHeight
+            val scale = deviceHeight.toFloat() / bitmapFullHeight
+            desiredWidth = (scale * bitmapFullWidth).toInt()
+        }
+
+        return Bitmap.createScaledBitmap(value, desiredWidth, desiredHeight, true)
+
+    }
 
     fun getBitmapHome(): Bitmap? {
         return _viewerState.value.bitmapHome
@@ -145,7 +186,7 @@ class WallpaperViewModel: ViewModel() {
     }
 
     fun getDisplayBitmap(): Bitmap? {
-        if (currentBitmap == HOME){
+        if (currentBitmap == HOME) {
             return _viewerState.value.bitmapHome
         } else if (currentBitmap == LOCK) {
             return _viewerState.value.bitmapLock
@@ -156,7 +197,7 @@ class WallpaperViewModel: ViewModel() {
     fun currentBitmapToggle() {
         if (currentBitmap == HOME) {
             currentBitmap = LOCK
-        }else if (currentBitmap == LOCK) {
+        } else if (currentBitmap == LOCK) {
             currentBitmap = HOME
         }
     }
@@ -196,45 +237,6 @@ class WallpaperViewModel: ViewModel() {
 
                 override fun onBlurFailed(error: Throwable) {}
             })
-//        GlobalScope.launch {
-//            // 启动第一个命令
-//            val result1 = async {
-//                HokoBlur.with(context)
-//                    .radius(value.toInt())
-////            .sampleFactor(1.0f)
-//                    .forceCopy(true)
-//                    .asyncBlur(bakBitmap.bitmapHome, object : AsyncBlurTask.Callback {
-//                        override fun onBlurSuccess(bitmap: Bitmap) {
-//                            _viewerState.update { current ->
-//                                current.copy(bitmapHome = bitmap)
-//                            }
-//                        }
-//
-//                        override fun onBlurFailed(error: Throwable) {}
-//                    })
-//            }
-//
-//            // 启动第二个命令
-//            val result2 = async {
-//                HokoBlur.with(context)
-//                    .radius(value.toInt())
-////            .sampleFactor(1.0f)
-//                    .forceCopy(true)
-//                    .asyncBlur(bakBitmap.bitmapLock, object : AsyncBlurTask.Callback {
-//                        override fun onBlurSuccess(bitmap: Bitmap) {
-//                            _viewerState.update { current ->
-//                                current.copy(bitmapLock = bitmap)
-//                            }
-//                        }
-//
-//                        override fun onBlurFailed(error: Throwable) {}
-//                    })
-//            }
-//
-//            // 等待两个命令执行完毕，并获取结果
-//            val resultHome = result1.await()
-//            val resultLock = result2.await()
-//        }
     }
 
     fun editBrightness(value: Float) {
@@ -269,7 +271,11 @@ class WallpaperViewModel: ViewModel() {
         val fileOutputStream: FileOutputStream
         try {
             fileOutputStream = FileOutputStream(file)
-            _viewerState.value.bitmapHome?.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream)
+            _viewerState.value.bitmapHome?.compress(
+                Bitmap.CompressFormat.PNG,
+                100,
+                fileOutputStream
+            )
             fileOutputStream.flush()
             fileOutputStream.close()
         } catch (e: IOException) {
@@ -283,59 +289,73 @@ class WallpaperViewModel: ViewModel() {
         )
     }
 
-//    fun performUpscale(context: Context) {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            upscale(context)
-//        }
-//    }
-
-//    fun upscale(context: Context) {
-//        val sessionOptions: OrtSession.SessionOptions = OrtSession.SessionOptions()
-//        sessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath())
-//        sessionOptions.addNnapi(EnumSet.of(
-//            NNAPIFlags.USE_FP16,
-//            NNAPIFlags.CPU_DISABLED))
-//        ortSession = ortEnv.createSession(readModel(context), sessionOptions)
-//        performSuperResolution(ortSession)
-//    }
-
-    private fun readModel(context: Context): ByteArray {
+    private fun readModel(context: Context, modelID: Int): ByteArray {
         Log.e("WVM", "READ MODEL")
-        val modelID = R.raw.realesrgan_x2plus
         return context.resources.openRawResource(modelID).readBytes()
     }
 
-    fun performSuperResolution(ortSession: OrtSession, bitmap: Bitmap): Bitmap? {
-        var superResPerformer = SuperResPerformer()
+    private fun performSuperResolution(ortSession: OrtSession, bitmap: Bitmap): Bitmap? {
+        val superResPerformer = SuperResPerformer()
         Log.v("WVM", "STARTED")
 
-        var result = superResPerformer.upscale(bitmapToInputStream(bitmap), ortEnv, ortSession)
-//        _viewerState.update { current ->
-//            Log.v("WVM", "FINISHED")
-//            current.copy(
-//                bitmapHome = result.outputBitmap
-//            )
-//        }
+        val result = superResPerformer.upscale(bitmapToInputStream(bitmap), ortEnv, ortSession)
         return result.outputBitmap
     }
 
-    fun bitmapToInputStream(bitmap: Bitmap?): InputStream {
+    private fun bitmapToInputStream(bitmap: Bitmap?): InputStream {
         val outputStream = ByteArrayOutputStream()
         bitmap?.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
         return ByteArrayInputStream(outputStream.toByteArray())
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    fun processBitmap(context: Context){
+    private suspend fun process(tileBitmap: Bitmap): Bitmap? {
+        // 实现对图片的超分辨率处理
+        return viewModelScope.async(Dispatchers.IO) {
+            performSuperResolution(ortSession, tileBitmap)
+        }.await()
+    }
+
+    private fun scaleBitmapTo(originalBitmap: Bitmap, scale: Float): Bitmap {
+        val originalWidth = originalBitmap.width
+        val originalHeight = originalBitmap.height
+        val scaledWidth = (originalWidth * scale).toInt()
+        val scaledHeight = (originalHeight * scale).toInt()
+        return Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
+    }
+
+    fun upscale(context: Context, modelName: String) {
+        Log.v("WVM", modelName)
+
+        var model = R.raw.realesrgan_anime
+        var scale = 4
+        val modelArray = context.resources.getStringArray(R.array.model_names)
+        when (modelName) {
+            modelArray[0] -> {
+                model = R.raw.realesrgan_x2plus
+                scale = 2
+            }
+
+            modelArray[1] -> {
+                model = R.raw.realesrgan_x4plus
+                scale = 4
+                scaleBitmapTo(bitmapRaw!!, 0.5f)
+            }
+
+            modelArray[2] -> {
+                model = R.raw.realesrgan_anime
+                scaleBitmapTo(bitmapRaw!!, 0.5f)
+            }
+        }
 
         val sessionOptions: OrtSession.SessionOptions = OrtSession.SessionOptions()
         sessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath())
-        sessionOptions.addNnapi(EnumSet.of(
-            NNAPIFlags.USE_FP16,
-            NNAPIFlags.CPU_DISABLED))
-        ortSession = ortEnv.createSession(readModel(context), sessionOptions)
-
-//        bitmapRaw = scaleBitmapToHalf(bitmapRaw!!)
+        sessionOptions.addNnapi(
+            EnumSet.of(
+                NNAPIFlags.USE_FP16,
+                NNAPIFlags.CPU_DISABLED
+            )
+        )
+        ortSession = ortEnv.createSession(readModel(context, model), sessionOptions)
 
         // 1. 输入是一个 bimap
         val originalWidth = bitmapRaw!!.width
@@ -345,66 +365,22 @@ class WallpaperViewModel: ViewModel() {
         val tileSize = 256
         val numTilesX = (originalWidth + tileSize - 1) / tileSize
         val numTilesY = (originalHeight + tileSize - 1) / tileSize
+        val sub = numTilesX * numTilesY
 
         // 存储处理后的 tile
         val processedTiles = mutableListOf<Bitmap>()
-//
-//        var i = 0
-//
-//        for (y in 0 until numTilesY) {
-//            for (x in 0 until numTilesX) {
-//                // 计算当前 tile 的位置
-//                val tileX = x * tileSize
-//                val tileY = y * tileSize
-//                val tileWidth = minOf(tileSize, originalWidth - tileX)
-//                val tileHeight = minOf(tileSize, originalHeight - tileY)
-//
-//                // 获取当前 tile
-//                val tileBitmap = Bitmap.createBitmap(bitmapRaw!!, tileX, tileY, tileWidth, tileHeight)
-//
-//                Log.v("WVM", "TILE INPUT")
-//                // 3. 将 tile 输入 process() 函数
-//                val processedTile = runBlocking { process(tileBitmap) }
-//
-//                // 将处理后的 tile 存入列表
-//                if (processedTile != null) {
-//                    processedTiles.add(processedTile)
-//                }
-//
-//                System.gc()
-//                i++
-//                Log.v("WVM", i.toString())
-//
-//            }
-//        }
-//
-//        Log.v("WVM", "TILE FINISHED")
-//
-//
-//        // 4. 拼接处理后的 tile
-//        val resultWidth = originalWidth * 4
-//        val resultHeight = originalHeight * 4
-//        val resultBitmap = Bitmap.createBitmap(resultWidth, resultHeight, bitmapRaw!!.config)
-//        val canvas = Canvas(resultBitmap)
-//        var currentX = 0
-//        var currentY = 0
-//
-//        for (processedTile in processedTiles) {
-//            canvas.drawBitmap(processedTile, currentX.toFloat(), currentY.toFloat(), null)
-//            currentX += processedTile.width
-//            if (currentX >= resultWidth) {
-//                currentX = 0
-//                currentY += processedTile.height
-//            }
-//        }
 
         val processedTilesDeferred = mutableListOf<Deferred<Bitmap?>>()
 
 
-        GlobalScope.launch {
-            var i = 0
+        viewModelScope.launch {
+            var numFinished = 0
+            var progress = 0
             for (y in 0 until numTilesY) {
                 for (x in 0 until numTilesX) {
+
+                    if (!_upscaleToggleState.value) break
+
                     val tileX = x * tileSize
                     val tileY = y * tileSize
                     val tileWidth = minOf(tileSize, originalWidth - tileX)
@@ -417,23 +393,25 @@ class WallpaperViewModel: ViewModel() {
                     processedTilesDeferred.add(deferred)
                     val processedTile = deferred.await()
 
-                    i++
-                    Log.e("WVM", i.toString())
+                    numFinished++
+                    Log.e("WVM", numFinished.toString())
+                    if (sub != 0) {
+                        progress = (String.format("%.2f", (numFinished.toDouble() / sub.toDouble()))
+                            .toDouble() * 100).toInt()
+                    }
+                    _upscaleProgressState.value = progress
 
                     if (processedTile != null) {
                         processedTiles.add(processedTile)
-//                        processedTiles.add(scaleBitmapToHalf(processedTile))
                     }
 
                     System.gc()
                 }
             }
 
-//            val resultWidth = originalWidth * 4
-//            val resultHeight = originalHeight * 4
-            val resultWidth = originalWidth * 2
-            val resultHeight = originalHeight * 2
-            val resultBitmap = Bitmap.createBitmap(resultWidth, resultHeight, bitmapRaw!!.config)
+            val resultWidth = originalWidth * scale
+            val resultHeight = originalHeight * scale
+            var resultBitmap = Bitmap.createBitmap(resultWidth, resultHeight, bitmapRaw!!.config)
             val canvas = Canvas(resultBitmap)
             var currentX = 0
             var currentY = 0
@@ -450,84 +428,15 @@ class WallpaperViewModel: ViewModel() {
                 }
             }
 
-            Util_Files.saveWallpaper(resultBitmap, context as Activity)
+            resultBitmap = fitBitmapToScreen(resultBitmap, context)
 
-            // 5. 返回处理后的图片
-//        return resultBitmap
             _viewerState.update { current ->
-                Log.v("WVM", "FINISHED")
                 current.copy(
-                    bitmapHome = resultBitmap
+                    bitmapHome = resultBitmap,
+                    bitmapLock = resultBitmap
                 )
             }
         }
 
-
-
     }
-
-    suspend fun process(tileBitmap: Bitmap): Bitmap? {
-        // 实现对图片的超分辨率处理
-        return viewModelScope.async(Dispatchers.IO) {
-            performSuperResolution(ortSession, tileBitmap)
-        }.await()
-    }
-
-    fun scaleBitmapToHalf(originalBitmap: Bitmap): Bitmap {
-        val originalWidth = originalBitmap.width
-        val originalHeight = originalBitmap.height
-        val scaledWidth = originalWidth / 2
-        val scaledHeight = originalHeight / 2
-        return Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
-    }
-
-
-
-
-//    data class Tile(val bitmap: Bitmap, val startX: Int, val startY: Int)
-//
-//    fun splitBitmap(bitmap: Bitmap): List<Tile> {
-//        val tiles = mutableListOf<Tile>()
-//
-//        // 计算短边长度 * 0.1 作为 tile 大小
-////        val shortEdge = minOf(bitmap.width, bitmap.height)
-//        val tileSize = 256
-//
-//        // 计算行列数
-//        val rows = bitmap.height / tileSize
-//        val cols = bitmap.width / tileSize
-//
-//        // 分割 bitmap 并记录位置
-//        for (row in 0 until rows) {
-//            for (col in 0 until cols) {
-//                val startX = col * tileSize
-//                val startY = row * tileSize
-//                val tileBitmap = Bitmap.createBitmap(bitmap, startX, startY, tileSize, tileSize)
-//                tiles.add(Tile(tileBitmap, startX, startY))
-//            }
-//        }
-//
-//        return tiles
-//    }
-//
-//
-//
-//    fun mergeTiles(tiles: List<Tile>, originalWidth: Int, originalHeight: Int): Bitmap {
-//        val resultBitmap = Bitmap.createBitmap(originalWidth, originalHeight, Bitmap.Config.ARGB_8888)
-//        val canvas = android.graphics.Canvas(resultBitmap)
-//
-//        // 将处理后的 tile 拼接成完整图片
-//        for (tile in tiles) {
-//            canvas.drawBitmap(process(tile), tile.startX.toFloat(), tile.startY.toFloat(), null)
-//        }
-//
-//        return resultBitmap
-//    }
-//
-//    fun processBitmap(bitmap: Bitmap): Bitmap {
-//        val tiles = splitBitmap(bitmap)
-//        val processedTiles = tiles.map { process(it) }
-//        return mergeTiles(tiles, bitmap.width, bitmap.height)
-//    }
-
 }

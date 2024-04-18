@@ -84,36 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
         WallpaperViewModel viewModel = new ViewModelProvider(this).get(WallpaperViewModel.class);
 
-        viewModel.setBitmapRaw(bitmap);
-
-        Point deviceBounds = Util.getDeviceBounds(MainActivity.this);
-        int device_height = deviceBounds.y;
-        int device_width = deviceBounds.x;
-
-        //image ratio > device ratio?
-        Boolean isVertical = Util.isVertical(device_height, device_width, bitmap);
-
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-
-        //show image to imageview
-        int bitmap_full_width = bitmap.getWidth();
-        int bitmap_full_height = bitmap.getHeight();
-        int desired_width;
-        int desired_height;
-
-        if (isVertical) {
-            desired_width = device_width;
-            float scale = (float) device_width / bitmap_full_width;
-            desired_height = (int) (scale * bitmap_full_height);
-        } else {
-            desired_height = device_height;
-            float scale = (float) device_height / bitmap_full_height;
-            desired_width = (int) (scale * bitmap_full_width);
-        }
-
-        bitmap = Bitmap.createScaledBitmap(bitmap, desired_width, desired_height, true);
-
-        viewModel.setBitmap(bitmap);
+        viewModel.setBitmapRaw(bitmap, this);
         viewModel.getViewerStateLiveData().observe(this, state -> binding.mainView.setImageBitmap(Objects.requireNonNull(viewModel.getDisplayBitmap())));
         viewModel.getCurrentBitmapStateLiveData().observe(this, state -> {
             binding.mainView.setImageBitmap(Objects.requireNonNull(viewModel.getDisplayBitmap()));
@@ -129,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         binding.mainView.setOnImageClickListener(v -> viewModel.currentBitmapToggle());
 

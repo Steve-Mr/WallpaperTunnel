@@ -66,4 +66,5 @@
     <string name="cancel_upscale">Cancel Upscale</string>
     <string name="start_upscale">Start Upscale</string>
     <string name="beta">beta</string>
+    <string name="process_speed_might_be_slow">Processing might be slow.</string>
 </resources>

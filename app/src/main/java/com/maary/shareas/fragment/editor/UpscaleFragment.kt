@@ -6,8 +6,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.maary.shareas.R
 import com.maary.shareas.WallpaperViewModel
+import com.maary.shareas.databinding.FragmentBlurBinding
+import com.maary.shareas.databinding.FragmentUpscaleBinding
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -25,6 +33,8 @@ class UpscaleFragment : Fragment() {
     private var param2: String? = null
 
     private val viewModel: WallpaperViewModel by activityViewModels()
+    private var _binding: FragmentUpscaleBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,15 +42,50 @@ class UpscaleFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.upscaleProgressState.collect { state ->
+                    binding.progressUpscale.setProgressCompat(state, true)
+                    if (state == 100) {
+                        viewModel.upscaleToggle = !viewModel.upscaleToggle
+                    }
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.upscaleToggleState.collect { state ->
+                    when (state) {
+                        true -> {
+                            binding.buttonUpscaleToggle.setIconResource(R.drawable.ic_action_close)
+                            binding.progressUpscale.isIndeterminate = true
+                            viewModel.upscale(requireContext(), binding.menuChooseModelTextview.text.toString())
+                        }
+                        false -> {
+                            binding.buttonUpscaleToggle.setIconResource(R.drawable.ic_play)
+                            binding.progressUpscale.setProgressCompat(0, true)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-//        viewModel.processBitmap(requireContext())
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_upscale, container, false)
+    ): View {
+        _binding = FragmentUpscaleBinding.inflate(inflater, container, false)
+
+        binding.menuChooseModelTextview.setText(resources.getStringArray(R.array.model_names)[2], false)
+
+        binding.buttonUpscaleToggle.setOnClickListener {
+            viewModel.upscaleToggle = !viewModel.upscaleToggle
+        }
+
+        return binding.root
     }
 
     companion object {
