@@ -13,6 +13,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.commit
+import androidx.fragment.app.commitNow
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -185,10 +187,9 @@ class EditorFragment : Fragment() {
         viewModel.abortEdit()
         removeFragment()
         val fragmentManager: FragmentManager = childFragmentManager
-        val transaction = fragmentManager.beginTransaction()
-        transaction.replace(binding.editorFragmentContainer.id, fragment)
-        transaction.addToBackStack(null) // 可选，用于返回栈管理
-        transaction.commit()
+        fragmentManager.commitNow {
+            replace(binding.editorFragmentContainer.id, fragment)
+        }
         if (fragment is UpscaleFragment) {
             binding.editorButtonApply.visibility = View.INVISIBLE
             binding.chipApplyHome.isClickable = false
