@@ -47,4 +47,15 @@
     <string name="permission_got">权限已获取</string>
     <string name="add_quick_tile">添加磁贴</string>
     <string name="finish_settings">完成初始设置。</string>
+    <string name="confirm">确认</string>
+    <string name="apply">应用</string>
+    <string name="upscale">超分</string>
+    <string name="model_name">选择模型</string>
+    <string name="cancel_upscale">取消超分</string>
+    <string name="start_upscale">开始超分</string>
+    <string name="beta">测试版</string>
+    <string name="process_speed_might_be_slow">处理过程可能较慢</string>
+    <string name="paint">填充</string>
+    <string name="color_label">颜色 Hex</string>
+    <string name="zoom">缩放</string>
 </resources>
