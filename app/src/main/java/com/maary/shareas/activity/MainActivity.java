@@ -97,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
                 binding.bottomAppBarContainer.setVisibility(View.INVISIBLE);
             } else {
                 binding.bottomAppBarContainer.setVisibility(View.VISIBLE);
-                removeFragment();
             }
         });
 
@@ -154,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
         //tap blur and brightness button will disable other menu item
         binding.bottomAppBar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.edit) {
-                viewModel.startEditing();
+//                viewModel.startEditing();
                 loadFragment(new EditorFragment());
             } else if (item.getItemId() == R.id.reset) {
                 viewModel.restoreChanges();
@@ -256,16 +255,6 @@ public class MainActivity extends AppCompatActivity {
         transaction.replace(R.id.editor_container, fragment);
         transaction.addToBackStack(null); // 可选，用于返回栈管理
         transaction.commit();
-    }
-
-    private void removeFragment() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        for (Fragment f : fragmentManager.getFragments()) {
-            transaction.remove(f);
-        }
-        transaction.commit();
-        fragmentManager.popBackStack();
     }
 
     private void shareUri(Context context, Uri uri) {

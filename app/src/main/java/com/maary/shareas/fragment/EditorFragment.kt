@@ -1,5 +1,6 @@
 package com.maary.shareas.fragment
 
+import android.content.Context
 import android.graphics.BlurMaskFilter.Blur
 import android.os.Bundle
 import android.util.Log
@@ -46,6 +47,12 @@ class EditorFragment : Fragment() {
     private var _binding: FragmentEditorBinding? = null
     private val binding get() = _binding!!
 
+    private var isSaved = false
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        viewModel.startEditing()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,7 +85,7 @@ class EditorFragment : Fragment() {
         }
 
         activity?.onBackPressedDispatcher?.addCallback {
-            viewModel.restoreChanges()
+            if (!isSaved) viewModel.restoreChanges()
             isEnabled = false
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
@@ -109,26 +116,32 @@ class EditorFragment : Fragment() {
 
         binding.appbarButtonCancel.setOnClickListener {
             viewModel.restoreChanges()
-            removeFragment()
-            exit()
+            isSaved = false
+            if (binding.editorCard.visibility == View.VISIBLE) {
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+            }
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
 
         binding.appbarButtonConfirm.setOnClickListener {
             viewModel.saveEdit()
-            removeFragment()
-            exit()
+            isSaved = true
+            if (binding.editorCard.visibility == View.VISIBLE) {
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+            }
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
 
         binding.editorButtonApply.setOnClickListener {
             if (!chipHome.isChecked) viewModel.abortEditHome()
             if (!chipLock.isChecked) viewModel.abortEditLock()
             viewModel.saveEdit()
-            removeFragment()
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
         binding.editorButtonAbort.setOnClickListener {
             viewModel.abortEdit()
-            removeFragment()
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
         binding.editorButtonBlur.setOnClickListener {
@@ -181,16 +194,8 @@ class EditorFragment : Fragment() {
             }
     }
 
-    private fun exit() {
-        viewModel.finishEditing()
-        val fragmentManager = activity?.supportFragmentManager
-        fragmentManager?.beginTransaction()?.remove(this)?.commit()
-        fragmentManager?.popBackStack()
-    }
-
     private fun loadFragment(fragment: Fragment) {
         viewModel.abortEdit()
-        removeFragment()
         val fragmentManager: FragmentManager = childFragmentManager
         fragmentManager.commitNow {
             replace(binding.editorFragmentContainer.id, fragment)
@@ -205,16 +210,5 @@ class EditorFragment : Fragment() {
             binding.chipApplyLock.isClickable = true
         }
         binding.editorCard.visibility = View.VISIBLE
-    }
-
-    private fun removeFragment() {
-        binding.editorCard.visibility = View.INVISIBLE
-        val fragmentManager: FragmentManager = childFragmentManager
-        val transaction = fragmentManager.beginTransaction()
-        for (f in fragmentManager.fragments) {
-            transaction.remove(f)
-        }
-        transaction.commit()
-        fragmentManager.popBackStack()
     }
 }

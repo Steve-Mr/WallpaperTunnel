@@ -306,8 +306,12 @@ class WallpaperViewModel : ViewModel() {
     }
 
     fun saveEdit() {
-        bakBitmap.bitmapHome = _viewerState.value.bitmapHome
-        bakBitmap.bitmapLock = _viewerState.value.bitmapLock
+        bakBitmap = _viewerState.value
+    }
+
+    fun isSaved(): Boolean {
+        Log.v("WVM", (bakBitmap == _viewerState.value).toString())
+        return bakBitmap == _viewerState.value
     }
 
     fun getBitmapUri(context: Context, cacheDir: File): Uri? {
@@ -417,12 +421,15 @@ class WallpaperViewModel : ViewModel() {
         }
     }
 
-    private fun addShadow(image: Bitmap, offset: Int = 32): Bitmap {
+    private fun addShadow(image: Bitmap, zoom: Float, offset: Int = 32): Bitmap {
         val width = image.width
         val height = image.height
 
         // 创建新的背景图片
         val _background = Bitmap.createBitmap(width + offset * 2, height + offset * 2, Bitmap.Config.ARGB_8888)
+
+        if (_background.width > width/zoom || _background.height > height/zoom) return image
+
         val canvas = Canvas(_background)
 
         // 创建绘制阴影的 Paint 对象
@@ -434,7 +441,7 @@ class WallpaperViewModel : ViewModel() {
 
         // 绘制阴影
         for (i in 0 until offset) {
-            val alpha = (255 * (1.5.pow(i) / 1.5.pow(offset))).toInt() // 根据当前距离计算透明度
+            val alpha = (255 * (1.3.pow(i) / 1.3.pow(offset))).toInt() // 根据当前距离计算透明度
             shadowPaint.alpha = alpha
             val rect = RectF(i.toFloat(), i.toFloat(), (width + offset * 2 - i).toFloat(), (height + offset * 2 - i).toFloat())
             canvas.drawRect(rect, shadowPaint)
@@ -460,7 +467,7 @@ class WallpaperViewModel : ViewModel() {
         val bWidth = background!!.width
 
         val _bitmapFit = scaleBitmapTo(bitmapFit!!, scale)
-        val target = addShadow(_bitmapFit)
+        val target = addShadow(_bitmapFit, scale)
 
         val canvasBack = Canvas(background!!)
         val srcLeft = (bitmap!!.width - bWidth)/2

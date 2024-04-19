@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -41,6 +42,17 @@ class UpscaleFragment : Fragment() {
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback {
+            viewModel.abortEdit()
+            requireParentFragment().childFragmentManager.beginTransaction().remove(this@UpscaleFragment).commit()
+            requireParentFragment().childFragmentManager.popBackStack()
+            // 获取包含当前 Fragment 的布局
+            val containingLayout = requireView().parent.parent.parent as? View
+            // 如果布局不为空，则隐藏布局
+            containingLayout?.visibility = View.INVISIBLE
+            isEnabled = false
         }
 
         lifecycleScope.launch {

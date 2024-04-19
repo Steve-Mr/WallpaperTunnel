@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.google.android.material.slider.Slider
@@ -36,6 +37,17 @@ class BlurFragment : Fragment() {
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback {
+            viewModel.abortEdit()
+            requireParentFragment().childFragmentManager.beginTransaction().remove(this@BlurFragment).commit()
+            requireParentFragment().childFragmentManager.popBackStack()
+            // 获取包含当前 Fragment 的布局
+            val containingLayout = requireView().parent.parent.parent as? View
+            // 如果布局不为空，则隐藏布局
+            containingLayout?.visibility = View.INVISIBLE
+            isEnabled = false
         }
     }
 

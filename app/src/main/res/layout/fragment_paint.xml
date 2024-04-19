@@ -102,12 +102,13 @@
 
         <LinearLayout
             android:id="@+id/container_paint_color_input"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@id/buttons_colors"
             app:layout_constraintStart_toStartOf="@id/buttons_colors">
 
             <com.google.android.material.textfield.TextInputLayout
@@ -148,6 +149,14 @@
                     android:digits="0123456789abcdefABCDEF"/>
 
             </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/button_paint"
+                style="?attr/materialIconButtonFilledTonalStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_paint_action"
+                android:layout_gravity="center_vertical"/>
 
         </LinearLayout>
 

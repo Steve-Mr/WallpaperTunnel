@@ -11,10 +11,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import androidx.activity.addCallback
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.palette.graphics.Palette
+import com.google.android.material.button.MaterialButton
 import com.maary.shareas.R
 import com.maary.shareas.WallpaperViewModel
 import com.maary.shareas.databinding.FragmentPaintBinding
@@ -40,13 +42,23 @@ class PaintFragment : Fragment() {
     private val viewModel: WallpaperViewModel by activityViewModels()
 
     private var position = 4 //viewModel.CENTER
-    private var zoom = 1f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback {
+            viewModel.abortEdit()
+            requireParentFragment().childFragmentManager.beginTransaction().remove(this@PaintFragment).commit()
+            requireParentFragment().childFragmentManager.popBackStack()
+            // 获取包含当前 Fragment 的布局
+            val containingLayout = requireView().parent.parent.parent as? View
+            // 如果布局不为空，则隐藏布局
+            containingLayout?.visibility = View.INVISIBLE
+            isEnabled = false
         }
     }
 
@@ -56,10 +68,9 @@ class PaintFragment : Fragment() {
     ): View {
         _binding = FragmentPaintBinding.inflate(inflater, container, false)
 
+        var paintType = 0
 
         binding.buttonAlignCenter.isChecked = true
-
-//        binding.menuChooseScaleTextview.setText(resources.getStringArray(R.array.zoom_scales)[2], false)
 
         binding.hexEditText.addTextChangedListener(object: TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -71,6 +82,8 @@ class PaintFragment : Fragment() {
             override fun afterTextChanged(p0: Editable?) {
                 if (p0?.length == 6){
                     binding.hexEditText.onEditorAction(EditorInfo.IME_ACTION_DONE)
+                    paintType = binding.buttonColorCustom.id
+                    checkButton(paintType)
                     binding.buttonColorCustom.setBackgroundColor(Color.parseColor("#${binding.hexEditText.text}"))
                 }
             }
@@ -103,28 +116,61 @@ class PaintFragment : Fragment() {
                 val imm = getSystemService(requireContext(), InputMethodManager::class.java) as InputMethodManager
                 imm.showSoftInput(binding.hexEditText, InputMethodManager.SHOW_IMPLICIT)
             } else {
-                paintColor(Color.parseColor("#${binding.hexEditText.text}"))
+                paintType = it.id
+                setZoom()
             }
         }
 
         binding.buttonColor1.setOnClickListener {
-            paintColor(colors[0])
+            paintType = it.id
+            setZoom()
+            checkButton(it.id)
         }
         binding.buttonColor2.setOnClickListener {
-            paintColor(colors[1])
+            paintType = it.id
+            setZoom()
+            checkButton(it.id)
         }
         binding.buttonColor3.setOnClickListener {
-            paintColor(colors[2])
+            paintType = it.id
+            setZoom()
+            checkButton(it.id)
         }
         binding.buttonColor4.setOnClickListener {
-            paintColor(colors[3])
+            paintType = it.id
+            setZoom()
+            checkButton(it.id)
         }
         binding.buttonColor5.setOnClickListener {
-            paintColor(colors[4])
+            paintType = it.id
+            setZoom()
+            checkButton(it.id)
         }
 
         binding.buttonBlur.setOnClickListener {
-            paintBlur(requireContext())
+            paintType = it.id
+            if (binding.scaleEditText.text.isNullOrEmpty()) {
+                binding.scaleEditText.setText(
+                    resources.getStringArray(R.array.zoom_scales)[3],
+                    false
+                )
+            }
+            checkButton(it.id)
+        }
+
+        binding.buttonPaint.setOnClickListener {
+            val zoom = binding.scaleEditText.text.toString().toFloat()
+            when (paintType) {
+                R.id.button_color1 -> viewModel.paintColor(position, colors[0], zoom)
+                R.id.button_color2 -> viewModel.paintColor(position, colors[1], zoom)
+                R.id.button_color3 -> viewModel.paintColor(position, colors[2], zoom)
+                R.id.button_color4 -> viewModel.paintColor(position, colors[3], zoom)
+                R.id.button_color5 -> viewModel.paintColor(position, colors[4], zoom)
+                R.id.button_color_custom ->
+                    viewModel.paintColor(position, Color.parseColor("#${binding.hexEditText.text}"), zoom)
+                R.id.button_blur -> viewModel.paintBlur(position, 16, requireContext(), zoom)
+
+            }
         }
 
         // Inflate the layout for this fragment
@@ -151,27 +197,56 @@ class PaintFragment : Fragment() {
             }
     }
 
-    private fun paintColor(color: Int) {
-        zoom = if (binding.scaleEditText.text.isNullOrEmpty()) {
+    private fun checkButton(buttonId: Int) {
+        val buttons = mutableListOf(
+            R.id.button_blur,
+            R.id.button_color1,
+            R.id.button_color2,
+            R.id.button_color3,
+            R.id.button_color4,
+            R.id.button_color5,
+            R.id.button_color_custom)
+
+        for (button in buttons) {
+            if (button == buttonId) {
+                binding.root.findViewById<MaterialButton>(button).setIconResource(R.drawable.ic_done)
+            } else {
+                if (button == R.id.button_blur) {
+                    binding.root.findViewById<MaterialButton>(button).setIconResource(R.drawable.ic_blur_16)
+                } else {
+                    binding.root.findViewById<MaterialButton>(button).icon = null
+                }
+            }
+        }
+    }
+
+    private fun setZoom() {
+        if (binding.scaleEditText.text.isNullOrEmpty()) {
             binding.scaleEditText.setText(resources.getStringArray(R.array.zoom_scales)[5], false)
-            1f
-        } else {
-            binding.scaleEditText.text.toString().toFloat()
         }
-        viewModel.paintColor(
-            position,
-            color,
-            zoom )
     }
 
-    private fun paintBlur(context: Context) {
-        zoom = if (binding.scaleEditText.text.isNullOrEmpty()) {
-            binding.scaleEditText.setText(resources.getStringArray(R.array.zoom_scales)[3], false)
-            0.8f
-        } else {
-            binding.scaleEditText.text.toString().toFloat()
-        }
-        viewModel.paintBlur(position, 16, context, zoom)
-
-    }
+//    private fun paintColor(color: Int) {
+//        zoom = if (binding.scaleEditText.text.isNullOrEmpty()) {
+//            binding.scaleEditText.setText(resources.getStringArray(R.array.zoom_scales)[5], false)
+//            1f
+//        } else {
+//            binding.scaleEditText.text.toString().toFloat()
+//        }
+//        viewModel.paintColor(
+//            position,
+//            color,
+//            zoom )
+//    }
+//
+//    private fun paintBlur(context: Context) {
+//        zoom = if (binding.scaleEditText.text.isNullOrEmpty()) {
+//            binding.scaleEditText.setText(resources.getStringArray(R.array.zoom_scales)[3], false)
+//            0.8f
+//        } else {
+//            binding.scaleEditText.text.toString().toFloat()
+//        }
+//        viewModel.paintBlur(position, 16, context, zoom)
+//
+//    }
 }
