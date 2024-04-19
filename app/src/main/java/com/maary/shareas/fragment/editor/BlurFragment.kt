@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -16,20 +17,25 @@ class BlurFragment : Fragment() {
     private val viewModel: WallpaperViewModel by activityViewModels()
     private var _binding: FragmentBlurBinding? = null
     private val binding get() = _binding!!
+    private lateinit var onBackPressedCallback: OnBackPressedCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        requireActivity().onBackPressedDispatcher.addCallback {
-            viewModel.abortEdit()
-            requireParentFragment().childFragmentManager.beginTransaction().remove(this@BlurFragment).commit()
-            requireParentFragment().childFragmentManager.popBackStack()
-            // 获取包含当前 Fragment 的布局
-            val containingLayout = requireView().parent.parent.parent as? View
-            // 如果布局不为空，则隐藏布局
-            containingLayout?.visibility = View.INVISIBLE
-            isEnabled = false
+        onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                viewModel.abortEdit()
+                requireParentFragment().childFragmentManager.beginTransaction().remove(this@BlurFragment).commit()
+                requireParentFragment().childFragmentManager.popBackStack()
+                // 获取包含当前 Fragment 的布局
+                val containingLayout = requireView().parent.parent.parent as? View
+                // 如果布局不为空，则隐藏布局
+                containingLayout?.visibility = View.INVISIBLE
+                isEnabled = false
+            }
         }
+        requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
+
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -45,6 +51,11 @@ class BlurFragment : Fragment() {
             viewModel.editBlur(requireActivity(), value)
         })
         return binding.root
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        onBackPressedCallback.remove()
     }
 
     override fun onDestroyView() {

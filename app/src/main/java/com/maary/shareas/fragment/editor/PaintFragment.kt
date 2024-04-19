@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
@@ -30,20 +31,25 @@ class PaintFragment : Fragment() {
     private val viewModel: WallpaperViewModel by activityViewModels()
 
     private var position = 4 //viewModel.CENTER
+    private lateinit var onBackPressedCallback: OnBackPressedCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        requireActivity().onBackPressedDispatcher.addCallback {
-            viewModel.abortEdit()
-            requireParentFragment().childFragmentManager.beginTransaction().remove(this@PaintFragment).commit()
-            requireParentFragment().childFragmentManager.popBackStack()
-            // 获取包含当前 Fragment 的布局
-            val containingLayout = requireView().parent.parent.parent as? View
-            // 如果布局不为空，则隐藏布局
-            containingLayout?.visibility = View.INVISIBLE
-            isEnabled = false
+        onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                viewModel.abortEdit()
+                requireParentFragment().childFragmentManager.beginTransaction().remove(this@PaintFragment).commit()
+                requireParentFragment().childFragmentManager.popBackStack()
+                // 获取包含当前 Fragment 的布局
+                val containingLayout = requireView().parent.parent.parent as? View
+                // 如果布局不为空，则隐藏布局
+                containingLayout?.visibility = View.INVISIBLE
+                isEnabled = false
+            }
         }
+        requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
+
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -194,6 +200,16 @@ class PaintFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        onBackPressedCallback.remove()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun setZoom() {
