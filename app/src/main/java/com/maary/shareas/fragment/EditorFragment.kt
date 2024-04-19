@@ -1,6 +1,7 @@
 package com.maary.shareas.fragment
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.BlurMaskFilter.Blur
 import android.os.Bundle
 import android.util.Log
@@ -9,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewStub
 import androidx.activity.addCallback
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
@@ -62,6 +64,27 @@ class EditorFragment : Fragment() {
                 viewModel.upscaleProgressState.collect { state ->
                     if (state == 100) {
                         binding.editorButtonApply.visibility = View.VISIBLE
+                    }
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.primaryColorState.collect {
+                    if (viewModel.primary != null) {
+                        val colorValue = viewModel.teriary!!
+                        val colorStateList = ColorStateList.valueOf(colorValue)
+                        binding.editorButtonBlur.backgroundTintList = colorStateList
+                        binding.editorButtonBrightness.backgroundTintList = colorStateList
+                        binding.editorButtonFill.backgroundTintList = colorStateList
+                        binding.editorButtonUpscale.backgroundTintList = colorStateList
+                        binding.appbarButtonCancel.setBackgroundColor(viewModel.secondary!!)
+                        binding.appbarButtonConfirm.setBackgroundColor(viewModel.secondary!!)
+                        binding.editorButtonApply.setTextColor(viewModel.primary!!)
+                        binding.editorButtonAbort.setTextColor(viewModel.primary!!)
+                        binding.chipApplyHome.backgroundTintList = colorStateList
+                        binding.chipApplyLock.backgroundTintList = colorStateList
                     }
                 }
             }

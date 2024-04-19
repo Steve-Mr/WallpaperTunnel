@@ -97,7 +97,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:alpha="0.9"
-            android:visibility="invisible"
             app:cardCornerRadius="8dp"
             android:layout_margin="16dp">
 

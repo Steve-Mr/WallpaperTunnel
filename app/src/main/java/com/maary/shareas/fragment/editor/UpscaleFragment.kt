@@ -1,5 +1,6 @@
 package com.maary.shareas.fragment.editor
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -63,6 +64,23 @@ class UpscaleFragment : Fragment() {
                 }
             }
         }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.primaryColorState.collect {
+                    if (viewModel.primary != null) {
+                        val primaryValue = viewModel.primary!!
+                        val primaryStateList = ColorStateList.valueOf(primaryValue)
+                        val tertiaryValue = viewModel.teriary!!
+                        val tertiaryStateList = ColorStateList.valueOf(tertiaryValue)
+                        binding.buttonUpscaleToggle.iconTint = primaryStateList
+                        binding.betaIcon.iconTint = tertiaryStateList
+                        binding.betaIcon.setTextColor(tertiaryValue)
+                    }
+                }
+            }
+        }
+
     }
 
     override fun onCreateView(

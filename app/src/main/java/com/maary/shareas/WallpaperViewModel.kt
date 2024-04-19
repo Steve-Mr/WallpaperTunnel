@@ -44,6 +44,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.util.EnumSet
 import kotlin.math.pow
+import kotlin.random.Random
 
 
 class WallpaperViewModel : ViewModel() {
@@ -61,8 +62,6 @@ class WallpaperViewModel : ViewModel() {
         const val RIGHT = 3
         const val CENTER = 4
     }
-
-
 
     private var bakBitmap = ViewerBitmap()
 
@@ -97,6 +96,11 @@ class WallpaperViewModel : ViewModel() {
             _upscaleToggleState.value = value
         }
 
+
+    var primary: Int? = null
+    var secondary: Int? = null
+    var teriary: Int? = null
+
     private val _currentBitmapState = MutableStateFlow(currentBitmap)
     val currentBitmapState: StateFlow<Int?> = _currentBitmapState.asStateFlow()
     val currentBitmapStateLiveData: LiveData<Int?> = _currentBitmapState.asLiveData()
@@ -113,6 +117,10 @@ class WallpaperViewModel : ViewModel() {
     private val _upscaleToggleState = MutableStateFlow(upscaleToggle)
     val upscaleToggleState = _upscaleToggleState.asStateFlow()
 
+    private val _primaryColorState = MutableStateFlow(Color.TRANSPARENT)
+    val primaryColorState = _primaryColorState.asStateFlow()
+    val primaryColorStateLiveData = _primaryColorState.asLiveData()
+
     private var ortEnv: OrtEnvironment = OrtEnvironment.getEnvironment()
     private lateinit var ortSession: OrtSession
 
@@ -123,6 +131,11 @@ class WallpaperViewModel : ViewModel() {
         bitmap = fitBitmapToScreen(value, context)
         val deviceBounds = Util.getDeviceBounds(context)
         background = Bitmap.createBitmap(deviceBounds.x, deviceBounds.y, Bitmap.Config.ARGB_8888)
+        val colors = extractColorsFromPalette()
+        primary = adjustColor(colors[0])
+        secondary = adjustColor(colors[1])
+        teriary = adjustColor(colors[2])
+        _primaryColorState.value += 1
     }
     private fun fitBitmapToScreen(value: Bitmap, context: Context): Bitmap {
         val deviceBounds = Util.getDeviceBounds(context)
@@ -197,6 +210,48 @@ class WallpaperViewModel : ViewModel() {
             )
         }
     }
+
+    fun adjustColor(color: Int, threshold: Float = 0.5f): Int {
+        val red = android.graphics.Color.red(color)
+        val green = android.graphics.Color.green(color)
+        val blue = android.graphics.Color.blue(color)
+        val brightness = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
+
+        return if (brightness > threshold) {
+            // 如果亮度超过阈值，则将颜色调暗
+            val factor = 0.8f // 调暗因子，可以根据需要调整
+            darkenColor(red, green, blue, factor)
+        } else if (brightness < (1 - threshold)) {
+            // 如果亮度低于 (1 - threshold)，则将颜色调亮
+            val factor = 1.2f // 调亮因子，可以根据需要调整
+            lightenColor(red, green, blue, factor)
+        } else {
+            // 如果颜色过于偏白，随机添加一些颜色
+            val offset = Random.nextInt(20, 50) // 随机偏移量
+            val newRed = (red + offset).coerceIn(0, 255)
+            val newGreen = (green + offset).coerceIn(0, 255)
+            val newBlue = (blue + offset).coerceIn(0, 255)
+            Color.rgb(newRed, newGreen, newBlue)
+        }
+    }
+
+    fun darkenColor(red: Int, green: Int, blue: Int, factor: Float): Int {
+        val offset = Random.nextInt(-20, 20) // 随机偏移量
+        val newRed = (red * factor + offset).coerceIn(0f, 255f)
+        val newGreen = (green * factor + offset).coerceIn(0f, 255f)
+        val newBlue = (blue * factor + offset).coerceIn(0f, 255f)
+        return Color.rgb(newRed.toInt(), newGreen.toInt(), newBlue.toInt())
+    }
+
+    fun lightenColor(red: Int, green: Int, blue: Int, factor: Float): Int {
+        val offset = Random.nextInt(-20, 20) // 随机偏移量
+        val newRed = (red * factor + offset).coerceIn(0f, 255f)
+        val newGreen = (green * factor + offset).coerceIn(0f, 255f)
+        val newBlue = (blue * factor + offset).coerceIn(0f, 255f)
+        return Color.rgb(newRed.toInt(), newGreen.toInt(), newBlue.toInt())
+    }
+
+
 
     // 丢弃当前的修改
     fun abortEdit() {
@@ -388,6 +443,15 @@ class WallpaperViewModel : ViewModel() {
         return sortedColors.map { it.first }
     }
 
+    fun extractColorsFromPalette(): List<Int> {
+        val palette = Palette.from(bitmap!!).generate()
+
+        // 获取所有的颜色 swatch，并根据 population 属性进行排序
+        val sortedSwatches = palette.swatches.sortedByDescending { it.population }
+
+        // 提取前五个颜色
+        return sortedSwatches.take(3).map { it.rgb }
+    }
 
     fun paintColor(position: Int, color: Int, scale: Float = 1f) {
         var left = 0

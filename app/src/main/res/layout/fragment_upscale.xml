@@ -20,7 +20,8 @@
             android:textColor="?attr/colorOnSurface"
             android:textSize="24sp" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/beta_icon"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -35,7 +36,7 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/menu_choose_model"
-            style="@style/Widget.Material3.TextInputLayout.FilledBox.ExposedDropdownMenu"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintLeft_toLeftOf="parent"

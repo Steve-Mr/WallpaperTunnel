@@ -1,5 +1,6 @@
 package com.maary.shareas.fragment.editor
 
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
@@ -13,10 +14,14 @@ import androidx.activity.addCallback
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.button.MaterialButton
 import com.maary.shareas.R
 import com.maary.shareas.WallpaperViewModel
 import com.maary.shareas.databinding.FragmentPaintBinding
+import kotlinx.coroutines.launch
 
 class PaintFragment : Fragment() {
 
@@ -38,6 +43,18 @@ class PaintFragment : Fragment() {
             // 如果布局不为空，则隐藏布局
             containingLayout?.visibility = View.INVISIBLE
             isEnabled = false
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.primaryColorState.collect {
+                    if (viewModel.primary != null) {
+                        val colorValue = viewModel.primary!!
+                        val colorStateList = ColorStateList.valueOf(colorValue)
+                        binding.buttonPaint.iconTint = colorStateList
+                    }
+                }
+            }
         }
     }
 

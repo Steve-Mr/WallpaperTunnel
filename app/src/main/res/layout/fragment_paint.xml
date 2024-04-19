@@ -150,7 +150,7 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_paint"
                 style="?attr/materialIconButtonFilledTonalStyle"
                 android:layout_width="wrap_content"
