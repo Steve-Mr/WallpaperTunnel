@@ -57,4 +57,15 @@
     <string name="permission_got">Permission Got.</string>
     <string name="add_quick_tile">Add Tile</string>
     <string name="finish_settings">Finish initial settings.</string>
+    <string name="confirm">Confirm</string>
+    <string name="apply">Apply</string>
+    <string name="upscale">Upscale</string>
+    <string name="model_name">Choose Model</string>
+    <string name="cancel_upscale">Cancel Upscale</string>
+    <string name="start_upscale">Start Upscale</string>
+    <string name="beta">beta</string>
+    <string name="process_speed_might_be_slow">Processing might be slow.</string>
+    <string name="paint">Paint</string>
+    <string name="color_label">Color Hex</string>
+    <string name="zoom">Zoom</string>
 </resources>

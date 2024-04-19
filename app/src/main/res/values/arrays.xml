@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="model_names">
+        <item>RealESRGAN-x2p</item>
+        <item>RealESRGAN-x4p</item>
+        <item>RealESRGAN-anime</item>
+    </string-array>
+
+    <string-array name="zoom_scales">
+        <item>0.5</item>
+        <item>0.6</item>
+        <item>0.7</item>
+        <item>0.8</item>
+        <item>0.9</item>
+        <item>1.0</item>
+    </string-array>
+</resources>

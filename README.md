@@ -5,6 +5,8 @@ Share image to WallpaperTunnel to set it as wallpaper.
 
 - Provide a simple method for setting images as wallpapers. 
 - Allow adjustment of image brightness and blur intensity. 
+- Fill images with solid color or blurred images.  
+- Image Super-Resolution. (Beta)
 - Maintain a history of wallpapers set through this app. 
 - Retrieve and modify the current wallpaper (static wallpapers only).
 

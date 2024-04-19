@@ -3,6 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     >
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 <androidx.constraintlayout.widget.ConstraintLayout
     android:id="@+id/start_constraintlayout"
     android:layout_width="match_parent"
@@ -19,19 +23,6 @@
         android:textColor="?attr/colorOutline"
         android:textSize="32sp"
         android:textStyle="bold"/>
-
-<!--    <com.google.android.material.card.MaterialCardView-->
-<!--        android:id="@+id/system_wallp_container"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        android:layout_margin="8dp"-->
-<!--        style="?attr/materialCardViewElevatedStyle"-->
-<!--        app:cardBackgroundColor="?attr/colorSecondaryContainer">-->
-<!--        app:layout_constraintTop_toBottomOf="@id/start_slogan">-->
-
 
         <LinearLayout
             android:id="@+id/system_wallp_container"
@@ -71,23 +62,9 @@
                     android:layout_height="wrap_content"
                     android:src="@drawable/place_holder"
                     android:adjustViewBounds="true"
+                    android:layout_gravity="center_horizontal"
                     app:shapeAppearanceOverlay="@style/RoundedSquare"
                     android:scaleType="centerInside" />
-
-<!--                <com.google.android.material.chip.Chip-->
-<!--                    android:id="@+id/chip_lockscreen"-->
-<!--                    style="@style/Widget.Material3.Chip.Filter"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:text="@string/lock"-->
-<!--                    app:chipIcon="@drawable/ic_lockscreen"-->
-<!--                    app:ensureMinTouchTargetSize="true"-->
-<!--                    app:chipIconVisible="true"-->
-<!--                    app:chipStrokeWidth="0dp"-->
-<!--                    android:checkable="false"-->
-<!--                    android:gravity="center"-->
-<!--                    app:chipIconTint="?attr/colorOnSurface"-->
-<!--                    android:layout_gravity="center_horizontal"/>-->
 
             </LinearLayout>
 
@@ -118,28 +95,13 @@
                     android:layout_height="wrap_content"
                     android:src="@drawable/place_holder"
                     android:adjustViewBounds="true"
+                    android:layout_gravity="center_horizontal"
                     app:shapeAppearanceOverlay="@style/RoundedSquare"
                     android:scaleType="centerInside"/>
-
-<!--                <com.google.android.material.chip.Chip-->
-<!--                    android:id="@+id/chip_home"-->
-<!--                    style="@style/Widget.Material3.Chip.Filter"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:text="@string/home"-->
-<!--                    app:chipIcon="@drawable/ic_vertical"-->
-<!--                    app:ensureMinTouchTargetSize="true"-->
-<!--                    app:chipIconVisible="true"-->
-<!--                    app:chipStrokeWidth="0dp"-->
-<!--                    android:checkable="false"-->
-<!--                    app:chipIconTint="?attr/colorOnSurface"-->
-<!--                    android:layout_gravity="center_horizontal"/>-->
 
             </LinearLayout>
 
         </LinearLayout>
-
-<!--    </com.google.android.material.card.MaterialCardView>-->
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
@@ -174,4 +136,5 @@
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 </layout>
