@@ -99,7 +99,7 @@ class WallpaperViewModel : ViewModel() {
 
     var primary: Int? = null
     var secondary: Int? = null
-    var teriary: Int? = null
+    var tertiary: Int? = null
 
     private val _currentBitmapState = MutableStateFlow(currentBitmap)
     val currentBitmapState: StateFlow<Int?> = _currentBitmapState.asStateFlow()
@@ -119,7 +119,6 @@ class WallpaperViewModel : ViewModel() {
 
     private val _primaryColorState = MutableStateFlow(Color.TRANSPARENT)
     val primaryColorState = _primaryColorState.asStateFlow()
-    val primaryColorStateLiveData = _primaryColorState.asLiveData()
 
     private var ortEnv: OrtEnvironment = OrtEnvironment.getEnvironment()
     private lateinit var ortSession: OrtSession
@@ -134,7 +133,7 @@ class WallpaperViewModel : ViewModel() {
         val colors = extractColorsFromPalette()
         primary = adjustColor(colors[0])
         secondary = adjustColor(colors[1])
-        teriary = adjustColor(colors[2])
+        tertiary = adjustColor(colors[2])
         _primaryColorState.value += 1
     }
     private fun fitBitmapToScreen(value: Bitmap, context: Context): Bitmap {
@@ -211,10 +210,10 @@ class WallpaperViewModel : ViewModel() {
         }
     }
 
-    fun adjustColor(color: Int, threshold: Float = 0.5f): Int {
-        val red = android.graphics.Color.red(color)
-        val green = android.graphics.Color.green(color)
-        val blue = android.graphics.Color.blue(color)
+    private fun adjustColor(color: Int, threshold: Float = 0.5f): Int {
+        val red = Color.red(color)
+        val green = Color.green(color)
+        val blue = Color.blue(color)
         val brightness = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
 
         return if (brightness > threshold) {
@@ -235,7 +234,7 @@ class WallpaperViewModel : ViewModel() {
         }
     }
 
-    fun darkenColor(red: Int, green: Int, blue: Int, factor: Float): Int {
+    private fun darkenColor(red: Int, green: Int, blue: Int, factor: Float): Int {
         val offset = Random.nextInt(-20, 20) // 随机偏移量
         val newRed = (red * factor + offset).coerceIn(0f, 255f)
         val newGreen = (green * factor + offset).coerceIn(0f, 255f)
@@ -243,7 +242,7 @@ class WallpaperViewModel : ViewModel() {
         return Color.rgb(newRed.toInt(), newGreen.toInt(), newBlue.toInt())
     }
 
-    fun lightenColor(red: Int, green: Int, blue: Int, factor: Float): Int {
+    private fun lightenColor(red: Int, green: Int, blue: Int, factor: Float): Int {
         val offset = Random.nextInt(-20, 20) // 随机偏移量
         val newRed = (red * factor + offset).coerceIn(0f, 255f)
         val newGreen = (green * factor + offset).coerceIn(0f, 255f)

@@ -97,6 +97,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:alpha="0.9"
+            android:visibility="invisible"
             app:cardCornerRadius="8dp"
             android:layout_margin="16dp">
 
@@ -144,8 +145,9 @@
                     android:id="@+id/editor_buttons_group"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginStart="16dp">
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp">
 
                     <Button
                         android:id="@+id/editor_button_abort"
@@ -224,35 +226,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_foreground"
+                    android:visibility="invisible"
                     android:layout_marginBottom="16dp"
                     android:layout_marginEnd="16dp"/>
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_brightness"
-                    android:layout_marginBottom="16dp"
-                    android:layout_marginEnd="16dp"/>
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_brightness"
-                    android:layout_marginBottom="16dp"
-                    android:layout_marginEnd="16dp"/>
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_brightness"
-                    android:layout_marginBottom="16dp"
-                    android:layout_marginEnd="16dp"/>
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_brightness"
-                    android:layout_marginBottom="16dp"
-                    android:layout_marginEnd="16dp"/>
-
-
-
 
             </LinearLayout>
 

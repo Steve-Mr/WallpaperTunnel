@@ -2,26 +2,21 @@ package com.maary.shareas.fragment
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.BlurMaskFilter.Blur
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewStub
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.maary.shareas.R
 import com.maary.shareas.WallpaperViewModel
 import com.maary.shareas.databinding.FragmentEditorBinding
 import com.maary.shareas.fragment.editor.BlurFragment
@@ -35,6 +30,8 @@ class EditorFragment : Fragment() {
     private val viewModel: WallpaperViewModel by activityViewModels()
     private var _binding: FragmentEditorBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var onBackPressedCallback: OnBackPressedCallback
 
     private var isSaved = false
 
@@ -73,7 +70,7 @@ class EditorFragment : Fragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.primaryColorState.collect {
                     if (viewModel.primary != null) {
-                        val colorValue = viewModel.teriary!!
+                        val colorValue = viewModel.tertiary!!
                         val colorStateList = ColorStateList.valueOf(colorValue)
                         binding.editorButtonBlur.backgroundTintList = colorStateList
                         binding.editorButtonBrightness.backgroundTintList = colorStateList
@@ -90,11 +87,15 @@ class EditorFragment : Fragment() {
             }
         }
 
-        activity?.onBackPressedDispatcher?.addCallback {
-            if (!isSaved) viewModel.restoreChanges()
-            isEnabled = false
-            activity?.onBackPressedDispatcher?.onBackPressed()
+        onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (!isSaved) viewModel.restoreChanges()
+                isEnabled = false
+                activity?.onBackPressedDispatcher?.onBackPressed()
+            }
         }
+        requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
+
     }
 
 
@@ -173,6 +174,7 @@ class EditorFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         viewModel.finishEditing()
+        onBackPressedCallback.remove()
     }
 
     override fun onDestroyView() {

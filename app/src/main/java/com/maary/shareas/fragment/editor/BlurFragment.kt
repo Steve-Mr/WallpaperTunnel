@@ -1,16 +1,20 @@
 package com.maary.shareas.fragment.editor
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.slider.Slider
 import com.maary.shareas.WallpaperViewModel
 import com.maary.shareas.databinding.FragmentBlurBinding
+import kotlinx.coroutines.launch
 
 class BlurFragment : Fragment() {
 
@@ -36,6 +40,20 @@ class BlurFragment : Fragment() {
         }
         requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
 
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.primaryColorState.collect {
+                    if (viewModel.primary != null) {
+                        val primaryValue = viewModel.primary!!
+                        val primaryStateList = ColorStateList.valueOf(primaryValue)
+                        val secondaryValue = viewModel.secondary!!
+                        val secondaryStateList = ColorStateList.valueOf(secondaryValue)
+                        binding.adjustmentSlider.thumbTintList = primaryStateList
+                        binding.adjustmentSlider.trackActiveTintList = secondaryStateList
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,

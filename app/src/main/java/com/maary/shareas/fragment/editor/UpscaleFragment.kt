@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -78,7 +77,7 @@ class UpscaleFragment : Fragment() {
                     if (viewModel.primary != null) {
                         val primaryValue = viewModel.primary!!
                         val primaryStateList = ColorStateList.valueOf(primaryValue)
-                        val tertiaryValue = viewModel.teriary!!
+                        val tertiaryValue = viewModel.tertiary!!
                         val tertiaryStateList = ColorStateList.valueOf(tertiaryValue)
                         binding.buttonUpscaleToggle.iconTint = primaryStateList
                         binding.betaIcon.iconTint = tertiaryStateList
