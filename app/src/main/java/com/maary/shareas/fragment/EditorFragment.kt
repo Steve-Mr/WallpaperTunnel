@@ -23,6 +23,7 @@ import com.maary.shareas.WallpaperViewModel
 import com.maary.shareas.databinding.FragmentEditorBinding
 import com.maary.shareas.fragment.editor.BlurFragment
 import com.maary.shareas.fragment.editor.BrightnessFragment
+import com.maary.shareas.fragment.editor.PaintFragment
 import com.maary.shareas.fragment.editor.UpscaleFragment
 import kotlinx.coroutines.launch
 
@@ -136,6 +137,10 @@ class EditorFragment : Fragment() {
 
         binding.editorButtonBrightness.setOnClickListener {
             loadFragment(BrightnessFragment())
+        }
+
+        binding.editorButtonFill.setOnClickListener {
+            loadFragment(PaintFragment())
         }
 
         binding.editorButtonUpscale.setOnClickListener {

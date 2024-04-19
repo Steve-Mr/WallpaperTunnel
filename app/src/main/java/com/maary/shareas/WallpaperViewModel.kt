@@ -7,6 +7,12 @@ import ai.onnxruntime.providers.NNAPIFlags
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Rect
+import android.graphics.RectF
 import android.net.Uri
 import android.util.Log
 import androidx.core.content.FileProvider
@@ -14,6 +20,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.palette.graphics.Palette
 import com.hoko.blur.HokoBlur
 import com.hoko.blur.task.AsyncBlurTask
 import com.maary.shareas.data.ViewerBitmap
@@ -36,15 +43,30 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.EnumSet
+import kotlin.math.pow
+
 
 class WallpaperViewModel : ViewModel() {
     init {
         Log.v("WVM", "INIT")
     }
 
+    val HOME = 1
+    val LOCK = 0
+
+    val TOP = 0
+    val BOTTOM = 1
+    val LEFT = 2
+    val RIGHT = 3
+    val CENTER = 4
+    val CENTOR_HORIZONTAL = 5
+    val CENTER_VERTICAL = 6
+
     private var bakBitmap = ViewerBitmap()
 
     private var bitmapRaw: Bitmap? = null
+    private var bitmapFit: Bitmap? = null
+    private var background: Bitmap? = null
 
     private var bitmap: Bitmap? = null
         set(value) {
@@ -60,9 +82,6 @@ class WallpaperViewModel : ViewModel() {
             field = value
             _inEditor.value = value
         }
-
-    val HOME = 1
-    val LOCK = 0
 
     var currentBitmap = HOME
         set(value) {
@@ -100,8 +119,10 @@ class WallpaperViewModel : ViewModel() {
 
     fun setBitmapRaw(value: Bitmap, context: Context) {
         bitmapRaw = value
-        val _bitmap = fitBitmapToScreen(value, context)
-        bitmap = _bitmap
+        bitmapFit = fitBitmapToScreenAlt(value, context)
+        bitmap = fitBitmapToScreen(value, context)
+        val deviceBounds = Util.getDeviceBounds(context)
+        background = Bitmap.createBitmap(deviceBounds.x, deviceBounds.y, Bitmap.Config.ARGB_8888)
     }
     private fun fitBitmapToScreen(value: Bitmap, context: Context): Bitmap {
         val deviceBounds = Util.getDeviceBounds(context)
@@ -128,7 +149,33 @@ class WallpaperViewModel : ViewModel() {
         }
 
         return Bitmap.createScaledBitmap(value, desiredWidth, desiredHeight, true)
+    }
 
+    private fun fitBitmapToScreenAlt(value: Bitmap, context: Context): Bitmap {
+        val deviceBounds = Util.getDeviceBounds(context)
+        val deviceHeight = deviceBounds.y
+        val deviceWidth = deviceBounds.x
+
+        //image ratio > device ratio?
+        val isVertical = Util.isVertical(deviceHeight, deviceWidth, value)
+
+        //show image to imageview
+        val bitmapFullWidth = value.width
+        val bitmapFullHeight = value.height
+        val desiredWidth: Int
+        val desiredHeight: Int
+
+        if (isVertical) {
+            desiredHeight = deviceHeight
+            val scale = deviceHeight.toFloat() / bitmapFullHeight
+            desiredWidth = (scale * bitmapFullWidth).toInt()
+        } else {
+            desiredWidth = deviceWidth
+            val scale = deviceWidth.toFloat() / bitmapFullWidth
+            desiredHeight = (scale * bitmapFullHeight).toInt()
+        }
+
+        return Bitmap.createScaledBitmap(value, desiredWidth, desiredHeight, true)
     }
 
     fun getBitmapHome(): Bitmap? {
@@ -192,6 +239,10 @@ class WallpaperViewModel : ViewModel() {
             return _viewerState.value.bitmapLock
         }
         return bitmap
+    }
+
+    fun getBitmapRaw(): Bitmap? {
+        return bitmapRaw
     }
 
     fun currentBitmapToggle() {
@@ -321,6 +372,142 @@ class WallpaperViewModel : ViewModel() {
         val scaledWidth = (originalWidth * scale).toInt()
         val scaledHeight = (originalHeight * scale).toInt()
         return Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
+    }
+
+    fun extractTopFiveColors(): List<Int> {
+        val palette = Palette.from(bitmapRaw!!).generate()
+
+        // 获取所有的颜色 swatch，并根据 population 属性进行排序
+        val sortedSwatches = palette.swatches.sortedByDescending { it.population }
+
+        // 提取前五个颜色
+        return sortedSwatches.take(5).map { it.rgb }
+    }
+
+    fun paintColor(position: Int, color: Int, scale: Float = 1f) {
+        var left = 0
+        var top = 0
+        val bHeight = background!!.height
+        val bWidth = background!!.width
+        val _background = Bitmap.createBitmap(bWidth, bHeight, Bitmap.Config.ARGB_8888)
+        val _bitmapFit = scaleBitmapTo(bitmapFit!!, scale)
+
+        val fHeight = _bitmapFit.height
+        val fWidth = _bitmapFit.width
+        when (position) {
+            TOP -> top = 0
+            BOTTOM -> top = bHeight - fHeight
+            LEFT -> left = 0
+            RIGHT -> left = bWidth - fWidth
+            CENTER -> {
+                left = (bWidth - fWidth) / 2
+                top = (bHeight - fHeight) / 2
+            }
+        }
+
+        val canvas = Canvas(_background)
+        canvas.drawColor(color)
+        canvas.drawBitmap(_bitmapFit, left.toFloat(), top.toFloat(), null)
+
+        _viewerState.update { current ->
+            current.copy(
+                bitmapHome = _background,
+                bitmapLock = _background
+            )
+        }
+    }
+
+    private fun addShadow(image: Bitmap, offset: Int = 32): Bitmap {
+        val width = image.width
+        val height = image.height
+
+        // 创建新的背景图片
+        val _background = Bitmap.createBitmap(width + offset * 2, height + offset * 2, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(_background)
+
+        // 创建绘制阴影的 Paint 对象
+        val shadowPaint = Paint().apply {
+            color = Color.BLACK
+            alpha = 255
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_ATOP)
+        }
+
+        // 绘制阴影
+        for (i in 0 until offset) {
+            val alpha = (255 * (1.5.pow(i) / 1.5.pow(offset))).toInt() // 根据当前距离计算透明度
+            shadowPaint.alpha = alpha
+            val rect = RectF(i.toFloat(), i.toFloat(), (width + offset * 2 - i).toFloat(), (height + offset * 2 - i).toFloat())
+            canvas.drawRect(rect, shadowPaint)
+        }
+
+        // 将原始图片绘制在背景上
+        canvas.drawBitmap(image, offset.toFloat(), offset.toFloat(), null)
+
+        return _background
+    }
+
+    fun paintBlur(
+        position: Int,
+        blur: Int,
+        context: Context,
+        scale: Float = 1f,
+        offset: Int = 32
+        ) {
+        var left = 0
+        var top = 0
+
+        val bHeight = background!!.height
+        val bWidth = background!!.width
+
+        val _bitmapFit = scaleBitmapTo(bitmapFit!!, scale)
+        val target = addShadow(_bitmapFit)
+
+        val canvasBack = Canvas(background!!)
+        val srcLeft = (bitmap!!.width - bWidth)/2
+        val srcTop = (bitmap!!.height - bHeight)/2
+        val srcRect = Rect(
+            srcLeft,
+            srcTop,
+            srcLeft + bWidth,
+            srcTop + bHeight)
+
+        // 定义目标区域
+        val destRect = Rect(0, 0, bWidth, bHeight)
+
+        // 在 Canvas 上绘制裁剪后的图像
+        canvasBack.drawBitmap(bitmap!!, srcRect, destRect, null)
+
+        val fHeight = target.height
+        val fWidth = target.width
+        when (position) {
+            TOP -> top = 0
+            BOTTOM -> top = bHeight - fHeight
+            LEFT -> left = 0
+            RIGHT -> left = bWidth - fWidth
+            CENTER -> {
+                left = (bWidth - fWidth) / 2
+                top = (bHeight - fHeight) / 2
+            }
+        }
+
+        HokoBlur.with(context)
+            .radius(blur)
+            .forceCopy(true)
+            .asyncBlur(background, object : AsyncBlurTask.Callback {
+                override fun onBlurSuccess(bitmap: Bitmap) {
+                    val canvas = Canvas(bitmap)
+                    canvas.drawBitmap(target, left.toFloat(), top.toFloat(), null)
+                    _viewerState.update { current ->
+                        current.copy(
+                            bitmapHome = bitmap,
+                            bitmapLock = bitmap
+                        )
+                    }
+                }
+
+                override fun onBlurFailed(error: Throwable) {}
+            })
+
     }
 
     fun upscale(context: Context, modelName: String) {

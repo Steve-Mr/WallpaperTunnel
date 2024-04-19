@@ -85,7 +85,9 @@ public class MainActivity extends AppCompatActivity {
         WallpaperViewModel viewModel = new ViewModelProvider(this).get(WallpaperViewModel.class);
 
         viewModel.setBitmapRaw(bitmap, this);
-        viewModel.getViewerStateLiveData().observe(this, state -> binding.mainView.setImageBitmap(Objects.requireNonNull(viewModel.getDisplayBitmap())));
+        viewModel.getViewerStateLiveData().observe(this, state -> {
+            binding.mainView.setImageBitmap(Objects.requireNonNull(viewModel.getDisplayBitmap()));
+        });
         viewModel.getCurrentBitmapStateLiveData().observe(this, state -> {
             binding.mainView.setImageBitmap(Objects.requireNonNull(viewModel.getDisplayBitmap()));
             binding.fab.setImageResource(viewModel.getFabResource());

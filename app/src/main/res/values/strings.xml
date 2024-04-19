@@ -67,4 +67,9 @@
     <string name="start_upscale">Start Upscale</string>
     <string name="beta">beta</string>
     <string name="process_speed_might_be_slow">Processing might be slow.</string>
+    <string name="paint">Paint</string>
+    <string name="color_label">Color Hex</string>
+    <string name="with_blur">With Blur</string>
+    <string name="with_color">With Color</string>
+    <string name="zoom">Zoom</string>
 </resources>

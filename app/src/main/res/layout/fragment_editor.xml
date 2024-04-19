@@ -96,7 +96,7 @@
             app:layout_constraintBottom_toTopOf="@id/editor_buttons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:alpha="0.7"
+            android:alpha="0.9"
             android:visibility="invisible"
             app:cardCornerRadius="8dp"
             android:layout_margin="16dp">
@@ -116,6 +116,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="8dp"
+                    android:layout_marginStart="8dp"
                     app:selectionRequired="true"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/dialog_slider_blur"
@@ -223,7 +224,7 @@
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_brightness"
+                    android:src="@drawable/ic_foreground"
                     android:layout_marginBottom="16dp"
                     android:layout_marginEnd="16dp"/>
                 <com.google.android.material.floatingactionbutton.FloatingActionButton

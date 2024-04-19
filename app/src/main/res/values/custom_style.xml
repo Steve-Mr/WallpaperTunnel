@@ -12,11 +12,13 @@
     <style name="CornerCut">
         <item name="cornerSize">8dp</item>
         <item name="cornerFamily">cut</item>
+        <item name="borderWidth">0dp</item>
     </style>
 
     <style name="DiamondCut">
-        <item name="cornerSize">75dp</item>
+        <item name="cornerSize">50%</item>
         <item name="cornerFamily">cut</item>
+        <item name="borderWidth">0dp</item>
     </style>
 
     <style name="SpecificCornerCut">
@@ -31,6 +33,34 @@
         <item name="cornerFamilyTopRight">rounded</item>
         <item name="cornerSizeBottomLeft">75dp</item>
         <item name="cornerFamilyBottomLeft">rounded</item>
+    </style>
+
+    <style name="top">
+        <item name="cornerSizeBottomRight">50%</item>
+        <item name="cornerFamilyBottomRight">rounded</item>
+        <item name="cornerSizeBottomLeft">50%</item>
+        <item name="cornerFamilyBottomLeft">rounded</item>
+    </style>
+
+    <style name="right">
+        <item name="cornerSizeTopLeft">50%</item>
+        <item name="cornerFamilyTopLeft">rounded</item>
+        <item name="cornerSizeBottomLeft">50%</item>
+        <item name="cornerFamilyBottomLeft">rounded</item>
+    </style>
+
+    <style name="bottom">
+        <item name="cornerSizeTopRight">50%</item>
+        <item name="cornerFamilyTopRight">rounded</item>
+        <item name="cornerSizeTopLeft">50%</item>
+        <item name="cornerFamilyTopLeft">rounded</item>
+    </style>
+
+    <style name="left">
+        <item name="cornerSizeBottomRight">50%</item>
+        <item name="cornerFamilyBottomRight">rounded</item>
+        <item name="cornerSizeTopRight">50%</item>
+        <item name="cornerFamilyTopRight">rounded</item>
     </style>
 
 </resources>
