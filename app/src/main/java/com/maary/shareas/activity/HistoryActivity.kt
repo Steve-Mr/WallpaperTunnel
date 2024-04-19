@@ -2,14 +2,16 @@ package com.maary.shareas.activity
 
 import android.Manifest
 import android.app.Activity
-import android.content.*
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.provider.Settings
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -24,7 +26,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.*
+import androidx.core.view.WindowCompat
+import androidx.core.view.updatePadding
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -33,11 +36,15 @@ import com.bumptech.glide.Glide
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.maary.shareas.HistoryActivityViewModel
-import com.maary.shareas.data.MediaStoreImage
 import com.maary.shareas.R
-import com.maary.shareas.helper.Util
+import com.maary.shareas.data.MediaStoreImage
 import com.maary.shareas.databinding.ActivityHistoryBinding
-import kotlinx.coroutines.*
+import com.maary.shareas.helper.Util
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 /** The request code for requesting [Manifest.permission.READ_EXTERNAL_STORAGE] permission. */
@@ -144,19 +151,9 @@ class HistoryActivity : AppCompatActivity(){
         }
 
         if (!haveStoragePermission()) {
-//            binding.welcomeView.visibility = View.VISIBLE
             requestPermission()
         } else {
             showImages()
-//            if (galleryAdapter.itemCount == 0){
-//                Log.v("WALLP", "0")
-//                binding.layoutNoHistory.visibility = View.VISIBLE
-//                binding.buttonClearAll.visibility = View.GONE
-//            }else {
-//                Log.v("WALLP", "1")
-//                binding.layoutNoHistory.visibility = View.INVISIBLE
-//                binding.buttonClearAll.visibility = View.VISIBLE
-//            }
         }
     }
 
@@ -171,30 +168,6 @@ class HistoryActivity : AppCompatActivity(){
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     showImages()
-                } else {
-                    // If we weren't granted the permission, check to see if we should show
-                    // rationale for the permission.
-                    val showRationale =
-                        ActivityCompat.shouldShowRequestPermissionRationale(
-                            this,
-                            Manifest.permission.READ_EXTERNAL_STORAGE
-                        )
-
-                    /**
-                     * If we should show the rationale for requesting storage permission, then
-                     * we'll show [ActivityMainBinding.permissionRationaleView] which does this.
-                     *
-                     * If `showRationale` is false, this means the user has not only denied
-                     * the permission, but they've clicked "Don't ask again". In this case
-                     * we send the user to the settings page for the app so they can grant
-                     * the permission (Yay!) or uninstall the app.
-                     */
-                    if (showRationale) {
-//                        showNoAccess()
-                        //TODO: do something
-                    } else {
-                        goToSettings()
-                    }
                 }
                 return
             }
@@ -209,7 +182,6 @@ class HistoryActivity : AppCompatActivity(){
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     private fun showImages() {
         viewModel.loadImages()
 
@@ -219,23 +191,6 @@ class HistoryActivity : AppCompatActivity(){
         }else {
             binding.layoutNoHistory.visibility = View.INVISIBLE
             binding.buttonClearAll.visibility = View.VISIBLE
-        }
-    }
-
-    private fun openMediaStore() {
-        if (haveStoragePermission()) {
-            showImages()
-        } else {
-            requestPermission()
-        }
-    }
-
-    private fun goToSettings() {
-        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")).apply {
-            addCategory(Intent.CATEGORY_DEFAULT)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }.also { intent ->
-            startActivity(intent)
         }
     }
 
@@ -280,7 +235,7 @@ class HistoryActivity : AppCompatActivity(){
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     val pendingIntent = MediaStore.createDeleteRequest(contentResolver, arrayListOf(image.contentUri))
-                    val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
+                    IntentSenderRequest.Builder(pendingIntent.intentSender).build()
                     startIntentSenderForResult(pendingIntent.intentSender, 42, null, 0, 0, 0, null)
                 } else {
                     application.contentResolver.delete(

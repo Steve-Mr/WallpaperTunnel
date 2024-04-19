@@ -51,16 +51,18 @@ class WallpaperViewModel : ViewModel() {
         Log.v("WVM", "INIT")
     }
 
-    val HOME = 1
-    val LOCK = 0
+    companion object {
+        const val HOME = 1
+        const val LOCK = 0
 
-    val TOP = 0
-    val BOTTOM = 1
-    val LEFT = 2
-    val RIGHT = 3
-    val CENTER = 4
-    val CENTOR_HORIZONTAL = 5
-    val CENTER_VERTICAL = 6
+        const val TOP = 0
+        const val BOTTOM = 1
+        const val LEFT = 2
+        const val RIGHT = 3
+        const val CENTER = 4
+    }
+
+
 
     private var bakBitmap = ViewerBitmap()
 
@@ -100,11 +102,9 @@ class WallpaperViewModel : ViewModel() {
     val currentBitmapStateLiveData: LiveData<Int?> = _currentBitmapState.asLiveData()
 
     private val _viewerState = MutableStateFlow(ViewerBitmap())
-    val viewerState = _viewerState.asStateFlow()
     val viewerStateLiveData = _viewerState.asLiveData()
 
     private val _inEditor: MutableStateFlow<Boolean> = MutableStateFlow(inEditor)
-    val inEditorState: StateFlow<Boolean> = _inEditor.asStateFlow()
     val inEditorLiveData: LiveData<Boolean> = _inEditor.asLiveData()
 
     private val _upscaleProgressState = MutableStateFlow(0)
@@ -241,10 +241,6 @@ class WallpaperViewModel : ViewModel() {
         return bitmap
     }
 
-    fun getBitmapRaw(): Bitmap? {
-        return bitmapRaw
-    }
-
     fun currentBitmapToggle() {
         if (currentBitmap == HOME) {
             currentBitmap = LOCK
@@ -307,11 +303,6 @@ class WallpaperViewModel : ViewModel() {
 
     fun saveEdit() {
         bakBitmap = _viewerState.value
-    }
-
-    fun isSaved(): Boolean {
-        Log.v("WVM", (bakBitmap == _viewerState.value).toString())
-        return bakBitmap == _viewerState.value
     }
 
     fun getBitmapUri(context: Context, cacheDir: File): Uri? {
@@ -457,9 +448,8 @@ class WallpaperViewModel : ViewModel() {
         position: Int,
         blur: Int,
         context: Context,
-        scale: Float = 1f,
-        offset: Int = 32
-        ) {
+        scale: Float = 1f
+    ) {
         var left = 0
         var top = 0
 

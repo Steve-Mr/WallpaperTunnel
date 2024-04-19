@@ -1,26 +1,24 @@
 package com.maary.shareas.helper
 
 import ai.onnxruntime.OnnxJavaType
-import ai.onnxruntime.OrtSession
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
+import ai.onnxruntime.OrtSession
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import java.io.InputStream
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.util.*
+import java.util.Collections
 
 internal data class Result(
     var outputBitmap: Bitmap? = null
-) {}
+)
 
-internal class SuperResPerformer(
-) {
+internal class SuperResPerformer {
 
     fun upscale(inputStream: InputStream, ortEnv: OrtEnvironment, ortSession: OrtSession): Result {
-        var result = Result()
+        val result = Result()
 
         // Step 1: convert image into byte array (raw image bytes)
         val rawImageBytes = inputStream.readBytes()

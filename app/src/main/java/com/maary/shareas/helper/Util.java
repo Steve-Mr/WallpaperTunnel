@@ -8,19 +8,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
-import android.graphics.ImageDecoder;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.view.WindowMetrics;
 
-import com.maary.shareas.activity.MainActivity;
-
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 
 public class Util {
@@ -28,7 +23,7 @@ public class Util {
     public static Bitmap getBitmap(Intent intent, Context context) {
         Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if (imageUri != null) {
-            InputStream inputStream = null;
+            InputStream inputStream;
             try {
                 inputStream = context.getContentResolver().openInputStream(imageUri);
             } catch (FileNotFoundException e) {
@@ -62,11 +57,11 @@ public class Util {
 
     }
 
-    public static Boolean isVertical(int dheight, int dwidth, Bitmap bitmap) {
+    public static Boolean isVertical(int dHeight, int dWidth, Bitmap bitmap) {
         int bitmap_full_width = bitmap.getWidth();
         int bitmap_full_height = bitmap.getHeight();
 
-        double device_scale = (double) dheight / dwidth;
+        double device_scale = (double) dHeight / dWidth;
         double bitmap_scale = (double) bitmap_full_height / bitmap_full_width;
 
         return device_scale < bitmap_scale;

@@ -1,9 +1,11 @@
 package com.maary.shareas
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.app.RecoverableSecurityException
-import android.content.*
+import android.content.ContentProvider
+import android.content.ContentResolver
+import android.content.ContentUris
+import android.content.IntentSender
 import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
@@ -21,10 +23,8 @@ import com.maary.shareas.data.MediaStoreImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 
 class HistoryActivityViewModel(application: Application) : AndroidViewModel(application) {
     private val _images = MutableLiveData<List<MediaStoreImage>>()
@@ -53,17 +53,6 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
                 }
             }
         }
-    }
-
-    fun getUriList(): ArrayList<Uri> {
-        val uriList = ArrayList<Uri>()
-        viewModelScope.launch {
-            val images = queryImages()
-
-            for (image in images) uriList.add(image.contentUri)
-
-        }
-        return uriList
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -215,7 +204,7 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
                 Log.i(TAG, "Found ${cursor.count} images")
                 while (cursor.moveToNext()) {
 
-                    // Here we'll use the column indexs that we found above.
+                    // Here we'll use the column index that we found above.
                     val id = cursor.getLong(idColumn)
                     val dateModified =
                         Date(TimeUnit.SECONDS.toMillis(cursor.getLong(dateModifiedColumn)))
@@ -292,14 +281,8 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
                  * so it can be either updated or deleted.
                  */
 
-                val pendingIntent = MediaStore.createDeleteRequest(getApplication<Application>().contentResolver, arrayListOf(image.contentUri))
-//                getApplication<Activity>().startIntentSenderForResult(pendingIntent.intentSender, null, 0, 0, 0)
+                MediaStore.createDeleteRequest(getApplication<Application>().contentResolver, arrayListOf(image.contentUri))
 
-//                getApplication<Application>().contentResolver.delete(
-//                    image.contentUri,
-//                    "${MediaStore.Images.Media._ID} = ?",
-//                    arrayOf(image.id.toString())
-//                )
             } catch (securityException: SecurityException) {
                 val recoverableSecurityException =
                     securityException as? RecoverableSecurityException
@@ -314,20 +297,6 @@ class HistoryActivityViewModel(application: Application) : AndroidViewModel(appl
             }
         }
     }
-
-    /**
-     * Convenience method to convert a day/month/year date into a UNIX timestamp.
-     *
-     * We're suppressing the lint warning because we're not actually using the date formatter
-     * to format the date to display, just to specify a format to use to parse it, and so the
-     * locale warning doesn't apply.
-     */
-    @Suppress("SameParameterValue")
-    @SuppressLint("SimpleDateFormat")
-    private fun dateToTimestamp(day: Int, month: Int, year: Int): Long =
-        SimpleDateFormat("dd.MM.yyyy").let { formatter ->
-            TimeUnit.MICROSECONDS.toSeconds(formatter.parse("$day.$month.$year")?.time ?: 0)
-        }
 
     /**
      * Since we register a [ContentObserver], we want to unregister this when the `ViewModel`
