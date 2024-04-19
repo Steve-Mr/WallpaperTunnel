@@ -81,7 +81,7 @@ class PaintFragment : Fragment() {
 
         }
 
-        val colors = viewModel.extractTopFiveColors()
+        val colors = viewModel.extractTopColorsFromBitmap()
         binding.buttonColor1.setBackgroundColor(colors[0])
         binding.buttonColor2.setBackgroundColor(colors[1])
         binding.buttonColor3.setBackgroundColor(colors[2])

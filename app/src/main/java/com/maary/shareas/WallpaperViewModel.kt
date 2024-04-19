@@ -369,15 +369,25 @@ class WallpaperViewModel : ViewModel() {
         return Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
     }
 
-    fun extractTopFiveColors(): List<Int> {
-        val palette = Palette.from(bitmapRaw!!).generate()
+    fun extractTopColorsFromBitmap(): List<Int> {
 
-        // 获取所有的颜色 swatch，并根据 population 属性进行排序
-        val sortedSwatches = palette.swatches.sortedByDescending { it.population }
+        val _bitmap = Bitmap.createScaledBitmap(bitmapRaw!!, 128, 128, true)
+        val colorMap = mutableMapOf<Int, Int>()
 
-        // 提取前五个颜色
-        return sortedSwatches.take(5).map { it.rgb }
+        // 遍历图片的每个像素，并统计每种颜色的出现次数
+        for (x in 0 until _bitmap.width) {
+            for (y in 0 until _bitmap.height) {
+                val pixel = _bitmap.getPixel(x, y)
+                val colorCount = colorMap.getOrDefault(pixel, 0)
+                colorMap[pixel] = colorCount + 1
+            }
+        }
+
+        // 按颜色出现次数排序，并取前五个颜色
+        val sortedColors = colorMap.toList().sortedByDescending { it.second }.take(5)
+        return sortedColors.map { it.first }
     }
+
 
     fun paintColor(position: Int, color: Int, scale: Float = 1f) {
         var left = 0
