@@ -652,12 +652,12 @@ class WallpaperViewModel : ViewModel() {
 
         val sessionOptions: OrtSession.SessionOptions = OrtSession.SessionOptions()
         sessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath())
-        sessionOptions.addNnapi(
-            EnumSet.of(
-                NNAPIFlags.USE_FP16,
-                NNAPIFlags.CPU_DISABLED
-            )
-        )
+//        sessionOptions.addNnapi(
+//            EnumSet.of(
+//                NNAPIFlags.USE_FP16,
+//                NNAPIFlags.CPU_DISABLED
+//            )
+//        )
         ortSession = ortEnv.createSession(readModel(context, model), sessionOptions)
 
         // 1. 输入是一个 bimap
