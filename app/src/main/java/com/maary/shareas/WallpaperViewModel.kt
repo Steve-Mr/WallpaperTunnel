@@ -136,6 +136,10 @@ class WallpaperViewModel : ViewModel() {
     private val _upscaleProgressState = MutableStateFlow(0)
     val upscaleProgressState = _upscaleProgressState.asStateFlow()
 
+    fun getUpscaleProgress(): Int {
+        return _upscaleProgressState.value
+    }
+
     private val _upscaleToggleState = MutableStateFlow(upscaleToggle)
     val upscaleToggleState = _upscaleToggleState.asStateFlow()
 

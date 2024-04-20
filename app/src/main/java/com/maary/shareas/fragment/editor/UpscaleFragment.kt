@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -63,8 +64,11 @@ class UpscaleFragment : Fragment() {
                             viewModel.upscale(requireContext(), binding.menuChooseModelTextview.text.toString())
                         }
                         false -> {
+                            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                             binding.buttonUpscaleToggle.setIconResource(R.drawable.ic_play)
-                            binding.progressUpscale.setProgressCompat(0, true)
+                            if (viewModel.getUpscaleProgress() != 100) {
+                                binding.progressUpscale.setProgressCompat(0, true)
+                            }
                         }
                     }
                 }
@@ -108,6 +112,7 @@ class UpscaleFragment : Fragment() {
         binding.menuChooseModelTextview.setText(resources.getStringArray(R.array.model_names)[2], false)
 
         binding.buttonUpscaleToggle.setOnClickListener {
+            activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             viewModel.upscaleToggle = !viewModel.upscaleToggle
         }
 
