@@ -54,7 +54,7 @@ class PaintFragment : Fragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.primaryColorState.collect {
                     if (viewModel.primary != null) {
-                        val colorValue = viewModel.primary!!
+                        val colorValue = viewModel.getPrimaryColor(requireContext())
                         val colorStateList = ColorStateList.valueOf(colorValue)
                         binding.buttonPaint.iconTint = colorStateList
                     }

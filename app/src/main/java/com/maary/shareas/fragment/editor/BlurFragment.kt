@@ -44,9 +44,9 @@ class BlurFragment : Fragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.primaryColorState.collect {
                     if (viewModel.primary != null) {
-                        val primaryValue = viewModel.primary!!
+                        val primaryValue = viewModel.getPrimaryColor(requireContext())
                         val primaryStateList = ColorStateList.valueOf(primaryValue)
-                        val secondaryValue = viewModel.secondary!!
+                        val secondaryValue = viewModel.getSecondaryColor(requireContext())
                         val secondaryStateList = ColorStateList.valueOf(secondaryValue)
                         binding.adjustmentSlider.thumbTintList = primaryStateList
                         binding.adjustmentSlider.trackActiveTintList = secondaryStateList

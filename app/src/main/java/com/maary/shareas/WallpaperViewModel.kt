@@ -5,6 +5,7 @@ import ai.onnxruntime.OrtSession
 import ai.onnxruntime.extensions.OrtxPackage
 import ai.onnxruntime.providers.NNAPIFlags
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -43,6 +44,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.EnumSet
+import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -98,8 +100,26 @@ class WallpaperViewModel : ViewModel() {
 
 
     var primary: Int? = null
-    var secondary: Int? = null
-    var tertiary: Int? = null
+    private var secondary: Int? = null
+    private var tertiary: Int? = null
+    private var primaryDark: Int? = null
+    private var secondaryDark: Int? = null
+    private var tertiaryDark: Int? = null
+
+    fun getPrimaryColor(context: Context): Int {
+        return if (isDarkMode(context)) primaryDark!!
+        else primary!!
+    }
+
+    fun getSecondaryColor(context: Context): Int {
+        return if (isDarkMode(context)) secondaryDark!!
+        else secondary!!
+    }
+
+    fun getTertiaryColor(context: Context): Int {
+        return if (isDarkMode(context)) tertiaryDark!!
+        else tertiary!!
+    }
 
     private val _currentBitmapState = MutableStateFlow(currentBitmap)
     val currentBitmapState: StateFlow<Int?> = _currentBitmapState.asStateFlow()
@@ -113,6 +133,10 @@ class WallpaperViewModel : ViewModel() {
 
     private val _upscaleProgressState = MutableStateFlow(0)
     val upscaleProgressState = _upscaleProgressState.asStateFlow()
+
+    fun getUpscaleProgress(): Int {
+        return _upscaleProgressState.value
+    }
 
     private val _upscaleToggleState = MutableStateFlow(upscaleToggle)
     val upscaleToggleState = _upscaleToggleState.asStateFlow()
@@ -131,9 +155,12 @@ class WallpaperViewModel : ViewModel() {
         val deviceBounds = Util.getDeviceBounds(context)
         background = Bitmap.createBitmap(deviceBounds.x, deviceBounds.y, Bitmap.Config.ARGB_8888)
         val colors = extractColorsFromPalette()
-        primary = adjustColor(colors[0])
-        secondary = adjustColor(colors[1])
-        tertiary = adjustColor(colors[2])
+        primary = adjustColorToBlack(colors[0])
+        secondary = adjustColorToBlack(colors[1])
+        tertiary = adjustColorToBlack(colors[2])
+        primaryDark = adjustColorToWhite(colors[0])
+        secondaryDark = adjustColorToWhite(colors[1])
+        tertiaryDark = adjustColorToWhite(colors[2])
         _primaryColorState.value += 1
     }
     private fun fitBitmapToScreen(value: Bitmap, context: Context): Bitmap {
@@ -210,46 +237,65 @@ class WallpaperViewModel : ViewModel() {
         }
     }
 
-    private fun adjustColor(color: Int, threshold: Float = 0.5f): Int {
-        val red = Color.red(color)
-        val green = Color.green(color)
-        val blue = Color.blue(color)
-        val brightness = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
+    private fun adjustColorToBlack(value: Int): Int {
+        val blackColor = Color.BLACK
 
-        return if (brightness > threshold) {
-            // 如果亮度超过阈值，则将颜色调暗
-            val factor = 0.8f // 调暗因子，可以根据需要调整
-            darkenColor(red, green, blue, factor)
-        } else if (brightness < (1 - threshold)) {
-            // 如果亮度低于 (1 - threshold)，则将颜色调亮
-            val factor = 1.2f // 调亮因子，可以根据需要调整
-            lightenColor(red, green, blue, factor)
-        } else {
-            // 如果颜色过于偏白，随机添加一些颜色
-            val offset = Random.nextInt(20, 50) // 随机偏移量
-            val newRed = (red + offset).coerceIn(0, 255)
-            val newGreen = (green + offset).coerceIn(0, 255)
-            val newBlue = (blue + offset).coerceIn(0, 255)
-            Color.rgb(newRed, newGreen, newBlue)
+        val offset = Random.nextInt(-80, 80) // 随机偏移量
+        val newRed = (Color.red(value) + offset).coerceIn(0, 255)
+        val newGreen = (Color.green(value) + offset).coerceIn(0, 255)
+        val newBlue = (Color.blue(value) + offset).coerceIn(0, 255)
+        val color =  Color.rgb(newRed, newGreen, newBlue)
+
+        // 计算颜色与黑色的差异程度
+        val colorDiff = abs(Color.red(color) - Color.red(blackColor)) +
+                abs(Color.green(color) - Color.green(blackColor)) +
+                abs(Color.blue(color) - Color.blue(blackColor))
+
+        // 如果颜色过深或者差异程度不够大，则调整颜色
+        val threshold = 400 // 可以根据需要调整阈值
+        if (colorDiff < threshold) {
+            // 计算需要调整的亮度
+            val adjustedRed = 255.coerceAtMost(Color.red(color) + 100)
+            val adjustedGreen = 255.coerceAtMost(Color.green(color) + 100)
+            val adjustedBlue = 255.coerceAtMost(Color.blue(color) + 100)
+
+            // 构造新的颜色并返回
+            return Color.rgb(adjustedRed, adjustedGreen, adjustedBlue)
         }
+
+        // 如果差异程度足够大，则不需要调整，直接返回原始颜色
+        return color
     }
 
-    private fun darkenColor(red: Int, green: Int, blue: Int, factor: Float): Int {
-        val offset = Random.nextInt(-20, 20) // 随机偏移量
-        val newRed = (red * factor + offset).coerceIn(0f, 255f)
-        val newGreen = (green * factor + offset).coerceIn(0f, 255f)
-        val newBlue = (blue * factor + offset).coerceIn(0f, 255f)
-        return Color.rgb(newRed.toInt(), newGreen.toInt(), newBlue.toInt())
-    }
+    private fun adjustColorToWhite(value: Int): Int {
+        val whiteColor = Color.WHITE
 
-    private fun lightenColor(red: Int, green: Int, blue: Int, factor: Float): Int {
-        val offset = Random.nextInt(-20, 20) // 随机偏移量
-        val newRed = (red * factor + offset).coerceIn(0f, 255f)
-        val newGreen = (green * factor + offset).coerceIn(0f, 255f)
-        val newBlue = (blue * factor + offset).coerceIn(0f, 255f)
-        return Color.rgb(newRed.toInt(), newGreen.toInt(), newBlue.toInt())
-    }
+        val offset = Random.nextInt(-80, 80) // 随机偏移量
+        val newRed = (Color.red(value) + offset).coerceIn(0, 255)
+        val newGreen = (Color.green(value) + offset).coerceIn(0, 255)
+        val newBlue = (Color.blue(value) + offset).coerceIn(0, 255)
+        val color =  Color.rgb(newRed, newGreen, newBlue)
 
+        // 计算颜色与白色的差异程度
+        val colorDiff = abs(Color.red(color) - Color.red(whiteColor)) +
+                abs(Color.green(color) - Color.green(whiteColor)) +
+                abs(Color.blue(color) - Color.blue(whiteColor))
+
+        // 如果颜色过浅或者差异程度不够大，则调整颜色
+        val threshold = 400 // 可以根据需要调整阈值
+        if (colorDiff < threshold) {
+            // 计算需要调整的亮度
+            val adjustedRed = 0.coerceAtLeast(Color.red(color) - 100)
+            val adjustedGreen = 0.coerceAtLeast(Color.green(color) - 100)
+            val adjustedBlue = 0.coerceAtLeast(Color.blue(color) - 100)
+
+            // 构造新的颜色并返回
+            return Color.rgb(adjustedRed, adjustedGreen, adjustedBlue)
+        }
+
+        // 如果差异程度足够大，则不需要调整，直接返回原始颜色
+        return color
+    }
 
 
     // 丢弃当前的修改
@@ -442,7 +488,7 @@ class WallpaperViewModel : ViewModel() {
         return sortedColors.map { it.first }
     }
 
-    fun extractColorsFromPalette(): List<Int> {
+    private fun extractColorsFromPalette(): List<Int> {
         val palette = Palette.from(bitmap!!).generate()
 
         // 获取所有的颜色 swatch，并根据 population 属性进行排序
@@ -695,5 +741,17 @@ class WallpaperViewModel : ViewModel() {
             }
         }
 
+    }
+
+    private fun isDarkMode(context: Context): Boolean {
+        when (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_NO -> {
+                return false
+            } // Night mode is not active, we're using the light theme
+            Configuration.UI_MODE_NIGHT_YES -> {
+                return true
+            } // Night mode is active, we're using dark theme
+        }
+        return false
     }
 }
