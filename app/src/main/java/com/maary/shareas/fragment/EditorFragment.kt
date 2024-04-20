@@ -69,16 +69,16 @@ class EditorFragment : Fragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.primaryColorState.collect {
                     if (viewModel.primary != null) {
-                        val colorValue = viewModel.tertiary!!
+                        val colorValue = viewModel.getTertiaryColor(requireContext())
                         val colorStateList = ColorStateList.valueOf(colorValue)
                         binding.editorButtonBlur.backgroundTintList = colorStateList
                         binding.editorButtonBrightness.backgroundTintList = colorStateList
                         binding.editorButtonFill.backgroundTintList = colorStateList
                         binding.editorButtonUpscale.backgroundTintList = colorStateList
-                        binding.appbarButtonCancel.setBackgroundColor(viewModel.secondary!!)
-                        binding.appbarButtonConfirm.setBackgroundColor(viewModel.secondary!!)
-                        binding.editorButtonApply.setTextColor(viewModel.primary!!)
-                        binding.editorButtonAbort.setTextColor(viewModel.primary!!)
+                        binding.appbarButtonCancel.setBackgroundColor(viewModel.getSecondaryColor(requireContext()))
+                        binding.appbarButtonConfirm.setBackgroundColor(viewModel.getSecondaryColor(requireContext()))
+                        binding.editorButtonApply.setTextColor(viewModel.getPrimaryColor(requireContext()))
+                        binding.editorButtonAbort.setTextColor(viewModel.getPrimaryColor(requireContext()))
                         binding.chipApplyHome.backgroundTintList = colorStateList
                         binding.chipApplyLock.backgroundTintList = colorStateList
                     }

@@ -75,9 +75,9 @@ class UpscaleFragment : Fragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.primaryColorState.collect {
                     if (viewModel.primary != null) {
-                        val primaryValue = viewModel.primary!!
+                        val primaryValue = viewModel.getPrimaryColor(requireContext())
                         val primaryStateList = ColorStateList.valueOf(primaryValue)
-                        val tertiaryValue = viewModel.tertiary!!
+                        val tertiaryValue = viewModel.getTertiaryColor(requireContext())
                         val tertiaryStateList = ColorStateList.valueOf(tertiaryValue)
                         binding.buttonUpscaleToggle.iconTint = primaryStateList
                         binding.betaIcon.iconTint = tertiaryStateList
