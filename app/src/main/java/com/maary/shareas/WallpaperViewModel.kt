@@ -15,10 +15,7 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
 import android.net.Uri
-import android.os.Build
 import android.util.Log
-import android.view.WindowInsetsController
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -47,6 +44,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.EnumSet
+import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -102,11 +100,11 @@ class WallpaperViewModel : ViewModel() {
 
 
     var primary: Int? = null
-    var secondary: Int? = null
-    var tertiary: Int? = null
-    var primaryDark: Int? = null
-    var secondaryDark: Int? = null
-    var tertiaryDark: Int? = null
+    private var secondary: Int? = null
+    private var tertiary: Int? = null
+    private var primaryDark: Int? = null
+    private var secondaryDark: Int? = null
+    private var tertiaryDark: Int? = null
 
     fun getPrimaryColor(context: Context): Int {
         return if (isDarkMode(context)) primaryDark!!
@@ -239,48 +237,27 @@ class WallpaperViewModel : ViewModel() {
         }
     }
 
-    private fun adjustColor(color: Int, threshold: Float = 0.5f): Int {
-
-        return adjustColorToBlack(color)
-    }
-
-    private fun darkenColor(red: Int, green: Int, blue: Int, factor: Float): Int {
-        val offset = Random.nextInt(-20, 20) // 随机偏移量
-        val newRed = (red * factor + offset).coerceIn(0f, 255f)
-        val newGreen = (green * factor + offset).coerceIn(0f, 255f)
-        val newBlue = (blue * factor + offset).coerceIn(0f, 255f)
-        return Color.rgb(newRed.toInt(), newGreen.toInt(), newBlue.toInt())
-    }
-
-    private fun lightenColor(red: Int, green: Int, blue: Int, factor: Float): Int {
-        val offset = Random.nextInt(-20, 20) // 随机偏移量
-        val newRed = (red * factor + offset).coerceIn(0f, 255f)
-        val newGreen = (green * factor + offset).coerceIn(0f, 255f)
-        val newBlue = (blue * factor + offset).coerceIn(0f, 255f)
-        return Color.rgb(newRed.toInt(), newGreen.toInt(), newBlue.toInt())
-    }
-
-    fun adjustColorToBlack(value: Int): Int {
+    private fun adjustColorToBlack(value: Int): Int {
         val blackColor = Color.BLACK
 
         val offset = Random.nextInt(-80, 80) // 随机偏移量
         val newRed = (Color.red(value) + offset).coerceIn(0, 255)
         val newGreen = (Color.green(value) + offset).coerceIn(0, 255)
         val newBlue = (Color.blue(value) + offset).coerceIn(0, 255)
-        val color =  Color.rgb(newRed.toInt(), newGreen.toInt(), newBlue.toInt())
+        val color =  Color.rgb(newRed, newGreen, newBlue)
 
         // 计算颜色与黑色的差异程度
-        val colorDiff = Math.abs(Color.red(color) - Color.red(blackColor)) +
-                Math.abs(Color.green(color) - Color.green(blackColor)) +
-                Math.abs(Color.blue(color) - Color.blue(blackColor))
+        val colorDiff = abs(Color.red(color) - Color.red(blackColor)) +
+                abs(Color.green(color) - Color.green(blackColor)) +
+                abs(Color.blue(color) - Color.blue(blackColor))
 
         // 如果颜色过深或者差异程度不够大，则调整颜色
         val threshold = 400 // 可以根据需要调整阈值
         if (colorDiff < threshold) {
             // 计算需要调整的亮度
-            val adjustedRed = Math.min(255, Color.red(color) + 100)
-            val adjustedGreen = Math.min(255, Color.green(color) + 100)
-            val adjustedBlue = Math.min(255, Color.blue(color) + 100)
+            val adjustedRed = 255.coerceAtMost(Color.red(color) + 100)
+            val adjustedGreen = 255.coerceAtMost(Color.green(color) + 100)
+            val adjustedBlue = 255.coerceAtMost(Color.blue(color) + 100)
 
             // 构造新的颜色并返回
             return Color.rgb(adjustedRed, adjustedGreen, adjustedBlue)
@@ -290,27 +267,27 @@ class WallpaperViewModel : ViewModel() {
         return color
     }
 
-    fun adjustColorToWhite(value: Int): Int {
+    private fun adjustColorToWhite(value: Int): Int {
         val whiteColor = Color.WHITE
 
         val offset = Random.nextInt(-80, 80) // 随机偏移量
         val newRed = (Color.red(value) + offset).coerceIn(0, 255)
         val newGreen = (Color.green(value) + offset).coerceIn(0, 255)
         val newBlue = (Color.blue(value) + offset).coerceIn(0, 255)
-        val color =  Color.rgb(newRed.toInt(), newGreen.toInt(), newBlue.toInt())
+        val color =  Color.rgb(newRed, newGreen, newBlue)
 
         // 计算颜色与白色的差异程度
-        val colorDiff = Math.abs(Color.red(color) - Color.red(whiteColor)) +
-                Math.abs(Color.green(color) - Color.green(whiteColor)) +
-                Math.abs(Color.blue(color) - Color.blue(whiteColor))
+        val colorDiff = abs(Color.red(color) - Color.red(whiteColor)) +
+                abs(Color.green(color) - Color.green(whiteColor)) +
+                abs(Color.blue(color) - Color.blue(whiteColor))
 
         // 如果颜色过浅或者差异程度不够大，则调整颜色
-        val threshold = 200 // 可以根据需要调整阈值
+        val threshold = 400 // 可以根据需要调整阈值
         if (colorDiff < threshold) {
             // 计算需要调整的亮度
-            val adjustedRed = Math.max(0, Color.red(color) - 100)
-            val adjustedGreen = Math.max(0, Color.green(color) - 100)
-            val adjustedBlue = Math.max(0, Color.blue(color) - 100)
+            val adjustedRed = 0.coerceAtLeast(Color.red(color) - 100)
+            val adjustedGreen = 0.coerceAtLeast(Color.green(color) - 100)
+            val adjustedBlue = 0.coerceAtLeast(Color.blue(color) - 100)
 
             // 构造新的颜色并返回
             return Color.rgb(adjustedRed, adjustedGreen, adjustedBlue)
@@ -319,86 +296,6 @@ class WallpaperViewModel : ViewModel() {
         // 如果差异程度足够大，则不需要调整，直接返回原始颜色
         return color
     }
-
-
-    fun adjustColorForTextBackground(color: Int, isWhiteText: Boolean): Int {
-        // 提取 RGB 分量
-        val red = android.graphics.Color.red(color)
-        val green = android.graphics.Color.green(color)
-        val blue = android.graphics.Color.blue(color)
-
-        // 计算亮度
-        val luminance = 0.299 * red + 0.587 * green + 0.114 * blue
-
-        Log.v("WVM LUM", luminance.toString())
-
-        // 计算相对亮度
-        val relativeLuminance = if (luminance <= 128) {
-            (luminance + 0.05) / 255
-        } else {
-            (luminance + 0.05) / 255 * (1 - 0.05)
-        }
-
-        Log.v("WVM RLUM", relativeLuminance.toString())
-
-
-        // 计算与白色或黑色的相对对比度
-        var contrastWithBackground = if (isWhiteText) {
-            (relativeLuminance + 0.05) / 1.05
-        } else {
-            1.05 / (relativeLuminance + 0.05)
-        }
-
-        Log.v("WVM CONT", contrastWithBackground.toString())
-
-
-        // 如果对比度不足，则调整颜色
-        var adjustedColor = color
-        if (contrastWithBackground < 4.5) {
-            var newRed = red
-            var newGreen = green
-            var newBlue = blue
-
-            // 调整颜色直到满足对比度要求
-            while (contrastWithBackground < 4.5) {
-
-                Log.v("WVM NCONT", contrastWithBackground.toString())
-
-                if (isWhiteText) {
-                    newRed = (newRed + 255) / 2
-                    newGreen = (newGreen + 255) / 2
-                    newBlue = (newBlue + 255) / 2
-                } else {
-                    newRed /= 2
-                    newGreen /= 2
-                    newBlue /= 2
-                }
-
-                val newLuminance = 0.299 * newRed + 0.587 * newGreen + 0.114 * newBlue
-                val newRelativeLuminance = if (newLuminance <= 128) {
-                    (newLuminance + 0.05) / 255
-                } else {
-                    (newLuminance + 0.05) / 255 * (1 - 0.05)
-                }
-
-                // 更新对比度值
-                contrastWithBackground = if (isWhiteText) {
-                    (newRelativeLuminance + 0.05) / 1.05
-                } else {
-                    1.05 / (newRelativeLuminance + 0.05)
-                }
-            }
-
-            // 根据新的 RGB 分量重新创建颜色值
-            adjustedColor = android.graphics.Color.rgb(newRed, newGreen, newBlue)
-        }
-
-        return adjustedColor
-    }
-
-
-
-
 
 
     // 丢弃当前的修改
@@ -591,7 +488,7 @@ class WallpaperViewModel : ViewModel() {
         return sortedColors.map { it.first }
     }
 
-    fun extractColorsFromPalette(): List<Int> {
+    private fun extractColorsFromPalette(): List<Int> {
         val palette = Palette.from(bitmap!!).generate()
 
         // 获取所有的颜色 swatch，并根据 population 属性进行排序
@@ -846,7 +743,7 @@ class WallpaperViewModel : ViewModel() {
 
     }
 
-    fun isDarkMode(context: Context): Boolean {
+    private fun isDarkMode(context: Context): Boolean {
         when (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
             Configuration.UI_MODE_NIGHT_NO -> {
                 return false
