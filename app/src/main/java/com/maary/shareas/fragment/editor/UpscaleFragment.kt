@@ -84,8 +84,9 @@ class UpscaleFragment : Fragment() {
                         val tertiaryValue = viewModel.getTertiaryColor(requireContext())
                         val tertiaryStateList = ColorStateList.valueOf(tertiaryValue)
                         binding.buttonUpscaleToggle.iconTint = primaryStateList
-                        binding.betaIcon.iconTint = tertiaryStateList
-                        binding.betaIcon.setTextColor(tertiaryValue)
+                        binding.betaIcon.iconTint = ColorStateList.valueOf(
+                            viewModel.getPrimaryColorAlt(requireContext()))
+                        binding.betaIcon.setTextColor(viewModel.getPrimaryColorAlt(requireContext()))
                     }
                 }
             }

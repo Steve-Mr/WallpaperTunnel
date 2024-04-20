@@ -111,6 +111,11 @@ class WallpaperViewModel : ViewModel() {
         else primary!!
     }
 
+    fun getPrimaryColorAlt(context: Context): Int {
+        return if (!isDarkMode(context)) primaryDark!!
+        else primary!!
+    }
+
     fun getSecondaryColor(context: Context): Int {
         return if (isDarkMode(context)) secondaryDark!!
         else secondary!!
