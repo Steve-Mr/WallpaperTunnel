@@ -30,8 +30,6 @@
             app:layout_constraintTop_toTopOf="@id/adjustment_title"
             app:layout_constraintBottom_toBottomOf="@id/adjustment_title"
             app:icon="@drawable/ic_lab"
-            android:clickable="false"
-            android:focusable="false"
             android:text="@string/beta"/>
 
         <com.google.android.material.textfield.TextInputLayout

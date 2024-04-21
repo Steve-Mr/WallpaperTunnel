@@ -14,4 +14,11 @@
         <item>0.9</item>
         <item>1.0</item>
     </string-array>
+
+    <string-array name="tile_sizes">
+        <item>64</item>
+        <item>128</item>
+        <item>256</item>
+        <item>512</item>
+    </string-array>
 </resources>

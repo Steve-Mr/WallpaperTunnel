@@ -28,7 +28,7 @@ class BlurFragment : Fragment() {
 
         onBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                viewModel.abortEdit()
+                viewModel.abortEdit(null)
                 requireParentFragment().childFragmentManager.beginTransaction().remove(this@BlurFragment).commit()
                 requireParentFragment().childFragmentManager.popBackStack()
                 // 获取包含当前 Fragment 的布局

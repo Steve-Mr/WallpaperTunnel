@@ -2,6 +2,7 @@ package com.maary.shareas.fragment.editor
 
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.maary.shareas.R
 import com.maary.shareas.WallpaperViewModel
 import com.maary.shareas.databinding.FragmentUpscaleBinding
+import com.maary.shareas.fragment.UpscaleSettingsFragment
+import com.maary.shareas.helper.PreferencesHelper
 import kotlinx.coroutines.launch
 
 class UpscaleFragment : Fragment() {
@@ -25,12 +28,14 @@ class UpscaleFragment : Fragment() {
 
     private lateinit var onBackPressedCallback: OnBackPressedCallback
 
+    private val preferencesHelper by lazy { PreferencesHelper(requireContext()) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         onBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                viewModel.abortEdit()
+                viewModel.abortEdit(null)
                 requireParentFragment().childFragmentManager.beginTransaction().remove(this@UpscaleFragment).commit()
                 requireParentFragment().childFragmentManager.popBackStack()
                 // 获取包含当前 Fragment 的布局
@@ -48,7 +53,10 @@ class UpscaleFragment : Fragment() {
                 viewModel.upscaleProgressState.collect { state ->
                     binding.progressUpscale.setProgressCompat(state, true)
                     if (state == 100) {
+                        Log.v("WVM", "FROM2 ${viewModel.upscaleToggle}")
                         viewModel.upscaleToggle = !viewModel.upscaleToggle
+                        viewModel.clearUpscaleProgress()
+                        Log.v("WVM", "TO2 ${viewModel.upscaleToggle}")
                     }
                 }
             }
@@ -61,7 +69,10 @@ class UpscaleFragment : Fragment() {
                         true -> {
                             binding.buttonUpscaleToggle.setIconResource(R.drawable.ic_action_close)
                             binding.progressUpscale.isIndeterminate = true
-                            viewModel.upscale(requireContext(), binding.menuChooseModelTextview.text.toString())
+                            viewModel.upscale(
+                                requireContext(), binding.menuChooseModelTextview.text.toString(),
+                                preferencesHelper.getTileSize(),
+                                preferencesHelper.getFP16(), preferencesHelper.getCPUDisabled())
                         }
                         false -> {
                             activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -84,8 +95,9 @@ class UpscaleFragment : Fragment() {
                         val tertiaryValue = viewModel.getTertiaryColor(requireContext())
                         val tertiaryStateList = ColorStateList.valueOf(tertiaryValue)
                         binding.buttonUpscaleToggle.iconTint = primaryStateList
-                        binding.betaIcon.iconTint = tertiaryStateList
-                        binding.betaIcon.setTextColor(tertiaryValue)
+                        binding.betaIcon.iconTint = ColorStateList.valueOf(
+                            viewModel.getPrimaryColorAlt(requireContext()))
+                        binding.betaIcon.setTextColor(viewModel.getPrimaryColorAlt(requireContext()))
                     }
                 }
             }
@@ -111,10 +123,22 @@ class UpscaleFragment : Fragment() {
 
         binding.menuChooseModelTextview.setText(resources.getStringArray(R.array.model_names)[2], false)
 
+        binding.betaIcon.setOnLongClickListener {
+            UpscaleSettingsFragment().show(childFragmentManager, UpscaleSettingsFragment.TAG)
+            true
+        }
+
         binding.buttonUpscaleToggle.setOnClickListener {
             activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            Log.v("WVM", "FROM ${viewModel.upscaleToggle}")
+
             viewModel.upscaleToggle = !viewModel.upscaleToggle
+            Log.v("WVM", "TO ${viewModel.upscaleToggle}")
+
         }
+
+        val preferencesHelper = PreferencesHelper(requireContext())
+
 
         return binding.root
     }

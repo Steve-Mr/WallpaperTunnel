@@ -58,4 +58,7 @@
     <string name="paint">填充</string>
     <string name="color_label">颜色 Hex</string>
     <string name="zoom">缩放</string>
+    <string name="tile_size">图像块大小</string>
+    <string name="fp16">使用 FP_16</string>
+    <string name="cpu_disabled">不使用 CPU</string>
 </resources>
