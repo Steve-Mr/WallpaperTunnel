@@ -68,4 +68,7 @@
     <string name="paint">Paint</string>
     <string name="color_label">Color Hex</string>
     <string name="zoom">Zoom</string>
+    <string name="tile_size">Tile Size</string>
+    <string name="fp16">Use FP16</string>
+    <string name="cpu_disabled">Disable CPU</string>
 </resources>

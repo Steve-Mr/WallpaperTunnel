@@ -37,7 +37,7 @@ class PaintFragment : Fragment() {
 
         onBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                viewModel.abortEdit()
+                viewModel.abortEdit(null)
                 requireParentFragment().childFragmentManager.beginTransaction().remove(this@PaintFragment).commit()
                 requireParentFragment().childFragmentManager.popBackStack()
                 // 获取包含当前 Fragment 的布局
@@ -162,13 +162,13 @@ class PaintFragment : Fragment() {
         binding.buttonPaint.setOnClickListener {
             val zoom = binding.scaleEditText.text.toString().toFloat()
             when (paintType) {
-                R.id.button_color1 -> viewModel.paintColor(position, colors[0], zoom)
-                R.id.button_color2 -> viewModel.paintColor(position, colors[1], zoom)
-                R.id.button_color3 -> viewModel.paintColor(position, colors[2], zoom)
-                R.id.button_color4 -> viewModel.paintColor(position, colors[3], zoom)
-                R.id.button_color5 -> viewModel.paintColor(position, colors[4], zoom)
+                R.id.button_color1 -> viewModel.paintColor(requireContext(), position, colors[0], zoom)
+                R.id.button_color2 -> viewModel.paintColor(requireContext(), position, colors[1], zoom)
+                R.id.button_color3 -> viewModel.paintColor(requireContext(), position, colors[2], zoom)
+                R.id.button_color4 -> viewModel.paintColor(requireContext(), position, colors[3], zoom)
+                R.id.button_color5 -> viewModel.paintColor(requireContext(), position, colors[4], zoom)
                 R.id.button_color_custom ->
-                    viewModel.paintColor(position, Color.parseColor("#${binding.hexEditText.text}"), zoom)
+                    viewModel.paintColor(requireContext(), position, Color.parseColor("#${binding.hexEditText.text}"), zoom)
                 R.id.button_blur -> viewModel.paintBlur(position, 16, requireContext(), zoom)
 
             }

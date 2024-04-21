@@ -128,23 +128,22 @@ class StartActivity : AppCompatActivity(){
             }
 
             binding.homeContainer.setOnClickListener {
-                while (!isHomeSaved){}
-                shareImg("home")
+                if (isHomeSaved) {
+                    shareImg("home")
+                }
             }
 
             binding.lockContainer.setOnClickListener {
                 if (lockBitmap != null) {
-//                    shareBitmap(lockBitmap)
-                    while (!isLockSaved){}
-                    shareImg("lock")
+                    if (isLockSaved) {
+                        shareImg("lock")
+                    }
                 }
             }
 
         } else {
             binding.systemWallpContainer.visibility = View.INVISIBLE
         }
-
-
 
         binding.buttonPicker.setOnClickListener {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))

@@ -3,6 +3,7 @@ package com.maary.shareas.fragment
 import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -77,8 +78,8 @@ class EditorFragment : Fragment() {
                         binding.editorButtonUpscale.backgroundTintList = colorStateList
                         binding.appbarButtonCancel.setBackgroundColor(viewModel.getSecondaryColor(requireContext()))
                         binding.appbarButtonConfirm.setBackgroundColor(viewModel.getSecondaryColor(requireContext()))
-                        binding.editorButtonApply.setTextColor(viewModel.getPrimaryColor(requireContext()))
-                        binding.editorButtonAbort.setTextColor(viewModel.getPrimaryColor(requireContext()))
+                        binding.editorButtonApply.setTextColor(viewModel.getPrimaryColorAlt(requireContext()))
+                        binding.editorButtonAbort.setTextColor(viewModel.getPrimaryColorAlt(requireContext()))
                         binding.chipApplyHome.backgroundTintList = colorStateList
                         binding.chipApplyLock.backgroundTintList = colorStateList
                     }
@@ -138,15 +139,29 @@ class EditorFragment : Fragment() {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
 
+        binding.chipApplyHome.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.processHome = binding.chipApplyHome.isChecked
+            if (!isChecked) {
+                viewModel.abortEdit(WallpaperViewModel.HOME)
+                viewModel.currentBitmap = WallpaperViewModel.LOCK
+            }
+        }
+
+        binding.chipApplyLock.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.processLock = binding.chipApplyLock.isChecked
+            if (!isChecked) {
+                viewModel.abortEdit(WallpaperViewModel.LOCK)
+                viewModel.currentBitmap = WallpaperViewModel.HOME
+            }
+        }
+
         binding.editorButtonApply.setOnClickListener {
-            if (!chipHome.isChecked) viewModel.abortEditHome()
-            if (!chipLock.isChecked) viewModel.abortEditLock()
             viewModel.saveEdit()
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
         binding.editorButtonAbort.setOnClickListener {
-            viewModel.abortEdit()
+            viewModel.abortEdit(null)
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
@@ -182,7 +197,7 @@ class EditorFragment : Fragment() {
     }
 
     private fun loadFragment(fragment: Fragment) {
-        viewModel.abortEdit()
+        viewModel.abortEdit(null)
         val fragmentManager: FragmentManager = childFragmentManager
         fragmentManager.commitNow {
             replace(binding.editorFragmentContainer.id, fragment)
