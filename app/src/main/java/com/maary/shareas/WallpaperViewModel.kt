@@ -3,6 +3,7 @@ package com.maary.shareas
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
 import ai.onnxruntime.extensions.OrtxPackage
+import ai.onnxruntime.providers.NNAPIFlags
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
@@ -42,6 +43,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.util.EnumSet
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.random.Random
@@ -123,6 +125,10 @@ class WallpaperViewModel : ViewModel() {
 
     fun getUpscaleProgress(): Int {
         return _upscaleProgressState.value
+    }
+
+    fun clearUpscaleProgress() {
+        _upscaleProgressState.value = 0
     }
 
     private val _upscaleToggleState = MutableStateFlow(upscaleToggle)
@@ -238,8 +244,8 @@ class WallpaperViewModel : ViewModel() {
         )
     }
 
-    fun upscale(context: Context, modelName: String) {
-        performUpscale(input = getDisplayBitmap()!!, modelName, context)
+    fun upscale(context: Context, modelName: String, tileSize: Int = 128, fp16: Boolean = false, cpuDisabled: Boolean = false) {
+        performUpscale(input = getDisplayBitmap()!!, modelName, context, tileSize, fp16, cpuDisabled)
     }
 
     /**
@@ -686,7 +692,9 @@ class WallpaperViewModel : ViewModel() {
     }
 
 
-    private fun performUpscale(input: Bitmap, modelName: String, context: Context) {
+    private fun performUpscale(input: Bitmap, modelName: String, context: Context, tileSize: Int, fp16: Boolean, cpuDisabled: Boolean) {
+
+        Log.v("WVM", "UPSCALE $upscaleToggle")
 
         var model = R.raw.realesrgan_anime
         var scale = 4
@@ -695,12 +703,10 @@ class WallpaperViewModel : ViewModel() {
             bitmapRaw!!
         } else {
             if (input.width / bitmap!!.width
-                == input.height / bitmap!!.height
-            ) {
+                == input.height / bitmap!!.height) {
                 scaleBitmapTo(
                     input,
-                    bitmapRaw!!.width.toFloat() / input.width
-                )
+                    bitmapRaw!!.width.toFloat() / input.width)
             } else {
                 input
             }
@@ -729,20 +735,22 @@ class WallpaperViewModel : ViewModel() {
 
         val sessionOptions: OrtSession.SessionOptions = OrtSession.SessionOptions()
         sessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath())
-//        sessionOptions.addNnapi(
-//            EnumSet.of(
-//                NNAPIFlags.USE_FP16,
-//                NNAPIFlags.CPU_DISABLED
-//            )
-//        )
+
+        val nnapiFlags = EnumSet.noneOf(NNAPIFlags::class.java)
+        if (fp16) nnapiFlags.add(NNAPIFlags.USE_FP16)
+        if (cpuDisabled) nnapiFlags.add(NNAPIFlags.CPU_DISABLED)
+        if (nnapiFlags.isNotEmpty()) sessionOptions.addNnapi(nnapiFlags)
+
+        Log.v("WVM", "OPTIONS $sessionOptions")
+
         ortSession = ortEnv.createSession(readModel(context, model), sessionOptions)
 
         // 1. 输入是一个 bimap
         val originalWidth = inputBitmap.width
         val originalHeight = inputBitmap.height
 
+        Log.v("WVM", "TILE SIZE $tileSize")
         // 2. 将 bitmap 分割为多个 tile，记录 tile 的相对位置
-        val tileSize = 128
         val numTilesX = (originalWidth + tileSize - 1) / tileSize
         val numTilesY = (originalHeight + tileSize - 1) / tileSize
         val sub = numTilesX * numTilesY

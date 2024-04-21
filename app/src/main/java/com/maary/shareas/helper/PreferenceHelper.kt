@@ -29,6 +29,9 @@ class PreferencesHelper(context: Context) {
         val SETTINGS_FINISHED = booleanPreferencesKey("SETTING_FINISHED")
         var DEVICE_HEIGHT= intPreferencesKey("device_height")
         var DEVICE_WIDTH = intPreferencesKey("device_width")
+        var TILE_SIZE = intPreferencesKey("tile_size")
+        var FP16 = booleanPreferencesKey("FP16")
+        var CPU_DISABLED = booleanPreferencesKey("cpu_disabled")
         // Add more keys here as needed
     }
 
@@ -93,7 +96,56 @@ class PreferencesHelper(context: Context) {
         }
     }
 
+    suspend fun setFP16(boolean: Boolean) {
+        dataStore.edit { settings ->
+            settings[FP16] = boolean
+        }
+    }
+
+    private fun getFP16Flow(): Flow<Boolean> {
+        return dataStore.data
+            .map { preferences ->
+                preferences[FP16] ?: false
+            }
+    }
+
+    fun getFP16(): Boolean = runBlocking {
+        getFP16Flow().first()
+    }
+
+    suspend fun setCPUDisabled(boolean: Boolean) {
+        dataStore.edit { settings ->
+            settings[CPU_DISABLED] = boolean
+        }
+    }
+
+    private fun getCPUDisabledFlow(): Flow<Boolean> {
+        return dataStore.data
+            .map { preferences ->
+                preferences[CPU_DISABLED] ?: false
+            }
+    }
+
+    fun getCPUDisabled(): Boolean = runBlocking {
+        getCPUDisabledFlow().first()
+    }
 
 
+    private fun getTileSizeFlow(): Flow<Int> {
+        return dataStore.data
+            .map { preferences ->
+                preferences[TILE_SIZE] ?: 128
+            }
+    }
+
+    fun getTileSize(): Int = runBlocking {
+        getTileSizeFlow().first()
+    }
+
+    fun setTileSize(size: Int) = runBlocking {
+        dataStore.edit { settings ->
+            settings[TILE_SIZE] = size
+        }
+    }
 
 }
