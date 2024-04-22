@@ -21,6 +21,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -28,7 +29,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -71,6 +76,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.indicatorContainer, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            mlp.topMargin = insets.top; // * 2; //+ mlp.topMargin;
+            v.setLayoutParams(mlp);
+            return windowInsets;
+        });
+
+
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
@@ -87,12 +101,14 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getViewerStateLiveData().observe(this, state -> binding.mainView.setImageBitmap(Objects.requireNonNull(viewModel.getDisplayBitmap())));
         viewModel.getCurrentBitmapStateLiveData().observe(this, state -> {
             binding.mainView.setImageBitmap(Objects.requireNonNull(viewModel.getDisplayBitmap()));
-            binding.fab.setImageResource(viewModel.getFabResource());
+            binding.indicatorCurrentState.setIcon(ContextCompat.getDrawable(getApplicationContext(), viewModel.getFabResource()));
         });
         viewModel.getInEditorLiveData().observe(this, inEditor -> {
             if (inEditor) {
+                binding.indicatorCurrentState.setVisibility(View.INVISIBLE);
                 binding.bottomAppBarContainer.setVisibility(View.INVISIBLE);
             } else {
+                binding.indicatorCurrentState.setVisibility(View.VISIBLE);
                 binding.bottomAppBarContainer.setVisibility(View.VISIBLE);
             }
         });
@@ -100,6 +116,10 @@ public class MainActivity extends AppCompatActivity {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         binding.mainView.setOnImageClickListener(v -> viewModel.currentBitmapToggle());
+
+        binding.indicatorCurrentState.setOnClickListener( v -> viewModel.currentBitmapToggle());
+        binding.indicatorCurrentState.setBackgroundColor(viewModel.getTertiaryColorAlt(getApplicationContext()));
+        binding.indicatorCurrentState.setIconTint(ColorStateList.valueOf(viewModel.getTertiaryColor(getApplicationContext())));
 
         Palette.from(bitmap).generate(palette -> {
             // Access the colors from the palette
@@ -133,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
 
         //TODO:ADD zoom (if possible
 
-        Snackbar snackbarReturnHome = Snackbar.make(binding.container, getString(R.string.wallpaper_setted), Snackbar.LENGTH_INDEFINITE)
+        Snackbar snackbarReturnHome = Snackbar.make(binding.container, getString(R.string.wallpaper_setted), Snackbar.LENGTH_LONG)
                 .setAction(getString(R.string.gohome), v -> returnToHomeScreen());
 
         WallpaperManager.OnColorsChangedListener wallpaperChangedListener = new WallpaperManager.OnColorsChangedListener() {
