@@ -27,6 +27,24 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
+    <LinearLayout
+        android:id="@+id/indicator_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            style="?attr/materialIconButtonStyle"
+            android:id="@+id/indicator_current_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_vertical"
+            app:shapeAppearance="@style/Circular"
+            android:layout_margin="16dp"/>
+
+    </LinearLayout>
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/bottomAppBarContainer"
         android:layout_width="match_parent"
@@ -53,7 +71,7 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/setAsWallpaper"
             app:layout_anchor="@id/bottomAppBar"
-            app:srcCompat="@drawable/ic_vertical" />
+            app:srcCompat="@drawable/ic_setter" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

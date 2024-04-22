@@ -137,9 +137,6 @@ class UpscaleFragment : Fragment() {
 
         }
 
-        val preferencesHelper = PreferencesHelper(requireContext())
-
-
         return binding.root
     }
 }
