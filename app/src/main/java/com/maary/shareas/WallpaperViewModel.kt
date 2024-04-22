@@ -181,14 +181,6 @@ class WallpaperViewModel : ViewModel() {
         }
     }
 
-    fun getInputBitmap(): Bitmap? {
-        return when (currentBitmap) {
-            HOME -> bakBitmap.bitmapHome
-            LOCK -> bakBitmap.bitmapLock
-            else -> bitmap
-        }
-    }
-
     fun currentBitmapToggle() {
         currentBitmap = if (currentBitmap == HOME) LOCK else HOME
     }
@@ -276,14 +268,14 @@ class WallpaperViewModel : ViewModel() {
     }
 
     fun restoreChanges() {
-        bakBitmap.bitmapLock = bitmap
-        bakBitmap.bitmapHome = bitmap
         _viewerState.update { currentState ->
             currentState.copy(
                 bitmapHome = bitmap,
                 bitmapLock = bitmap
             )
         }
+        bakBitmap.bitmapLock = bitmap
+        bakBitmap.bitmapHome = bitmap
     }
 
     /**
@@ -328,6 +320,11 @@ class WallpaperViewModel : ViewModel() {
         else tertiary!!
     }
 
+    fun getTertiaryColorAlt(context: Context): Int {
+        return if (!isDarkMode(context)) tertiaryDark!!
+        else tertiary!!
+    }
+
     fun getFabResource(): Int {
         if (currentBitmap == HOME) {
             return R.drawable.ic_vertical
@@ -368,6 +365,13 @@ class WallpaperViewModel : ViewModel() {
         )
     }
 
+    private fun getInputBitmap(): Bitmap? {
+        return when (currentBitmap) {
+            HOME -> bakBitmap.bitmapHome
+            LOCK -> bakBitmap.bitmapLock
+            else -> bitmap
+        }
+    }
 
     private fun fitBitmapToScreen(value: Bitmap, context: Context): Bitmap {
         val deviceBounds = Util.getDeviceBounds(context)
