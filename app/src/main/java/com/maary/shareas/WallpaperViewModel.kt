@@ -27,6 +27,7 @@ import com.hoko.blur.task.AsyncBlurTask
 import com.maary.shareas.data.ViewerBitmap
 import com.maary.shareas.helper.SuperResPerformer
 import com.maary.shareas.helper.Util
+import com.maary.shareas.view.ScrollableImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -363,6 +364,45 @@ class WallpaperViewModel : ViewModel() {
             context.packageName + ".provider",
             file
         )
+    }
+
+    fun isAlignmentNeeded(context: Context): Boolean {
+        val deviceBounds = Util.getDeviceBounds(context)
+        val deviceHeight = deviceBounds.y
+        val deviceWidth = deviceBounds.x
+        return !(bitmap!!.width == deviceWidth && bitmap!!.height == deviceHeight)
+    }
+
+    fun getAlignmentIconResource(context: Context): Int {
+        val deviceBounds = Util.getDeviceBounds(context)
+        val deviceHeight = deviceBounds.y
+        val deviceWidth = deviceBounds.x
+        return if (deviceWidth < bitmap!!.width) {
+            R.drawable.ic_center_horizontal
+        } else if (deviceHeight < bitmap!!.height) {
+            R.drawable.ic_center_vertical
+        } else {
+            R.drawable.ic_center_horizontal
+        }
+    }
+
+    fun getCenterAlignParam(context: Context): Triple<Int, Int, Int>?{
+        val deviceBounds = Util.getDeviceBounds(context)
+        val deviceHeight = deviceBounds.y
+        val deviceWidth = deviceBounds.x
+        if (deviceWidth < bitmap!!.width) {
+            return Triple(
+                ScrollableImageView.HORIZONTAL,
+                (bitmap!!.width - deviceWidth)/2,
+                0)
+        }
+        if (deviceHeight < bitmap!!.height) {
+            return Triple(
+                ScrollableImageView.VERTICAL,
+                0,
+                (bitmap!!.height - deviceHeight)/2)
+        }
+        return null
     }
 
     private fun getInputBitmap(): Bitmap? {

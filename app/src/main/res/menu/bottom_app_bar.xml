@@ -14,6 +14,12 @@
         android:title="@string/blur"
         app:showAsAction="ifRoom"/>
 
+    <item
+        android:id="@+id/alignment_center"
+        android:icon="@drawable/ic_center_vertical"
+        android:title="@string/center"
+        app:showAsAction="ifRoom"/>
+
 <!--    <item-->
 <!--        android:id="@+id/horizontal"-->
 <!--        android:icon="@drawable/ic_horizontal"-->
