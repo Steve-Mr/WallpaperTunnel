@@ -29,7 +29,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -55,6 +54,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import kotlin.Triple;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -166,6 +167,11 @@ public class MainActivity extends AppCompatActivity {
 
         wallpaperManager.addOnColorsChangedListener(wallpaperChangedListener, new Handler(Looper.getMainLooper()));
 
+        if (viewModel.isAlignmentNeeded(this)) {
+            binding.bottomAppBar.getMenu().getItem(2).setIcon(viewModel.getAlignmentIconResource(this));
+        } else {
+            binding.bottomAppBar.getMenu().getItem(2).setVisible(false);
+        }
         //set bottomAppBar menu item
         //tap blur and brightness button will disable other menu item
         binding.bottomAppBar.setOnMenuItemClickListener(item -> {
@@ -174,6 +180,11 @@ public class MainActivity extends AppCompatActivity {
                 loadFragment(new EditorFragment());
             } else if (item.getItemId() == R.id.reset) {
                 viewModel.restoreChanges();
+            } else if (item.getItemId() == R.id.alignment_center) {
+                Triple<Integer, Integer, Integer> param = viewModel.getCenterAlignParam(this);
+                if (param != null) {
+                    binding.mainView.scrollImageTo(param.getFirst(), param.getSecond(), param.getThird());
+                }
             }
             return true;
         });

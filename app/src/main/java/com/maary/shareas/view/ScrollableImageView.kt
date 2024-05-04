@@ -3,6 +3,7 @@ package com.maary.shareas.view
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Point
 import android.graphics.Rect
 import android.net.Uri
 import android.util.AttributeSet
@@ -82,6 +83,10 @@ class ScrollableImageView  @JvmOverloads constructor(
 
     }
 
+    fun scrollImageTo(target: Int, x: Int, y: Int) {
+        if (target == VERTICAL) this.smoothScrollTo(x, y)
+        if (target == HORIZONTAL) horizontalView.smoothScrollTo(x, y)
+    }
 
     inner class CustomHorizontalView @JvmOverloads constructor(
         context: Context,
@@ -93,5 +98,10 @@ class ScrollableImageView  @JvmOverloads constructor(
             isHorizontalScrollBarEnabled = false
         }
 
+    }
+
+    companion object {
+        val VERTICAL = 0
+        val HORIZONTAL = 1
     }
 }
