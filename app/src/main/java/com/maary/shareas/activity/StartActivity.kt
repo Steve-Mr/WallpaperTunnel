@@ -94,7 +94,7 @@ class StartActivity : AppCompatActivity(){
         val homePFD:ParcelFileDescriptor?
         var lockPFD:ParcelFileDescriptor?
         val homeBitmap: Bitmap
-        var lockBitmap: Bitmap?
+        var lockBitmap: Bitmap
 
         if (checkPermission()){
             homePFD = wallpaperManager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)
@@ -109,10 +109,15 @@ class StartActivity : AppCompatActivity(){
 
             }else{
                 homeBitmap = (wallpaperManager.getBuiltInDrawable(WallpaperManager.FLAG_SYSTEM)).toBitmap()
-                lockBitmap = (wallpaperManager.getBuiltInDrawable(WallpaperManager.FLAG_LOCK)).toBitmapOrNull()
-                if (lockBitmap == null){
+                /**
+                 * 持续产生
+                 * java.lang.NullPointerException: wallpaperManager.getBuil…llpaperManager.FLAG_LOCK) must not be null
+                 * 问题
+                 * */
+//                lockBitmap = (wallpaperManager.getBuiltInDrawable(WallpaperManager.FLAG_LOCK)).toBitmap()
+//                if (lockBitmap == null){
                     lockBitmap = homeBitmap
-                }
+//                }
             }
             binding.homeContainer.setImageBitmap(homeBitmap)
             binding.lockContainer.setImageBitmap(lockBitmap)
