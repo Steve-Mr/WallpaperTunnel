@@ -843,15 +843,18 @@ class WallpaperViewModel : ViewModel() {
 
             val resultWidth = originalWidth * scale
             val resultHeight = originalHeight * scale
-            var resultBitmap = Bitmap.createBitmap(resultWidth, resultHeight, bitmapRaw!!.config)
-            val canvas = Canvas(resultBitmap)
+            var resultBitmap =
+                bitmapRaw?.config?.let { Bitmap.createBitmap(resultWidth, resultHeight, it) }
+            val canvas = resultBitmap?.let { Canvas(it) }
             var currentX = 0
             var currentY = 0
 
             for (processedTileDeferred in processedTilesDeferred) {
                 val processedTile = processedTileDeferred.await()
                 if (processedTile != null) {
-                    canvas.drawBitmap(processedTile, currentX.toFloat(), currentY.toFloat(), null)
+                    if (canvas != null) {
+                        canvas.drawBitmap(processedTile, currentX.toFloat(), currentY.toFloat(), null)
+                    }
                     currentX += processedTile.width
                     if (currentX >= resultWidth) {
                         currentX = 0
@@ -860,7 +863,7 @@ class WallpaperViewModel : ViewModel() {
                 }
             }
 
-            resultBitmap = fitBitmapToScreen(resultBitmap, context)
+            resultBitmap = resultBitmap?.let { fitBitmapToScreen(it, context) }
 
             _viewerState.update { current ->
                 current.copy(
