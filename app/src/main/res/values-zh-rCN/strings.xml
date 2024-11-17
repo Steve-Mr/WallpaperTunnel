@@ -61,4 +61,7 @@
     <string name="tile_size">图像块大小</string>
     <string name="fp16">使用 FP_16</string>
     <string name="cpu_disabled">不使用 CPU</string>
+    <string name="center">居中</string>
+    <string name="crop">裁切</string>
+    <string name="setFullAs">全图设置为</string>
 </resources>

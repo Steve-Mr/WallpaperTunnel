@@ -83,6 +83,26 @@ class ScrollableImageView  @JvmOverloads constructor(
 
     }
 
+    fun getVisibleRectStart(): Int {
+        // 获取 ScrollView 和 HorizontalView 的滚动距离
+        val scrollX = scrollX
+        val horizontalScrollX = horizontalView.scrollX
+
+        // 计算可视部分的矩形区域
+        return scrollX + horizontalScrollX
+
+    }
+
+    fun getVisibleRectEnd(): Int {
+        // 获取 ScrollView 和 HorizontalView 的滚动距离
+        val scrollX = scrollX
+        val horizontalScrollX = horizontalView.scrollX
+
+        // 计算可视部分的矩形区域
+        return scrollX + horizontalScrollX + width
+
+    }
+
     fun scrollImageTo(target: Int, x: Int, y: Int) {
         if (target == VERTICAL) this.smoothScrollTo(x, y)
         if (target == HORIZONTAL) horizontalView.smoothScrollTo(x, y)

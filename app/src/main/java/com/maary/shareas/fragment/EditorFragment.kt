@@ -21,6 +21,7 @@ import com.maary.shareas.WallpaperViewModel
 import com.maary.shareas.databinding.FragmentEditorBinding
 import com.maary.shareas.fragment.editor.BlurFragment
 import com.maary.shareas.fragment.editor.BrightnessFragment
+import com.maary.shareas.fragment.editor.CropFragment
 import com.maary.shareas.fragment.editor.PaintFragment
 import com.maary.shareas.fragment.editor.UpscaleFragment
 import kotlinx.coroutines.launch
@@ -75,6 +76,7 @@ class EditorFragment : Fragment() {
                         binding.editorButtonBlur.backgroundTintList = colorStateList
                         binding.editorButtonBrightness.backgroundTintList = colorStateList
                         binding.editorButtonFill.backgroundTintList = colorStateList
+                        binding.editorButtonCrop.backgroundTintList = colorStateList
                         binding.editorButtonUpscale.backgroundTintList = colorStateList
                         binding.appbarButtonCancel.setBackgroundColor(viewModel.getSecondaryColor(requireContext()))
                         binding.appbarButtonConfirm.setBackgroundColor(viewModel.getSecondaryColor(requireContext()))
@@ -175,6 +177,10 @@ class EditorFragment : Fragment() {
 
         binding.editorButtonFill.setOnClickListener {
             loadFragment(PaintFragment())
+        }
+
+        binding.editorButtonCrop.setOnClickListener {
+            loadFragment(CropFragment())
         }
 
         binding.editorButtonUpscale.setOnClickListener {

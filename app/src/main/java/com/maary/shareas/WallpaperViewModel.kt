@@ -76,12 +76,17 @@ class WallpaperViewModel : ViewModel() {
     var processHome = true
     var processLock = true
 
+    private var cropped: Bitmap? = null
+
     private var bitmap: Bitmap? = null
         set(value) {
             Log.v("WVM", "BITMAP SET")
             field = value
-            bakBitmap.bitmapHome = value
-            bakBitmap.bitmapLock = value
+            cropped = value
+            bakBitmap = bakBitmap.copy(
+                bitmapHome = value,
+                bitmapLock = value
+            )
             _viewerState.value = bakBitmap
         }
 
@@ -248,9 +253,9 @@ class WallpaperViewModel : ViewModel() {
         if (processHome && processLock) {
             bakBitmap = _viewerState.value
         } else if (processHome) {
-            bakBitmap.bitmapHome = _viewerState.value.bitmapHome
+            bakBitmap = bakBitmap.copy(bitmapHome = _viewerState.value.bitmapHome)
         } else if (processLock) {
-            bakBitmap.bitmapLock = _viewerState.value.bitmapLock
+            bakBitmap= bakBitmap.copy(bitmapLock = _viewerState.value.bitmapLock)
         }
     }
 
@@ -275,8 +280,10 @@ class WallpaperViewModel : ViewModel() {
                 bitmapLock = bitmap
             )
         }
-        bakBitmap.bitmapLock = bitmap
-        bakBitmap.bitmapHome = bitmap
+        bakBitmap = bakBitmap.copy(
+            bitmapHome = bitmap,
+            bitmapLock = bitmap
+        )
     }
 
     /**
@@ -843,15 +850,18 @@ class WallpaperViewModel : ViewModel() {
 
             val resultWidth = originalWidth * scale
             val resultHeight = originalHeight * scale
-            var resultBitmap = Bitmap.createBitmap(resultWidth, resultHeight, bitmapRaw!!.config)
-            val canvas = Canvas(resultBitmap)
+            var resultBitmap =
+                bitmapRaw?.config?.let { Bitmap.createBitmap(resultWidth, resultHeight, it) }
+            val canvas = resultBitmap?.let { Canvas(it) }
             var currentX = 0
             var currentY = 0
 
             for (processedTileDeferred in processedTilesDeferred) {
                 val processedTile = processedTileDeferred.await()
                 if (processedTile != null) {
-                    canvas.drawBitmap(processedTile, currentX.toFloat(), currentY.toFloat(), null)
+                    if (canvas != null) {
+                        canvas.drawBitmap(processedTile, currentX.toFloat(), currentY.toFloat(), null)
+                    }
                     currentX += processedTile.width
                     if (currentX >= resultWidth) {
                         currentX = 0
@@ -860,7 +870,7 @@ class WallpaperViewModel : ViewModel() {
                 }
             }
 
-            resultBitmap = fitBitmapToScreen(resultBitmap, context)
+            resultBitmap = resultBitmap?.let { fitBitmapToScreen(it, context) }
 
             _viewerState.update { current ->
                 current.copy(
@@ -891,5 +901,40 @@ class WallpaperViewModel : ViewModel() {
             } // Night mode is active, we're using dark theme
         }
         return false
+    }
+
+    fun scrollToStart(): Triple<Int, Int, Int> {
+        return Triple(
+            ScrollableImageView.HORIZONTAL,
+            0,
+            0
+        )
+    }
+
+    fun scrollToEnd(): Triple<Int, Int, Int> {
+        return Triple(
+            ScrollableImageView.HORIZONTAL,
+            bitmap!!.width,
+            0
+        )
+    }
+
+    fun crop(
+        start: Int = 0,
+        end: Int = cropped!!.width) {
+        val safeStart = start.coerceAtLeast(0)  // 起始点不能小于 0
+        val safeEnd = end.coerceAtMost(cropped!!.width) // 终止点不能超过 bitmap 的宽度
+        if (safeStart >= safeEnd) {
+            throw IllegalArgumentException("Start must be less than end")
+        }
+
+        // 计算裁剪的宽度和高度
+        val width = safeEnd - safeStart
+        val height = cropped!!.height
+
+        // 裁剪 bitmap
+        cropped = Bitmap.createBitmap(cropped!!, safeStart, 0, width, height)
+//        bitmap = cropped
+        updateViewerState(cropped, cropped)
     }
 }
