@@ -46,22 +46,22 @@ jobs:
           echo "APK_FILE_X86=$(find app/build/outputs/apk -name '*x86*.apk')" >> $GITHUB_ENV
           echo "APK_FILE_X64=$(find app/build/outputs/apk -name '*x64*.apk')" >> $GITHUB_ENV
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         name: Upload apk (arm64-v8a)
         with:
           name: app-arm64-v8a-release
           path: ${{ env.APK_FILE }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         name: Upload apk (armeabi-v7a)
         with:
           name: app-armeabi-v7a-release
           path: ${{ env.APK_FILE_ARMV7 }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         name: Upload apk (x86_64)
         with:
           name: app-x86_64-release
           path: ${{ env.APK_FILE_X64 }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         name: Upload apk (x86)
         with:
           name: app-x86-release
@@ -130,7 +130,7 @@ jobs:
       - telegram-bot-api
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
       - name: Download Telegram Bot API Binary
@@ -170,14 +170,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Clone Telegram Bot API
         run: |
           git clone --recursive https://github.com/tdlib/telegram-bot-api.git
           git status telegram-bot-api >> telegram-bot-api-status
       - name: Cache Bot API Binary
         id: cache-bot-api
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: telegram-bot-api-binary
           key: CI-telegram-bot-api-${{ hashFiles('telegram-bot-api-status') }}
