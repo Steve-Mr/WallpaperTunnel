@@ -140,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
         //setup the fab click listener
         binding.fab.setOnClickListener(view -> {
             cord = binding.mainView.getVisibleRect();
+            builder.setTitle(R.string.setAs);
             binding.bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
             AlertDialog dialog = builder.create();
             dialog.show();
@@ -147,6 +148,7 @@ public class MainActivity extends AppCompatActivity {
 
         binding.fab.setOnLongClickListener(view -> {
             cord = null;
+            builder.setTitle(R.string.setFullAs);
             AlertDialog dialog = builder.create();
             dialog.show();
             return false;
@@ -202,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
 
         //setup AlertDialog builder
         builder = new MaterialAlertDialogBuilder(context);
-        builder.setTitle(R.string.setAs);
+//        builder.setTitle(R.string.setAs);
 
         String[] options = {
                 getResources().getString(R.string.home),
