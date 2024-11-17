@@ -73,4 +73,5 @@
     <string name="cpu_disabled">Disable CPU</string>
     <string name="center">Center</string>
     <string name="crop">Crop</string>
+    <string name="setFullAs">Set full image as</string>
 </resources>
