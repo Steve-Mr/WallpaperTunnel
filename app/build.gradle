@@ -22,6 +22,12 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+    kotlin {
+        jvmToolchain(17)
+    }
 
     signingConfigs {
         release {
@@ -113,7 +119,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 
     implementation 'io.github.hokofly:hoko-blur:1.5.3'
-    implementation 'com.google.android.material:material:1.13.0-alpha07'
+    implementation 'com.google.android.material:material:1.14.0-alpha01'
 
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7"
     implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.7"

@@ -107,10 +107,10 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getInEditorLiveData().observe(this, inEditor -> {
             if (inEditor) {
                 binding.indicatorCurrentState.setVisibility(View.INVISIBLE);
-                binding.bottomAppBarContainer.setVisibility(View.INVISIBLE);
+                binding.toolbarContainer.setVisibility(View.INVISIBLE);
             } else {
                 binding.indicatorCurrentState.setVisibility(View.VISIBLE);
-                binding.bottomAppBarContainer.setVisibility(View.VISIBLE);
+                binding.toolbarContainer.setVisibility(View.VISIBLE);
             }
         });
 
@@ -130,23 +130,29 @@ public class MainActivity extends AppCompatActivity {
             dominant = palette.getDominantSwatch();
 
             if (vibrant != null) {
-                binding.fab.setBackgroundTintList(ColorStateList.valueOf(vibrant.getRgb()));
+                binding.toolbarActionSet.setBackgroundTintList(ColorStateList.valueOf(vibrant.getRgb()));
             } else {
-                binding.fab.setBackgroundColor(palette.getVibrantColor(getColor(R.color.colorAccent)));
+                binding.toolbarActionSet.setBackgroundColor(palette.getVibrantColor(getColor(R.color.colorAccent)));
+            }
+
+            if (muted != null) {
+                binding.toolbarActionRestore.setBackgroundTintList(ColorStateList.valueOf(muted.getRgb()));
+                binding.toolbarActionEdit.setBackgroundTintList(ColorStateList.valueOf(muted.getRgb()));
+                binding.toolbarActionCenter.setBackgroundTintList(ColorStateList.valueOf(muted.getRgb()));
             }
 
         });
 
         //setup the fab click listener
-        binding.fab.setOnClickListener(view -> {
+        binding.toolbarActionSet.setOnClickListener(view -> {
             cord = binding.mainView.getVisibleRect();
             builder.setTitle(R.string.setAs);
-            binding.bottomAppBar.getMenu().getItem(MENU_RESET).setEnabled(true);
+            binding.toolbarActionRestore.setEnabled(true);
             AlertDialog dialog = builder.create();
             dialog.show();
         });
 
-        binding.fab.setOnLongClickListener(view -> {
+        binding.toolbarActionSet.setOnLongClickListener(view -> {
             cord = null;
             builder.setTitle(R.string.setFullAs);
             AlertDialog dialog = builder.create();
@@ -170,32 +176,30 @@ public class MainActivity extends AppCompatActivity {
         wallpaperManager.addOnColorsChangedListener(wallpaperChangedListener, new Handler(Looper.getMainLooper()));
 
         if (viewModel.isAlignmentNeeded(this)) {
-            binding.bottomAppBar.getMenu().getItem(2).setIcon(viewModel.getAlignmentIconResource(this));
+            binding.toolbarActionCenter.setIconResource(viewModel.getAlignmentIconResource(this));
         } else {
-            binding.bottomAppBar.getMenu().getItem(2).setVisible(false);
+            binding.toolbarActionCenter.setVisibility(View.GONE);
         }
-        //set bottomAppBar menu item
-        //tap blur and brightness button will disable other menu item
-        binding.bottomAppBar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.edit) {
-//                viewModel.startEditing();
-                loadFragment(new EditorFragment());
-            } else if (item.getItemId() == R.id.reset) {
-                viewModel.restoreChanges();
-            } else if (item.getItemId() == R.id.alignment_center) {
-                Triple<Integer, Integer, Integer> param = viewModel.getCenterAlignParam(this);
-                if (param != null) {
-                    binding.mainView.scrollImageTo(param.getFirst(), param.getSecond(), param.getThird());
-                }
-            }
-            return true;
+
+        binding.toolbarActionRestore.setOnClickListener(view -> {
+            viewModel.restoreChanges();
         });
 
-        ActionMenuItemView resetItem = binding.bottomAppBar.findViewById(R.id.reset);
-        resetItem.setOnLongClickListener(view -> {
+        binding.toolbarActionRestore.setOnLongClickListener(view -> {
             Intent intent1 = new Intent(getApplicationContext(), HistoryActivity.class);
             startActivity(intent1);
             return true;
+        });
+
+        binding.toolbarActionEdit.setOnClickListener(view -> {
+            loadFragment(new EditorFragment());
+        });
+
+        binding.toolbarActionCenter.setOnClickListener( view -> {
+            Triple<Integer, Integer, Integer> param = viewModel.getCenterAlignParam(this);
+            if (param != null) {
+                binding.mainView.scrollImageTo(param.getFirst(), param.getSecond(), param.getThird());
+            }
         });
 
         Context context = DynamicColors.wrapContextIfAvailable(
@@ -204,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
 
         //setup AlertDialog builder
         builder = new MaterialAlertDialogBuilder(context);
-//        builder.setTitle(R.string.setAs);
 
         String[] options = {
                 getResources().getString(R.string.home),
@@ -244,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
 
         }));
 
-        binding.bottomAppBarContainer.bringToFront();
+        binding.toolbarContainer.bringToFront();
 
     }
 
