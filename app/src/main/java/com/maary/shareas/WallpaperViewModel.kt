@@ -48,6 +48,7 @@ import java.util.EnumSet
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.random.Random
+import androidx.core.graphics.createBitmap
 
 
 class WallpaperViewModel : ViewModel() {
@@ -158,14 +159,16 @@ class WallpaperViewModel : ViewModel() {
         bitmapRaw = value
         bitmap = fitBitmapToScreen(value, context)
         val deviceBounds = Util.getDeviceBounds(context)
-        background = Bitmap.createBitmap(deviceBounds.x, deviceBounds.y, Bitmap.Config.ARGB_8888)
+        background = createBitmap(deviceBounds.x, deviceBounds.y)
         val colors = extractColorsFromPalette()
-        primary = adjustColorToBlack(colors[0])
-        secondary = adjustColorToBlack(colors[1])
-        tertiary = adjustColorToBlack(colors[2])
-        primaryDark = adjustColorToWhite(colors[0])
-        secondaryDark = adjustColorToWhite(colors[1])
-        tertiaryDark = adjustColorToWhite(colors[2])
+        val defaultColor = if (colors.isNotEmpty()) colors[0] else Color.DKGRAY
+        primary = adjustColorToBlack(colors.getOrElse(0) { defaultColor })
+        secondary = adjustColorToBlack(colors.getOrElse(1) { defaultColor }) // 安全访问索引 1
+        tertiary = adjustColorToBlack(colors.getOrElse(2) { defaultColor }) // 安全访问索引 2
+
+        primaryDark = adjustColorToWhite(colors.getOrElse(0) { defaultColor })
+        secondaryDark = adjustColorToWhite(colors.getOrElse(1) { defaultColor })
+        tertiaryDark = adjustColorToWhite(colors.getOrElse(2) { defaultColor })
         _primaryColorState.value += 1
         processHome = true
         processLock = true
