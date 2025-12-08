@@ -104,11 +104,12 @@ class PaintFragment : Fragment() {
         }
 
         val colors = viewModel.extractTopColorsFromBitmap()
-        binding.buttonColor1.setBackgroundColor(colors[0])
-        binding.buttonColor2.setBackgroundColor(colors[1])
-        binding.buttonColor3.setBackgroundColor(colors[2])
-        binding.buttonColor4.setBackgroundColor(colors[3])
-        binding.buttonColor5.setBackgroundColor(colors[4])
+        val defaultColor = Color.BLACK
+        binding.buttonColor2.setBackgroundColor(colors.getOrNull(1) ?: defaultColor)
+        binding.buttonColor3.setBackgroundColor(colors.getOrNull(2) ?: defaultColor)
+        binding.buttonColor4.setBackgroundColor(colors.getOrNull(3) ?: defaultColor)
+        binding.buttonColor5.setBackgroundColor(colors.getOrNull(4) ?: defaultColor)
+
 
         binding.buttonColorCustom.setOnClickListener {
             if (binding.hexEditText.text.isNullOrEmpty()) {
