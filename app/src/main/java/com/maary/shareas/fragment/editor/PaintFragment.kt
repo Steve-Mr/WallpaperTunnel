@@ -22,6 +22,7 @@ import com.maary.shareas.R
 import com.maary.shareas.WallpaperViewModel
 import com.maary.shareas.databinding.FragmentPaintBinding
 import kotlinx.coroutines.launch
+import androidx.core.graphics.toColorInt
 
 class PaintFragment : Fragment() {
 
@@ -85,7 +86,7 @@ class PaintFragment : Fragment() {
                     binding.hexEditText.onEditorAction(EditorInfo.IME_ACTION_DONE)
                     paintType = binding.buttonColorCustom.id
                     checkButton(paintType)
-                    binding.buttonColorCustom.setBackgroundColor(Color.parseColor("#${binding.hexEditText.text}"))
+                    binding.buttonColorCustom.setBackgroundColor("#${binding.hexEditText.text}".toColorInt())
                 }
             }
         })
@@ -169,7 +170,8 @@ class PaintFragment : Fragment() {
                 R.id.button_color4 -> viewModel.paintColor(requireContext(), position, colors[3], zoom)
                 R.id.button_color5 -> viewModel.paintColor(requireContext(), position, colors[4], zoom)
                 R.id.button_color_custom ->
-                    viewModel.paintColor(requireContext(), position, Color.parseColor("#${binding.hexEditText.text}"), zoom)
+                    viewModel.paintColor(requireContext(), position,
+                        "#${binding.hexEditText.text}".toColorInt(), zoom)
                 R.id.button_blur -> viewModel.paintBlur(position, 16, requireContext(), zoom)
 
             }
