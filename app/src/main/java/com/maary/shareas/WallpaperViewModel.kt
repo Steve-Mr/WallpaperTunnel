@@ -49,6 +49,8 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.random.Random
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
+import androidx.core.graphics.get
 
 
 class WallpaperViewModel : ViewModel() {
@@ -163,8 +165,8 @@ class WallpaperViewModel : ViewModel() {
         val colors = extractColorsFromPalette()
         val defaultColor = if (colors.isNotEmpty()) colors[0] else Color.DKGRAY
         primary = adjustColorToBlack(colors.getOrElse(0) { defaultColor })
-        secondary = adjustColorToBlack(colors.getOrElse(1) { defaultColor }) // 安全访问索引 1
-        tertiary = adjustColorToBlack(colors.getOrElse(2) { defaultColor }) // 安全访问索引 2
+        secondary = adjustColorToBlack(colors.getOrElse(1) { defaultColor })
+        tertiary = adjustColorToBlack(colors.getOrElse(2) { defaultColor })
 
         primaryDark = adjustColorToWhite(colors.getOrElse(0) { defaultColor })
         secondaryDark = adjustColorToWhite(colors.getOrElse(1) { defaultColor })
@@ -228,7 +230,7 @@ class WallpaperViewModel : ViewModel() {
         val deviceBounds = Util.getDeviceBounds(context)
         val bHeight = deviceBounds.y
         val bWidth = deviceBounds.x
-        val _background = Bitmap.createBitmap(bWidth, bHeight, Bitmap.Config.ARGB_8888)
+        val _background = createBitmap(bWidth, bHeight)
 
         performPaintColor(
             foreground = getInputBitmap()!!,
@@ -294,13 +296,13 @@ class WallpaperViewModel : ViewModel() {
      * */
     fun extractTopColorsFromBitmap(): List<Int> {
 
-        val _bitmap = Bitmap.createScaledBitmap(getDisplayBitmap()!!, 128, 128, true)
+        val _bitmap = getDisplayBitmap()!!.scale(128, 128)
         val colorMap = mutableMapOf<Int, Int>()
 
         // 遍历图片的每个像素，并统计每种颜色的出现次数
         for (x in 0 until _bitmap.width) {
             for (y in 0 until _bitmap.height) {
-                val pixel = _bitmap.getPixel(x, y)
+                val pixel = _bitmap[x, y]
                 val colorCount = colorMap.getOrDefault(pixel, 0)
                 colorMap[pixel] = colorCount + 1
             }
@@ -447,7 +449,7 @@ class WallpaperViewModel : ViewModel() {
             desiredWidth = (scale * bitmapFullWidth).toInt()
         }
 
-        return Bitmap.createScaledBitmap(value, desiredWidth, desiredHeight, true)
+        return value.scale(desiredWidth, desiredHeight)
     }
 
     private fun fitBitmapToScreenAlt(value: Bitmap, context: Context): Bitmap {
@@ -474,7 +476,7 @@ class WallpaperViewModel : ViewModel() {
             desiredHeight = (scale * bitmapFullHeight).toInt()
         }
 
-        return Bitmap.createScaledBitmap(value, desiredWidth, desiredHeight, true)
+        return value.scale(desiredWidth, desiredHeight)
     }
 
     private fun adjustColorToBlack(value: Int): Int {
@@ -586,7 +588,7 @@ class WallpaperViewModel : ViewModel() {
         val originalHeight = originalBitmap.height
         val scaledWidth = (originalWidth * scale).toInt()
         val scaledHeight = (originalHeight * scale).toInt()
-        return Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
+        return originalBitmap.scale(scaledWidth, scaledHeight)
     }
 
 
@@ -635,7 +637,7 @@ class WallpaperViewModel : ViewModel() {
 
         // 创建新的背景图片
         val _background =
-            Bitmap.createBitmap(width + offset * 2, height + offset * 2, Bitmap.Config.ARGB_8888)
+            createBitmap(width + offset * 2, height + offset * 2)
 
         if (_background.width > width / zoom || _background.height > height / zoom) return image
 
@@ -854,7 +856,7 @@ class WallpaperViewModel : ViewModel() {
             val resultWidth = originalWidth * scale
             val resultHeight = originalHeight * scale
             var resultBitmap =
-                bitmapRaw?.config?.let { Bitmap.createBitmap(resultWidth, resultHeight, it) }
+                bitmapRaw?.config?.let { createBitmap(resultWidth, resultHeight, it) }
             val canvas = resultBitmap?.let { Canvas(it) }
             var currentX = 0
             var currentY = 0
@@ -862,9 +864,7 @@ class WallpaperViewModel : ViewModel() {
             for (processedTileDeferred in processedTilesDeferred) {
                 val processedTile = processedTileDeferred.await()
                 if (processedTile != null) {
-                    if (canvas != null) {
-                        canvas.drawBitmap(processedTile, currentX.toFloat(), currentY.toFloat(), null)
-                    }
+                    canvas?.drawBitmap(processedTile, currentX.toFloat(), currentY.toFloat(), null)
                     currentX += processedTile.width
                     if (currentX >= resultWidth) {
                         currentX = 0
