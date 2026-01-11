@@ -6,13 +6,13 @@ def keystoreProperties = new Properties()
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         applicationId "com.maary.shareas"
         minSdkVersion 29
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode 5
-        versionName "2025.05.26-alpha"
+        versionName "2026.01.11-beta"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
@@ -92,40 +92,40 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
-    implementation 'androidx.core:core-ktx:1.15.0'
-    implementation 'androidx.activity:activity:1.9.3'
-    implementation "androidx.datastore:datastore-preferences:1.1.1"
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.core:core-ktx:1.17.0'
+    implementation 'androidx.activity:activity:1.12.2'
+    implementation "androidx.datastore:datastore-preferences:1.2.0"
     // optional - RxJava2 support
-    implementation "androidx.datastore:datastore-preferences-rxjava2:1.1.1"
+    implementation "androidx.datastore:datastore-preferences-rxjava2:1.2.0"
     // optional - RxJava3 support
-    implementation "androidx.datastore:datastore-preferences-rxjava3:1.1.1"
-    implementation "androidx.fragment:fragment-ktx:1.8.5"
+    implementation "androidx.datastore:datastore-preferences-rxjava3:1.2.0"
+    implementation "androidx.fragment:fragment-ktx:1.8.9"
 
-    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.20.0'
+    //noinspection Aligned16KB
+    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.23.2'
+    //noinspection Aligned16KB
     implementation 'com.microsoft.onnxruntime:onnxruntime-extensions-android:0.13.0'
 
-    implementation("androidx.transition:transition:1.5.1")
-    implementation("androidx.transition:transition-ktx:1.5.1")
+    implementation("androidx.transition:transition:1.6.0")
+    implementation("androidx.transition:transition-ktx:1.6.0")
 
-    implementation "androidx.fragment:fragment:1.8.5"
-    // Kotlin
-    implementation "androidx.fragment:fragment-ktx:1.8.5"
-
+    implementation "androidx.fragment:fragment:1.8.9"
 
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 
-    implementation 'io.github.hokofly:hoko-blur:1.5.3'
-    implementation 'com.google.android.material:material:1.14.0-alpha01'
+    //noinspection Aligned16KB
+    implementation 'io.github.hokofly:hoko-blur:1.5.5'
+    implementation 'com.google.android.material:material:1.14.0-alpha08'
 
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.7"
-    implementation "androidx.activity:activity-ktx:1.9.3"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.10.0"
+    implementation "androidx.activity:activity-ktx:1.12.2"
 
-    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    implementation 'com.github.bumptech.glide:glide:5.0.5'
 
     implementation 'androidx.palette:palette:1.0.0'
 }

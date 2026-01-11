@@ -22,6 +22,7 @@ import com.maary.shareas.R
 import com.maary.shareas.WallpaperViewModel
 import com.maary.shareas.databinding.FragmentPaintBinding
 import kotlinx.coroutines.launch
+import androidx.core.graphics.toColorInt
 
 class PaintFragment : Fragment() {
 
@@ -85,7 +86,7 @@ class PaintFragment : Fragment() {
                     binding.hexEditText.onEditorAction(EditorInfo.IME_ACTION_DONE)
                     paintType = binding.buttonColorCustom.id
                     checkButton(paintType)
-                    binding.buttonColorCustom.setBackgroundColor(Color.parseColor("#${binding.hexEditText.text}"))
+                    binding.buttonColorCustom.setBackgroundColor("#${binding.hexEditText.text}".toColorInt())
                 }
             }
         })
@@ -104,11 +105,12 @@ class PaintFragment : Fragment() {
         }
 
         val colors = viewModel.extractTopColorsFromBitmap()
-        binding.buttonColor1.setBackgroundColor(colors[0])
-        binding.buttonColor2.setBackgroundColor(colors[1])
-        binding.buttonColor3.setBackgroundColor(colors[2])
-        binding.buttonColor4.setBackgroundColor(colors[3])
-        binding.buttonColor5.setBackgroundColor(colors[4])
+        val defaultColor = Color.BLACK
+        binding.buttonColor2.setBackgroundColor(colors.getOrNull(1) ?: defaultColor)
+        binding.buttonColor3.setBackgroundColor(colors.getOrNull(2) ?: defaultColor)
+        binding.buttonColor4.setBackgroundColor(colors.getOrNull(3) ?: defaultColor)
+        binding.buttonColor5.setBackgroundColor(colors.getOrNull(4) ?: defaultColor)
+
 
         binding.buttonColorCustom.setOnClickListener {
             if (binding.hexEditText.text.isNullOrEmpty()) {
@@ -168,7 +170,8 @@ class PaintFragment : Fragment() {
                 R.id.button_color4 -> viewModel.paintColor(requireContext(), position, colors[3], zoom)
                 R.id.button_color5 -> viewModel.paintColor(requireContext(), position, colors[4], zoom)
                 R.id.button_color_custom ->
-                    viewModel.paintColor(requireContext(), position, Color.parseColor("#${binding.hexEditText.text}"), zoom)
+                    viewModel.paintColor(requireContext(), position,
+                        "#${binding.hexEditText.text}".toColorInt(), zoom)
                 R.id.button_blur -> viewModel.paintBlur(position, 16, requireContext(), zoom)
 
             }
